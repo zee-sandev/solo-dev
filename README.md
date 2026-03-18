@@ -109,6 +109,8 @@ Picks the next eligible feature from your roadmap and runs the full 8-phase life
 | `/solo-dev:start-from-idea` | Turn a rough idea into a validated, prioritized roadmap |
 | `/solo-dev:init` | Initialize a project — works for new concepts, existing codebases, and templates |
 | `/solo-dev:next-feature` | Build and ship the next feature through all 8 phases |
+| `/solo-dev:consult <agent>` | Quick expert consultation with any agent — no init required |
+| `/solo-dev:handoff` | Transition your current discussion into a structured build |
 | `/solo-dev:status` | See where you are — roadmap progress, current phase, token usage |
 | `/solo-dev:set-autonomy` | Fine-tune how much solo-dev asks vs. decides on its own |
 | `/solo-dev:evolve` | Let agents analyze their performance and improve their strategies |

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 17 agents, 8 commands, 6 bundled skills, hooks, and a self-learning memory system.
+This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 17 agents, 10 commands, 6 bundled skills, hooks, and a self-learning memory system.
 
 ## Documentation Sync Rules
 
@@ -17,7 +17,7 @@ This project maintains 3 documentation surfaces that MUST stay in sync:
 | Change Type | Update |
 |-------------|--------|
 | New/modified agent | `README.md` (agent roster table), `docs/agent-architecture.md` (full details), `wiki/Agent-Architecture.md` |
-| New/modified command | `README.md` (commands table + examples if applicable), `wiki/Commands.md` |
+| New/modified command | `README.md` (commands table + examples if applicable), `wiki/Commands.md`, `docs/design.md` (commands table) |
 | Workflow/phase change | `README.md` (Mermaid diagrams), `docs/workflow.md`, `wiki/Feature-Lifecycle.md` |
 | Feedback protocol change | `docs/agent-feedback-flow.md`, `wiki/Agent-Feedback-Protocol.md` |
 | Memory system change | `docs/memory-flow.md`, `wiki/Memory-System.md` |

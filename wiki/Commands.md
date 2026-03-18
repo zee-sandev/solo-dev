@@ -1,14 +1,16 @@
 # Commands
 
-solo-dev provides 8 commands for the full product development lifecycle.
+solo-dev provides 10 commands for the full product development lifecycle.
 
 ## Overview
 
 | Command | Description |
 |---------|-------------|
 | `/solo-dev:start-from-idea` | Turn a rough idea into a validated roadmap |
-| `/solo-dev:init` | Initialize a project from an existing concept or codebase |
+| `/solo-dev:init` | Initialize a project from a concept, codebase, or template |
 | `/solo-dev:next-feature` | Build and ship the next feature on your roadmap |
+| `/solo-dev:consult <agent>` | Quick expert consultation with any agent — no init required |
+| `/solo-dev:handoff` | Transition a conversation discussion into a structured build |
 | `/solo-dev:status` | Progress dashboard — roadmap, phase, token usage |
 | `/solo-dev:set-autonomy` | Configure per-decision autonomy levels interactively |
 | `/solo-dev:evolve` | Analyze performance data and improve agent strategies |
@@ -43,6 +45,8 @@ Sets up the project for development. Detects whether this is a new concept or ex
 
 **Path B (existing codebase):** Analyzes codebase silently, cross-checks understanding with user (3 interactions), generates docs. See [Existing Project Onboarding](Existing-Project-Onboarding.md).
 
+**Path C (template/foundation):** Reads existing CLAUDE.md, docs/, .claude/agents/ — delegates implementation to template agents, tags example code. 1 interaction only. See [Existing Project Onboarding](Existing-Project-Onboarding.md).
+
 **Next step:** `/solo-dev:next-feature`
 
 ---
@@ -52,6 +56,58 @@ Sets up the project for development. Detects whether this is a new concept or ex
 Runs the full [Feature Lifecycle](Feature-Lifecycle.md) (phases 0-8) for the next feature on the roadmap.
 
 Automatically selects the next `QUEUED` feature where all `depends_on` are `COMPLETE`. If no feature is eligible, reports which dependencies are blocking.
+
+---
+
+## `/solo-dev:consult`
+
+Quick, standalone consultation with any solo-dev agent. **No init required** — works from any conversation.
+
+```
+/solo-dev:consult tech-architect "should I use REST or GraphQL?"
+/solo-dev:consult security-reviewer "review this auth middleware"
+/solo-dev:consult product-researcher "competitors for invoice automation"
+```
+
+**Available agents for consultation:**
+
+| Agent | Expertise |
+|-------|----------|
+| `tech-architect` | Architecture, API design, stack selection, performance |
+| `product-researcher` | Market fit, competitors, positioning, monetization |
+| `ux-researcher` | User journey, UX patterns, information architecture |
+| `market-validator` | Commercial viability, market size, timing |
+| `business-validator` | Business logic, real-world edge cases, competitive gaps |
+| `security-reviewer` | Auth, multi-tenancy, payment security, OWASP |
+| `code-reviewer` | Code quality — security, maintainability, scalability |
+| `persona-validator` | Evaluate from user persona perspectives |
+
+If the project is initialized, agents have access to project memory (decisions, patterns). If not, they work as standalone experts.
+
+**Next step (optional):** `/solo-dev:handoff` to transition the consultation into a structured build.
+
+---
+
+## `/solo-dev:handoff`
+
+Transitions the current conversation into solo-dev's structured workflow. Use this when a discussion naturally reaches the point where building should begin.
+
+```
+/solo-dev:handoff              # Full lifecycle (8 phases)
+/solo-dev:handoff design-only  # Design loop only, stop before implementation
+```
+
+**What it does:**
+
+1. Synthesizes the conversation — extracts what was discussed, decisions made, open questions
+2. Confirms the summary with you
+3. Asks how deep to go:
+   - **A) Full lifecycle** — Design → Implementation → Review → QA → Demo (8 phases)
+   - **B) Design only** — Research agents produce a spec, personas validate, stop
+   - **C) Implement now** — Skip design, go straight to parallel implementation
+4. Creates a feature spec from the discussion and enters the workflow
+
+If the project isn't initialized yet, handoff runs a **quick init** (minimal setup) before proceeding.
 
 ---
 
