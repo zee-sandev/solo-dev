@@ -1,0 +1,196 @@
+# Memory System
+
+solo-dev's memory is designed for token efficiency. Only the index loads at session start (~300 tokens total). Everything else is pulled on demand.
+
+## Architecture
+
+```
+SESSION CONTEXT (always loaded)
+  ├── docs/agents/memory/index.md     ~200 tokens  ← project index
+  └── ~/.claude/solo-dev/global-memory/index.md  ~100 tokens  ← cross-project index
+
+ON-DEMAND (agents pull when needed, ~500 tokens each)
+  ├── docs/agents/memory/decisions.md
+  ├── docs/agents/memory/patterns.md
+  ├── docs/agents/memory/rejected.md
+  ├── docs/agents/memory/persona_insights.md
+  ├── docs/agents/memory/cr_learnings.md
+  ├── docs/agents/memory/bv_learnings.md
+  └── docs/agents/memory/performance-log.md
+
+STRATEGY FILES (loaded by respective agents, ~200 tokens each)
+  ├── ~/.claude/solo-dev/strategies/research.md
+  ├── ~/.claude/solo-dev/strategies/implementation.md
+  └── ~/.claude/solo-dev/strategies/qa.md
+
+CROSS-PROJECT LEARNINGS (search-only via index, never loaded upfront)
+  └── ~/.claude/solo-dev/global-memory/learnings/*.md
+
+SNAPSHOTS (rollback only)
+  └── docs/agents/memory/snapshots/pre-{feature-id}.json
+```
+
+### Token Budget per Feature
+
+| Layer | Max Tokens |
+|-------|-----------|
+| Memory index (project) | ~200 |
+| Memory index (global) | ~100 |
+| On-demand memory pulls | ~500 each, max 3 concurrent |
+| Repomix queries | ~300-500 each |
+| **Total overhead** | **< 2,000** |
+
+---
+
+## SessionStart Flow
+
+```
+Session begins
+  │
+  ├─ 1. Read .claude/solo-dev-state.json
+  │      → Determine current phase + feature
+  │      → Set $SAAS_DEV_PHASE, $SAAS_DEV_FEATURE env vars
+  │
+  ├─ 2. Load docs/agents/memory/index.md (~200 tokens)
+  │      → Summary of what's in memory, key decision pointers
+  │
+  ├─ 3. Load ~/.claude/solo-dev/global-memory/index.md (~100 tokens)
+  │      → Cross-project pattern summaries
+  │
+  ├─ 4. Detect tech stack from project files
+  │      package.json → Next.js | manage.py → Django | go.mod → Go | etc.
+  │      → Export $SAAS_DEV_STACK to $CLAUDE_ENV_FILE
+  │
+  ├─ 5. Check repomix pack
+  │      → If pack_id valid: set $REPOMIX_PACK_ID
+  │      → If no pack: prompt "Set up Repomix?"
+  │
+  └─ 6. Check optional plugins
+         → Detect: impeccable, ui-ux-pro-max, ecc plugins
+         → Report: "Using bundled fallback for: [missing plugins]"
+
+Total tokens at start: ~300-400
+```
+
+---
+
+## Memory Index Format
+
+The index is always ≤200 tokens. It's a summary, not the content itself.
+
+```markdown
+# Memory Index — {project-name}
+Last updated: {date} | Feature count: {N}
+
+## decisions.md
+- Tech: Next.js 15 + Hono, MongoDB (decided 2026-03-10)
+- API: REST with oRPC wrappers (decided 2026-03-12)
+  [3 total decisions]
+
+## patterns.md
+- Repository pattern for all data access [since A1]
+- API response envelope: {success, data, error, meta} [since A1]
+  [2 patterns]
+
+## cr_learnings.md
+- backend-agent: often misses rate limiting on auth routes [A1]
+  [1 learning]
+```
+
+---
+
+## Compression Rules
+
+`memory-curator` compresses memory after every feature ships.
+
+| File | Keep | Remove/Compress |
+|------|------|----------------|
+| `decisions.md` | Final decisions with rationale, all architectural decisions | Superseded decisions (mark `[SUPERSEDED]`) |
+| `patterns.md` | Patterns still in use | Replaced patterns → move to `rejected.md` |
+| `persona_insights.md` | Recurring themes (2+ appearances). Max 1000 tokens | One-off feedback → bullet points |
+| `cr_learnings.md` | Patterns that caused failures. Max 800 tokens | Issues resolved by codebase changes |
+
+---
+
+## Cross-Project Learning
+
+```
+Feature ships in Project A
+  │
+  ▼
+memory-curator identifies reusable patterns:
+  "multi-tenant auth with Better Auth — tested pattern"
+  │
+  ▼
+Writes to: ~/.claude/solo-dev/global-memory/learnings/
+  auth-patterns.md       ← auth patterns across projects
+  billing-patterns.md    ← billing edge cases
+  api-patterns.md        ← API design patterns
+  │
+  ▼
+Updates: ~/.claude/solo-dev/global-memory/index.md
+  "auth-patterns.md: 3 patterns (Better Auth, magic links, multi-tenant)"
+  │
+  ▼
+Project B starts, needs auth
+  tech-architect reads global index → finds auth-patterns.md
+  → retrieves pattern → applies immediately, skips re-research
+```
+
+---
+
+## Strategy Files
+
+Maintained by `strategy-evolver`. Loaded by respective agents.
+
+```markdown
+# Research Strategy — Updated 2026-03-18
+
+## What works well
+- Search competitor G2 reviews before proposing features
+- Check bv_learnings.md for domain-specific checklists
+
+## Common mistakes to avoid
+- product-researcher: missing dunning/proration in billing
+- ux-researcher: not checking mobile viewport for forms
+
+## Confidence calibration
+- Market size estimates: confidence 0.7
+- Competitor feature detection: confidence 0.85
+
+## Last evolved: 2026-03-18 | Features analyzed: 3
+```
+
+---
+
+## Token Budget Modes
+
+| Mode | Behavior |
+|------|---------|
+| `fixed` | Hard stop at limit. Warn at 80%. Pause + ask user at 100%. |
+| `subscription` | No hard stop. Warn if >3x average. Auto-compress at context 80%. Detect stalls. |
+| `disabled` | No intervention. No tracking. |
+
+See [Configuration](Configuration.md) for budget settings.
+
+---
+
+## Snapshots
+
+Before each feature begins, `memory-curator` creates a snapshot:
+
+```json
+{
+  "feature_id": "A1",
+  "timestamp": "2026-03-18T10:00:00Z",
+  "git_commit": "abc1234",
+  "state": { /* solo-dev-state.json */ },
+  "memory": {
+    "index": "...",
+    "decisions": "...",
+    "patterns": "..."
+  }
+}
+```
+
+Snapshots enable full rollback — git, state, and memory. See [Rollback](Rollback.md).

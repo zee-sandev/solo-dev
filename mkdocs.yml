@@ -1,0 +1,80 @@
+site_name: solo-dev
+site_description: Multi-agent SaaS development system for Claude Code
+site_url: https://zee-sandev.github.io/solo-dev/
+repo_url: https://github.com/zee-sandev/solo-dev
+repo_name: zee-sandev/solo-dev
+
+docs_dir: wiki
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: Home.md
+  - Getting Started: Getting-Started.md
+  - Commands: Commands.md
+  - Architecture:
+    - Agent Architecture: Agent-Architecture.md
+    - Feature Lifecycle: Feature-Lifecycle.md
+    - Agent Feedback Protocol: Agent-Feedback-Protocol.md
+    - Memory System: Memory-System.md
+  - Guides:
+    - Existing Project Onboarding: Existing-Project-Onboarding.md
+    - Configuration: Configuration.md
+    - Supported Stacks: Supported-Stacks.md
+    - Bundled Skills: Bundled-Skills.md
+    - Rollback: Rollback.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/zee-sandev/solo-dev

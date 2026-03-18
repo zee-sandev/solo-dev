@@ -1,0 +1,50 @@
+{
+  "description": "solo-dev lifecycle hooks: session resume, repomix repack, state persistence, context preservation",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-start.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "After writing or editing a file, check two things:\n1. If the modified file is an API route, controller, or endpoint handler: check .claude/solo-dev.local.md for api_contracts config. If enabled, generate or update the API contract doc per the configured output mode (markdown to docs/contracts/ or custom prompt).\n2. Run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/repack-check.sh mentally: if significant source code files were changed (not config, not docs, not tests), note that repomix repack may be needed before the next agent that does code exploration."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before stopping the session, perform these checks:\n1. Update .claude/solo-dev-state.json with current phase, feature, round, and agent statuses.\n2. If a feature was fully completed this session (reached COMPLETE state): trigger memory-curator to compress and index new learnings into docs/agents/memory/index.md.\n3. Verify no agent is in an incomplete BLOCKING state without a recorded reason — if found, note the blocker in solo-dev-state.json under blocked_since.\n4. If token_budget.mode is 'subscription' or 'fixed', log session token summary to docs/agents/memory/performance-log.md."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before context compaction, preserve critical solo-dev context:\n1. Keep solo-dev-state.json content fully intact.\n2. Keep the current feature spec (docs/specs/{current-feature}.md) fully intact.\n3. Keep active agent outputs for in-progress agents.\n4. Compress in this priority order (safe to compress first):\n   - Completed phase outputs (earlier design rounds, resolved CR reports)\n   - Old agent discussion logs\n   - Never compress: memory index, current spec, state.json, acceptance criteria."
+          }
+        ]
+      }
+    ]
+  }
+}

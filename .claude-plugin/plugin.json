@@ -1,0 +1,17 @@
+{
+  "name": "solo-dev",
+  "version": "0.1.0",
+  "description": "Multi-agent SaaS development system. Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy.",
+  "author": {
+    "name": "zee",
+    "url": "https://github.com/zee-sandev/solo-dev"
+  },
+  "keywords": ["saas", "development", "multi-agent", "self-learning", "autonomous"],
+  "recommended_plugins": [
+    "impeccable",
+    "ui-ux-pro-max",
+    "everything-claude-code",
+    "superpowers",
+    "repomix-mcp"
+  ]
+}
