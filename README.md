@@ -32,26 +32,26 @@ You describe an idea. solo-dev handles the rest:
 
 ## Installation
 
-### From Claude Code Plugin Marketplace (recommended)
+### From GitHub (recommended)
 
 ```bash
-# Install from marketplace
-claude plugin add solo-dev
+# Install directly from repo
+claude plugin add zee-sandev/solo-dev
 
 # Install optional plugins for enhanced quality
-claude plugin add impeccable
-claude plugin add ui-ux-pro-max
-claude plugin add everything-claude-code
+claude plugin add anthropics/claude-plugins-official:impeccable
+claude plugin add anthropics/claude-plugins-official:ui-ux-pro-max
+claude plugin add anthropics/claude-plugins-official:everything-claude-code
 ```
 
 ### Manual Install
 
 ```bash
-# Global install
-cp -r solo-dev ~/.claude/plugins/solo-dev
+# Clone and install globally
+git clone https://github.com/zee-sandev/solo-dev.git ~/.claude/plugins/solo-dev
 
 # Or project-scoped
-cp -r solo-dev .claude/plugins/solo-dev
+git clone https://github.com/zee-sandev/solo-dev.git .claude/plugins/solo-dev
 ```
 
 ---
