@@ -6,12 +6,5 @@
     "name": "zee",
     "url": "https://github.com/zee-sandev/solo-dev"
   },
-  "keywords": ["saas", "development", "multi-agent", "self-learning", "autonomous"],
-  "recommended_plugins": [
-    "impeccable",
-    "ui-ux-pro-max",
-    "everything-claude-code",
-    "superpowers",
-    "repomix-mcp"
-  ]
+  "keywords": ["saas", "development", "multi-agent", "self-learning", "autonomous"]
 }
