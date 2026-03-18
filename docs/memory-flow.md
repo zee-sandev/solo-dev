@@ -7,6 +7,8 @@
 
 ## Memory Architecture
 
+The memory index source of truth is `docs/yaml/memory-index.yaml`. The human-readable `docs/agents/memory/index.md` is auto-generated from it by hooks.
+
 ```
 SESSION CONTEXT (always loaded)
   ├── docs/agents/memory/index.md     ~200 tokens  ← project index
@@ -101,7 +103,12 @@ Total tokens loaded at start: ~300-400
 | `persona-validator` | persona_insights.md | Feedback themes per persona |
 | `business-validator` | bv_learnings.md | Business gaps to avoid in future specs |
 | `code-reviewer` | cr_learnings.md | Common failure patterns to proactively avoid |
-| `memory-curator` | index.md (reindex), snapshots/ | Compressed index, pre-feature snapshot |
+| `orchestrator` | features.yaml | Feature status updates |
+| `memory-curator` | index.md (reindex), snapshots/, memory-index.yaml | Compressed index, pre-feature snapshot |
+| `backend-agent` | contracts.yaml | API contract definitions |
+| `test-agent` | demos.yaml | Demo recording metadata |
+| `product-researcher` | backlog.yaml | Backlog item additions |
+| `business-validator` | backlog.yaml | Enhancement suggestions for backlog |
 | `strategy-evolver` | strategies/*.md | Updated agent strategies |
 
 ---
@@ -220,6 +227,17 @@ Maintained by strategy-evolver. Loaded by respective agents.
 - Competitor feature detection: confidence 0.85
 
 ## Last evolved: 2026-03-18 | Features analyzed: 3
+```
+
+---
+
+## YAML-Markdown Sync Flow
+
+```
+Agent writes → docs/yaml/*.yaml (source of truth)
+PostToolUse hook → yaml-to-markdown.sh → docs/**/*.md (generated view)
+Stop hook → yaml-to-markdown.sh --all (reconciliation)
+SessionStart → yaml-validate.sh (drift detection + repair)
 ```
 
 ---

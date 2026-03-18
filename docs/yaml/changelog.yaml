@@ -1,0 +1,12 @@
+version: 1
+entries: []
+# Schema per entry:
+#   feature_id: "A1"
+#   feature_name: "Feature Name"
+#   version: null                    # User can set semantic version
+#   date: "2026-03-19"
+#   summary: "What changed"
+#   changes:
+#     - type: "added"               # added|changed|fixed|removed|deprecated
+#       description: "Description of change"
+#   breaking_changes: []

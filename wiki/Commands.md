@@ -1,6 +1,6 @@
 # Commands
 
-solo-dev provides 10 commands for the full product development lifecycle.
+solo-dev provides 13 commands for the full product development lifecycle.
 
 ## Overview
 
@@ -16,6 +16,9 @@ solo-dev provides 10 commands for the full product development lifecycle.
 | `/solo-dev:evolve` | Analyze performance data and improve agent strategies |
 | `/solo-dev:rollback [feature-id]` | Revert a feature — git, state, and memory snapshots |
 | `/solo-dev:resume` | Resume from a human escalation or paused state |
+| `/solo-dev:showcase` | Compile feature demos into a product showcase |
+| `/solo-dev:sprint` | Plan sprints — select features, estimate effort |
+| `/solo-dev:decompose <id>` | Break a large feature into smaller sub-features |
 
 ---
 
@@ -176,3 +179,29 @@ Reads `.claude/solo-dev-state.json` to determine where the project left off:
 - If `ESCALATED` — presents the escalation context and asks for decision
 - If mid-phase — resumes from the exact phase and round
 - If `BLOCKED` — reports what's blocking and suggests options
+
+---
+
+## `/solo-dev:showcase`
+
+Compiles all recorded feature demos into a single showcase page.
+Reads docs/yaml/demos.yaml and generates docs/showcase/index.md.
+Use `html` argument for an HTML showcase page.
+**Requires:** At least 1 completed feature with a demo.
+
+---
+
+## `/solo-dev:sprint`
+
+Plans development sprints from the feature roadmap.
+`/solo-dev:sprint` — interactive sprint planning
+`/solo-dev:sprint show` — display current active sprint
+Reads features.yaml for available features, groups by priority/dependency, asks for effort estimates.
+
+---
+
+## `/solo-dev:decompose`
+
+Breaks a large feature into 2-5 smaller sub-features.
+`/solo-dev:decompose A3` — decompose feature A3
+Each sub-feature is independently shippable. Also offered as option C after /solo-dev:rollback.

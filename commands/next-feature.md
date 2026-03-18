@@ -16,7 +16,7 @@ You are the orchestrator. Pick the next eligible feature, run all 8 phases in se
    - If phase is mid-feature (not READY/COMPLETE): resume from that phase
    - If phase is READY or COMPLETE: start fresh with next feature
 
-2. Read docs/product/roadmap.md — find next eligible feature:
+2. Read docs/yaml/features.yaml (fallback: docs/product/roadmap.md if YAML doesn't exist) — find next eligible feature:
    - Status must be QUEUED
    - All depends_on features must be COMPLETE
    - If argument provided: use that specific feature-id
@@ -151,7 +151,8 @@ Then orchestrator:
 - git commit: "feat({feature-id}): {feature-name}\n\n{brief description of what was built}"
 - Update decisions.md: what was built and key decisions made
 - memory-curator: compress + reindex memory
-- Mark feature COMPLETE in roadmap.md
+- Update status to COMPLETE in docs/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
+- Add changelog entry to docs/yaml/changelog.yaml: read the spec for what was built, summarize changes, note any breaking changes from business validation. Then regenerate CHANGELOG.md: bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh docs/yaml/changelog.yaml
 - Update state: phase → COMPLETE, current_feature → null
 
 ### Example Code Cleanup (Foundation projects only)

@@ -58,6 +58,14 @@ Structure your output as a spec section covering:
 Write to docs/agents/memory/decisions.md any significant market decisions made.
 Write reusable patterns to ~/.claude/solo-dev/global-memory/learnings/ if applicable.
 
+If backlog items are identified during research (enhancement suggestions, future features, deferred scope), add them to docs/yaml/backlog.yaml with:
+  - id: next sequential BL{N} ID
+  - name: item name
+  - source: "feature-enhancement" or "idea-enhancement"
+  - source_feature: current feature ID (if applicable)
+  - description: what and why
+  - added_at: current date
+
 ## Invoke Skills
 - Use `everything-claude-code:market-research` for market research methodology
 - Use `everything-claude-code:search-first` to find existing patterns before proposing

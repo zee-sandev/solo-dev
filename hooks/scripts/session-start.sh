@@ -32,6 +32,12 @@ else
   echo "No project memory index yet (run /solo-dev:init to create)"
 fi
 
+# 2b. Validate YAML indexes
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+if [ -d "$PROJECT_DIR/docs/yaml" ]; then
+  bash "$PLUGIN_ROOT/hooks/scripts/yaml-validate.sh"
+fi
+
 # 3. Load global memory index
 if [ -f "$GLOBAL_INDEX" ]; then
   echo ""

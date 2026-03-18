@@ -50,6 +50,7 @@ nav:
     - Supported Stacks: Supported-Stacks.md
     - Bundled Skills: Bundled-Skills.md
     - Rollback: Rollback.md
+    - Sprint Planning: Sprint-Planning.md
 
 markdown_extensions:
   - admonition

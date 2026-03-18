@@ -73,3 +73,11 @@ BV_REPORT:
 ## After Completing
 Write any domain checklists discovered to docs/agents/memory/bv_learnings.md.
 Format as reusable checklists (e.g., "Billing domain checklist: dunning, proration, grace period, tax").
+
+When NON-CRITICAL enhancements are identified and user chooses "backlog", add them to docs/yaml/backlog.yaml with:
+  - id: next sequential BL{N} ID
+  - name: enhancement name
+  - source: "bv-suggestion"
+  - source_feature: current feature ID
+  - description: what and why this enhancement would help
+  - added_at: current date

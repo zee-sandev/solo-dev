@@ -1,0 +1,29 @@
+version: 1
+project: ""
+last_updated: ""
+features_completed: 0
+files:
+  decisions:
+    path: "docs/agents/memory/decisions.md"
+    summary: ""
+    entry_count: 0
+  patterns:
+    path: "docs/agents/memory/patterns.md"
+    summary: ""
+    entry_count: 0
+  rejected:
+    path: "docs/agents/memory/rejected.md"
+    summary: ""
+    entry_count: 0
+  persona_insights:
+    path: "docs/agents/memory/persona_insights.md"
+    summary: ""
+    entry_count: 0
+  cr_learnings:
+    path: "docs/agents/memory/cr_learnings.md"
+    summary: ""
+    entry_count: 0
+  bv_learnings:
+    path: "docs/agents/memory/bv_learnings.md"
+    summary: ""
+    entry_count: 0

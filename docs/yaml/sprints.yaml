@@ -1,0 +1,11 @@
+version: 1
+sprints: []
+# Schema per entry:
+#   id: "S1"
+#   name: "Sprint 1"
+#   status: "planned"               # planned|active|completed
+#   features: ["A1", "A2"]
+#   started_at: "2026-03-19"
+#   completed_at: null
+#   estimated_effort: "M"           # Aggregate: S|M|L|XL
+#   notes: ""

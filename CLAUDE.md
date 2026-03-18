@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 17 agents, 10 commands, 6 bundled skills, hooks, and a self-learning memory system.
+This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 17 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
 
 ## Documentation Sync Rules
 
@@ -26,6 +26,7 @@ This project maintains 3 documentation surfaces that MUST stay in sync:
 | New supported stack | `README.md` (supported stacks table), `wiki/Supported-Stacks.md` |
 | Onboarding flow change | `README.md` (onboarding example), `commands/init.md`, `wiki/Existing-Project-Onboarding.md`, `docs/workflow.md` |
 | Rollback change | `wiki/Rollback.md`, `docs/workflow.md` |
+| New/modified YAML index | N/A | `docs/memory-flow.md` (YAML sync section) | `wiki/Memory-System.md` |
 | Mermaid diagram needs update | `README.md`, `wiki/Feature-Lifecycle.md` (both have same diagrams) |
 
 ### Sync Checklist
@@ -50,6 +51,7 @@ solo-dev/
 ├── hooks/                        # hooks.json + scripts/
 ├── skills/                       # 6 bundled fallback skills
 ├── docs/                         # Architecture reference docs
+│   ├── yaml/                     # YAML indexes (source of truth)
 │   ├── design.md
 │   ├── agent-architecture.md
 │   ├── memory-flow.md
@@ -87,6 +89,12 @@ solo-dev/
 - One directory per skill in `skills/`
 - Each has `SKILL.md` with frontmatter (name, description)
 - References in `references/` subdirectory
+
+### YAML Indexes
+- Source of truth for all indexed content in docs/yaml/
+- Agents write YAML first, hooks generate markdown views
+- Never edit generated markdown directly for indexed content
+- 8 indexes: features, specs, contracts, demos, sprints, changelog, memory-index, backlog
 
 ### Wiki Pages (also GitHub Pages via MkDocs)
 - GitHub wiki format: `Page-Name.md` (hyphenated)

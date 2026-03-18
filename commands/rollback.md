@@ -13,7 +13,7 @@ Execute the rollback safely. Always confirm with user before taking destructive 
 ## Process
 
 ### Step 1: Validate
-Read .claude/solo-dev-state.json and docs/product/roadmap.md.
+Read .claude/solo-dev-state.json and docs/yaml/features.yaml (fallback: docs/product/roadmap.md).
 Check that the specified feature-id exists.
 
 Check for snapshot: docs/agents/memory/snapshots/pre-{feature-id}.json
@@ -48,7 +48,7 @@ Restore state from snapshot:
 - docs/agents/memory/decisions.md ← restore entries after snapshot date
 - docs/agents/memory/patterns.md ← restore entries after snapshot date
 
-Update roadmap: mark feature as ROLLED_BACK
+Update status to ROLLED_BACK in docs/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
 
 ### Step 3: Post-Rollback Options
 
@@ -63,7 +63,6 @@ What would you like to do next?
      → Previous spec saved as docs/specs/{feature-id}-rejected.md
   B) Remove feature from roadmap
      → Feature marked REMOVED, removed from dependency chains
-  C) Decompose into smaller sub-features
-     → I'll suggest how to break this into 2-3 smaller features
+  C) Decompose — run /solo-dev:decompose {feature-id} to break into smaller sub-features
   D) Do nothing for now (feature stays ROLLED_BACK)
 ```

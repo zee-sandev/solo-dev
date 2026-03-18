@@ -3,7 +3,7 @@
   "name": "solo-dev",
   "description": "Multi-agent SaaS development system for Claude Code",
   "metadata": {
-    "description": "Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy. 17 specialized agents, 8 commands, 6 bundled skills."
+    "description": "Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy. 17 specialized agents, 13 commands, 6 bundled skills, YAML-first data model."
   },
   "owner": {
     "name": "zee",
@@ -14,7 +14,7 @@
       "name": "solo-dev",
       "source": "./",
       "description": "Multi-agent SaaS development system. Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "zee",
         "url": "https://github.com/zee-sandev/solo-dev"

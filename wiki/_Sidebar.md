@@ -16,3 +16,4 @@
 - [[Supported Stacks]]
 - [[Bundled Skills]]
 - [[Rollback]]
+- [[Sprint Planning]]

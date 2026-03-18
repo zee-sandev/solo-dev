@@ -23,7 +23,7 @@ You choose what to do next:
 |--------|-------------|
 | **A) Re-attempt** | Re-enters Design Loop with "rollback context" note |
 | **B) Remove from roadmap** | Feature removed entirely |
-| **C) Decompose** | Orchestrator suggests splitting into smaller sub-features |
+| **C) Decompose** | Run `/solo-dev:decompose {feature-id}` to break into smaller, independently shippable sub-features |
 
 ## Example
 

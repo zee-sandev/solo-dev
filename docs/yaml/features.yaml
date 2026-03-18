@@ -1,0 +1,19 @@
+version: 1
+features: []
+# Schema per entry:
+#   id: "A1"                         # Feature ID
+#   name: "Feature Name"             # Display name
+#   phase: "A"                       # Roadmap phase (A=MVP, B=Moat, C=Scale)
+#   status: "QUEUED"                 # QUEUED|IN_PROGRESS|COMPLETE|ROLLED_BACK|BLOCKED|DECOMPOSED|REMOVED
+#   value: "Why it matters"          # Business value description
+#   personas: ["P1", "P2"]           # Target personas
+#   depends_on: []                   # Feature IDs this depends on
+#   blocks: ["A2"]                   # Feature IDs this blocks
+#   priority: 1                      # Numeric sort order within phase
+#   effort_estimate: null            # S|M|L|XL (filled by sprint command)
+#   current_lifecycle_phase: null    # MARKET_VALIDATION|DESIGN_LOOP|...|COMPLETE
+#   source: "roadmap"               # roadmap|handoff|decompose
+#   parent_feature: null             # Set when decomposed from a larger feature
+#   created_at: "2026-03-19"
+#   completed_at: null
+#   rolled_back_at: null

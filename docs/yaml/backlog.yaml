@@ -1,0 +1,10 @@
+version: 1
+items: []
+# Schema per entry:
+#   id: "BL1"
+#   name: "Backlog item name"
+#   source: "feature-enhancement"    # feature-enhancement|idea-enhancement|bv-suggestion|user
+#   source_feature: "A1"            # Which feature discussion spawned this
+#   priority: null                   # null until triaged
+#   description: "What and why"
+#   added_at: "2026-03-19"

@@ -1,0 +1,11 @@
+version: 1
+demos: []
+# Schema per entry:
+#   feature_id: "A1"
+#   feature_name: "Feature Name"
+#   path: "docs/demos/A1-feature-name/"
+#   has_video: true
+#   video_path: "docs/demos/A1-feature-name/demo.mp4"
+#   doc_path: "docs/demos/A1-feature-name/demo.md"
+#   recorded_at: "2026-03-19"
+#   description: "Brief 1-line description"

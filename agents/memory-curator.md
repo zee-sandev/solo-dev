@@ -53,19 +53,18 @@ Before each new feature starts, create a rollback snapshot:
 
 After a feature is shipped:
 
-### 1. Update index.md
-Add new entry to docs/agents/memory/index.md:
-```markdown
-## {feature-id}: {Feature Name}
-**Status:** SHIPPED | ROLLED_BACK
-**Key decisions:** [1-2 sentence summary]
-**Patterns added:** [list new patterns]
-**Learnings:** [1-2 sentence summary of what was learned]
-```
+### 1. Update Memory Index (YAML-first)
+Update docs/yaml/memory-index.yaml:
+  - Increment features_completed
+  - Update summary for each memory file (decisions, patterns, etc.)
+  - Update entry_count for each file (count actual entries)
+  - Set last_updated to current date
+  - Set project name if empty
 
-Keep index.md under 200 lines. If it exceeds this:
-- Compress oldest entries to 1-line summaries
-- Move details to docs/agents/memory/archive/{feature-id}.md
+Then regenerate the markdown view:
+  bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh docs/yaml/memory-index.yaml
+
+This generates docs/agents/memory/index.md (~200 tokens) from the YAML source.
 
 ### 2. Compress decisions.md
 - Remove duplicate decisions (keep most recent)

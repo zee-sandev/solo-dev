@@ -13,9 +13,10 @@ Read state and memory files, then format a clear status report.
 ## Process
 
 1. Read .claude/solo-dev-state.json
-2. Read docs/product/roadmap.md
-3. Read docs/agents/memory/index.md
+2. Read docs/yaml/features.yaml (fallback: docs/product/roadmap.md)
+3. Read docs/yaml/memory-index.yaml (fallback: docs/agents/memory/index.md)
 4. Read docs/agents/memory/performance-log.md (last 5 entries)
+5. Read docs/yaml/sprints.yaml for current sprint (if exists)
 
 ## Output Format
 
@@ -37,6 +38,17 @@ Roadmap:
   ○  {queued features}
 
   {N} features complete | {M} remaining | {K} in backlog
+
+Dependency Graph:
+  {Build from features.yaml depends_on/blocks fields}
+  {Show arrows: A1 ──→ A2 ──→ A3}
+  {Independent features on their own line}
+
+  Critical path: {longest dependency chain}
+  Blocked: {features waiting on incomplete deps}
+
+Current Sprint: {sprint-name or "none planned"}
+  {If active sprint: list features with status icons and effort}
 
 Memory:
   Project memory: {token estimate} tokens indexed

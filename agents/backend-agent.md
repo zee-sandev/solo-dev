@@ -28,6 +28,13 @@ You are the Backend Agent (I2) in the solo-dev implementation layer. You build A
 BEFORE implementing anything, write docs/contracts/{feature-id}-api.md.
 Notify orchestrator that contracts are ready — other agents (frontend, data, test) depend on this.
 
+After writing the contract markdown file, also add an entry to docs/yaml/contracts.yaml:
+  - feature_id: current feature ID
+  - path: path to the contract markdown file
+  - endpoints: list of {method, path, auth} for each endpoint defined
+  - created_at: current date
+  - updated_at: current date
+
 Contract format:
 ```markdown
 # {Feature Name} — API Contract

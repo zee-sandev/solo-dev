@@ -75,12 +75,13 @@ If user provided `design-only` argument: auto-select B.
 
 #### C. Create Feature Entry
 
-Write or append to `docs/product/roadmap.md`:
-```markdown
-## Ad-hoc Features (from handoff)
-| ID | Feature | Value | Status | Source |
-|----|---------|-------|--------|--------|
-| H1 | {feature name} | {why it matters} | QUEUED | Conversation handoff |
+Add feature entry to docs/yaml/features.yaml with status QUEUED, source 'handoff', then regenerate roadmap.md via yaml-to-markdown.sh:
+```yaml
+- id: H1
+  name: "{feature name}"
+  value: "{why it matters}"
+  status: QUEUED
+  source: handoff
 ```
 
 Write `docs/specs/{feature-id}-draft.md`:
@@ -102,6 +103,8 @@ Write `docs/specs/{feature-id}-draft.md`:
 ## Constraints
 {Timeline, compatibility, tech constraints mentioned}
 ```
+
+Also add entry to docs/yaml/specs.yaml with feature_id, path, status 'draft'.
 
 #### D. Execute
 

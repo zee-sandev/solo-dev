@@ -105,5 +105,16 @@ Create docs/demos/{feature-id}/demo.md:
 See demo.mp4 in this folder for a recorded walkthrough.
 ```
 
+### 4b. Update Demos Index
+Add entry to docs/yaml/demos.yaml:
+  - feature_id: current feature ID
+  - feature_name: feature display name
+  - path: "docs/demos/{feature-id}/"
+  - has_video: true (or false if Playwright unavailable)
+  - video_path: "docs/demos/{feature-id}/demo.mp4" (or null)
+  - doc_path: "docs/demos/{feature-id}/demo.md"
+  - recorded_at: current date
+  - description: 1-line summary of what the demo shows
+
 ### 5. Report completion
 "Phase 8 complete: docs/demos/{feature-id}/ created (video + documentation)"

@@ -22,6 +22,8 @@ Look for:
 
 Also check: docs/agents/memory/escalations.md (last entry)
 
+Also read docs/yaml/features.yaml (if exists) for current feature status and dependency state.
+
 ### Step 2: Present pending decision (if no argument provided)
 
 If there is a pending escalation or decision, show the CONFLICT_BRIEF or escalation context in full.

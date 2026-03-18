@@ -184,6 +184,9 @@ Then orchestrator:
 - Mark feature `COMPLETE` in roadmap
 - Load next feature → back to Phase 0
 
+### Changelog Generation
+After shipping, solo-dev adds a changelog entry to `docs/yaml/changelog.yaml` and regenerates `CHANGELOG.md` automatically.
+
 **Fallback:** Playwright not installed → skip video, write demo.md only
 
 ---

@@ -92,6 +92,9 @@ solo-dev/
 | `/solo-dev:set-autonomy` | Configure autonomy levels interactively | Interactive |
 | `/solo-dev:rollback` | Rollback a specific feature | Always-ask |
 | `/solo-dev:resume` | Resume from escalation or paused state | Interactive |
+| `/solo-dev:showcase` | Compile feature demos into a product showcase | Read-only |
+| `/solo-dev:sprint` | Plan sprints — select features, estimate effort | Interactive |
+| `/solo-dev:decompose` | Break a large feature into smaller sub-features | Semi-guided |
 
 ---
 
@@ -126,6 +129,28 @@ Agent invokes: "impeccable:polish"
 ```
 
 Bundled skills cover: ui-quality, ux-design, backend-patterns, security, tdd, saas-workflow
+
+---
+
+## YAML-First Architecture
+
+All structured agent outputs are stored as YAML indexes in `docs/yaml/`:
+
+| YAML File | Source of Truth For | Markdown View |
+|-----------|-------------------|---------------|
+| features.yaml | Feature roadmap | docs/product/roadmap.md |
+| specs.yaml | Feature specs | (used by commands) |
+| contracts.yaml | API contracts | (used by commands) |
+| demos.yaml | Demo recordings | (used by commands) |
+| sprints.yaml | Sprint plans | docs/product/sprints.md |
+| changelog.yaml | Changelog | CHANGELOG.md |
+| memory-index.yaml | Memory index | docs/agents/memory/index.md |
+| backlog.yaml | Backlog items | docs/product/backlog.md |
+
+### 3-Layer Consistency
+1. **YAML-First Write** (PostToolUse hook) — agents write YAML, hook regenerates markdown
+2. **Stop Reconciliation** (Stop hook) — validates YAML-markdown sync before session ends
+3. **Start Validation** (SessionStart hook) — detects and auto-repairs drift at session start
 
 ---
 

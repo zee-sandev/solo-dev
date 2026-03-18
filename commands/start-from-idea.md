@@ -81,6 +81,8 @@ Create the following files:
 - docs/product/roadmap.md — phased feature roadmap with dependency graph
 - docs/product/backlog.md — future ideas deferred from this session
 
+Also write docs/yaml/features.yaml with all feature entries from the roadmap (with status, priority, depends_on, blocks). After writing backlog.md, also write docs/yaml/backlog.yaml with all backlog entries.
+
 roadmap.md format:
 ```markdown
 ## Phase A — MVP

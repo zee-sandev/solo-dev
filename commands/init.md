@@ -42,6 +42,8 @@ If no roadmap exists, ask ONE AT A TIME:
 ### Step 2: Create directory structure → Step 3 → Step 4 → Step 5 → Step 6 → Step 7 → Step 8
 *(follow shared steps below)*
 
+After writing roadmap.md (from concept or start-from-idea output): also write docs/yaml/features.yaml with feature entries from the roadmap (with status, priority, depends_on, blocks), and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
+
 ---
 
 ## Path C — Foundation Mode (well-documented template/boilerplate)
@@ -159,6 +161,7 @@ Describe in 2-3 sentences: what it does, who it's for, and how it makes money.
 
 Wait for user response. Use their answer to:
 - Write initial docs/product/idea-brief.md
+- When roadmap.md is generated: also write docs/yaml/features.yaml with feature entries from the roadmap, and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
 - Continue to Shared Steps (skip Step 1/concept questions — already answered)
 
 ---
@@ -281,6 +284,8 @@ Write all product docs based on confirmed understanding:
 - **docs/agents/memory/patterns.md** — coding patterns observed in codebase
 - **docs/agents/memory/decisions.md** — confirmed decisions with reasons; unconfirmed tagged `[INFERRED]`
 
+Also write docs/yaml/features.yaml with feature entries from the roadmap, and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
+
 Then continue to shared Steps 3–8 below (skip Step 1 — already done).
 
 ---
@@ -294,6 +299,7 @@ mkdir -p docs/contracts
 mkdir -p docs/specs
 mkdir -p docs/demos
 mkdir -p docs/product
+mkdir -p docs/yaml
 mkdir -p .claude
 ```
 
@@ -318,6 +324,8 @@ Last updated: {date} | Features completed: {0 or N for existing}
 ```
 
 Create any missing memory files: decisions.md, patterns.md, rejected.md, persona_insights.md, cr_learnings.md, bv_learnings.md, performance-log.md
+
+Also create docs/yaml/memory-index.yaml with the same project name and initial empty summaries.
 
 ### Step 5 / Step 9: Create state file
 

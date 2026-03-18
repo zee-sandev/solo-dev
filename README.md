@@ -116,6 +116,9 @@ Picks the next eligible feature from your roadmap and runs the full 8-phase life
 | `/solo-dev:evolve` | Let agents analyze their performance and improve their strategies |
 | `/solo-dev:rollback [id]` | Revert a feature — git, state, and memory all restored |
 | `/solo-dev:resume` | Pick up where you left off after an escalation or pause |
+| `/solo-dev:showcase` | Compile all feature demos into a product showcase |
+| `/solo-dev:sprint` | Plan sprints — select features, estimate effort |
+| `/solo-dev:decompose <id>` | Break a large feature into smaller sub-features |
 
 ---
 
@@ -283,6 +286,16 @@ docs/agents/memory/
   performance-log.md  ← On-demand: agent performance data
   snapshots/          ← Pre-feature snapshots for rollback
 ```
+
+YAML indexes (`docs/yaml/`) serve as the source of truth for all indexed content (features, specs, contracts, demos, sprints, changelog, backlog). Markdown views are auto-generated from YAML by hooks.
+
+### YAML-First Data Model
+
+All structured data lives in `docs/yaml/` as YAML source of truth. Hooks auto-generate readable markdown views. A 3-layer consistency system ensures YAML and markdown never go out of sync:
+
+1. **YAML-First writes** — agents write YAML, hooks generate markdown
+2. **Stop reconciliation** — session-end hook validates and repairs
+3. **Start validation** — session-start hook detects and fixes drift
 
 ---
 

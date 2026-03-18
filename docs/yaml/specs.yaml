@@ -1,0 +1,9 @@
+version: 1
+specs: []
+# Schema per entry:
+#   feature_id: "A1"
+#   path: "docs/specs/A1-feature-name.md"
+#   status: "draft"                  # draft|approved|rejected|superseded
+#   approved_at: null
+#   design_rounds: 0
+#   superseded_by: null
