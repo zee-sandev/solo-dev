@@ -1,0 +1,36 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "solo-dev",
+  "description": "Multi-agent SaaS development system for Claude Code",
+  "metadata": {
+    "description": "Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy. 17 specialized agents, 8 commands, 6 bundled skills."
+  },
+  "owner": {
+    "name": "zee",
+    "url": "https://github.com/zee-sandev"
+  },
+  "plugins": [
+    {
+      "name": "solo-dev",
+      "source": "./",
+      "description": "Multi-agent SaaS development system. Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy.",
+      "version": "0.1.0",
+      "author": {
+        "name": "zee",
+        "url": "https://github.com/zee-sandev/solo-dev"
+      },
+      "homepage": "https://zee-sandev.github.io/solo-dev/",
+      "repository": "https://github.com/zee-sandev/solo-dev",
+      "category": "workflow",
+      "tags": [
+        "saas",
+        "development",
+        "multi-agent",
+        "self-learning",
+        "autonomous",
+        "product-development",
+        "full-stack"
+      ]
+    }
+  ]
+}
