@@ -17,8 +17,9 @@ You are the orchestrator. Detect the project's starting point and run the approp
 Check in this order:
 
 1. **docs/product/roadmap.md exists** → came from `/solo-dev:start-from-idea` → go to **Path A**
-2. **Existing codebase** (source files present, no solo-dev docs) → go to **Path B**
-3. **Neither** (blank project) → ask user for concept → go to **Path A**
+2. **Foundation detected** (CLAUDE.md exists AND (docs/ or .claude/agents/ exists), but no docs/product/) → go to **Path C**
+3. **Existing codebase** (source files present, no solo-dev docs, no CLAUDE.md) → go to **Path B**
+4. **Neither** (blank project) → ask user for concept → go to **Path A**
 
 ---
 
@@ -40,6 +41,125 @@ If no roadmap exists, ask ONE AT A TIME:
 
 ### Step 2: Create directory structure → Step 3 → Step 4 → Step 5 → Step 6 → Step 7 → Step 8
 *(follow shared steps below)*
+
+---
+
+## Path C — Foundation Mode (well-documented template/boilerplate)
+
+**1 user interaction only.** The template's own docs tell you everything about the stack.
+
+### Step 1: Read Foundation Docs
+
+Read these files to understand the foundation:
+
+- **CLAUDE.md** → extract: tech stack, conventions, architecture, development commands
+- **docs/** (if exists) → extract: architecture patterns, API structure, naming conventions, feature guide
+- **README.md** → extract: project overview, setup instructions
+
+No questions. No analysis agents. Just read what the template already documented.
+
+### Step 2: Map Existing Agents & Skills
+
+Check for `.claude/agents/` and `.claude/skills/`:
+
+If found, build an **agent delegation map**:
+
+| solo-dev agent | Project agent found | Action |
+|----------------|-------------------|--------|
+| frontend-agent | (any frontend/web agent) | DELEGATE to project agent |
+| backend-agent | (any api/backend agent) | DELEGATE to project agent |
+| data-agent | (any database/migration agent) | DELEGATE to project agent |
+| test-agent | (any test-runner agent) | DELEGATE to project agent |
+| ui-agent | (no equivalent) | USE solo-dev agent |
+| code-reviewer | (any code-reviewer agent) | MERGE both |
+
+Research, Validation, and Learning agents → ALWAYS solo-dev (template doesn't provide these).
+
+If `.claude/skills/` found: map available skills (e.g., add-api-endpoint, add-page, db-migration).
+
+### Step 3: Classify Example Code
+
+Auto-classify all source code into 3 categories:
+
+**INFRASTRUCTURE** (always keep):
+- Auth modules (login, register, session, middleware)
+- Config files, environment setup
+- libs/, utils/, providers/, layouts/
+- UI component library (shared components)
+- i18n setup files (config, request.ts, useTranslateWithFallback)
+- ORM setup, database config
+- API client/server setup
+
+**EXAMPLE** (tag for replace-as-you-go):
+- Feature modules that are NOT auth (e.g., posts, blog, demo features)
+- Pages with placeholder/demo content (e.g., landing page with template text)
+- i18n translation files for example features (e.g., translations/posts/)
+- Example-specific database models
+
+Detection signals for EXAMPLE:
+- Module/page not referenced by auth or core infrastructure
+- Content contains generic/placeholder text ("Lorem ipsum", "Example", "Demo", "Sample")
+- Feature name matches common template examples (posts, blog, todos, notes)
+- Translation namespace matches a non-auth feature module
+
+**SCAFFOLDING** (always keep):
+- .gitkeep files, empty directories
+- Config files (eslint, tsconfig, postcss, etc.)
+- Package manifests (package.json, pnpm-workspace.yaml)
+
+### Step 4: Generate Foundation Manifest
+
+Write `docs/agents/memory/foundation-manifest.md`:
+
+```markdown
+# Foundation Manifest
+
+## Stack
+{extracted from CLAUDE.md — tech stack table, versions, architecture}
+
+## Conventions
+{extracted from docs/ — naming conventions, file organization, patterns}
+
+## Development Commands
+{extracted from CLAUDE.md — dev, build, lint, test, db commands}
+
+## Existing Agents
+{list of .claude/agents/ with their capabilities}
+
+## Existing Skills
+{list of .claude/skills/ with their capabilities}
+
+## Agent Delegation Map
+| solo-dev agent | Delegates to | Reason |
+|----------------|-------------|--------|
+{filled from Step 2}
+
+## Example Code (Replace-as-you-go)
+| Path | Type | Replace When |
+|------|------|-------------|
+| apps/web/app/(public)/page.tsx | page | First landing page feature |
+| apps/web/app/(private)/profile/ | feature | User profile feature |
+| i18n/locales/*/posts/ | translation | If no posts feature in roadmap |
+| modules/posts/ (if exists) | module | If no posts feature in roadmap |
+{filled from Step 3}
+```
+
+### Step 5: Ask One Question ← Single Interaction
+
+```
+Foundation detected:
+  Stack: {stack summary from CLAUDE.md}
+  Agents: {N} existing agents will handle implementation
+  Examples: {N} example files tagged for replacement
+
+What product are you building on this foundation?
+
+Describe in 2-3 sentences: what it does, who it's for, and how it makes money.
+```
+
+Wait for user response. Use their answer to:
+- Write initial docs/product/idea-brief.md
+- Continue to Shared Steps (skip Step 1/concept questions — already answered)
 
 ---
 
@@ -206,14 +326,21 @@ Create .claude/solo-dev-state.json:
 {
   "project": "{project-name}",
   "phase": "INIT",
-  "onboarding_type": "new | existing",
+  "onboarding_type": "new | existing | foundation",
   "current_feature": null,
   "round": 0,
   "blocked_since": null,
   "agents_status": {},
   "repomix_pack_id": "{pack-id or null}",
   "stack": "{detected-stack}",
-  "last_updated": "{current-datetime}"
+  "last_updated": "{current-datetime}",
+  "foundation": {
+    "manifest": "docs/agents/memory/foundation-manifest.md",
+    "delegate_agents": true,
+    "example_code": [
+      {"path": "...", "type": "page|module|translation", "replace_when": "..."}
+    ]
+  }
 }
 ```
 

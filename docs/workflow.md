@@ -125,6 +125,88 @@ roadmap.md status ← based on confirmed feature map
 
 ---
 
+## Workflow 0.5: `/solo-dev:init` — Foundation-Aware Mode
+
+When init detects an existing well-documented codebase with CLAUDE.md, docs/, and/or .claude/agents/ — but no solo-dev product docs (docs/product/).
+
+**When triggered:** init detects CLAUDE.md + (docs/ or .claude/agents/) but no docs/product/
+**User interactions:** 1 (what product to build on this foundation)
+
+---
+
+### Step 1: Read Foundation (no questions)
+
+Read existing project documentation:
+
+| Source | Extract |
+|--------|---------|
+| CLAUDE.md | Tech stack, versions, conventions, architecture, dev commands |
+| docs/ | Architecture patterns, API structure, naming conventions, feature guide |
+| .claude/agents/ | Existing agent capabilities → build delegation map |
+| .claude/skills/ | Existing skill capabilities → map available automation |
+
+No analysis agents needed. The template's own documentation is the source of truth.
+
+**State update:** `phase: FOUNDATION_DETECTED`
+
+---
+
+### Step 2: Classify Code (no questions)
+
+Auto-classify all source code:
+
+| Classification | Signals | Action |
+|---------------|---------|--------|
+| **INFRASTRUCTURE** | Auth modules, config, libs/, providers, layouts, UI kit, i18n setup, ORM config, API client setup | Always keep |
+| **EXAMPLE** | Non-auth feature modules, pages with placeholder content, i18n translations for example features, example DB models | Tag for replace-as-you-go |
+| **SCAFFOLDING** | .gitkeep, empty dirs, config files, package manifests | Always keep |
+
+---
+
+### Step 3: Generate Foundation Manifest (no questions)
+
+Write `docs/agents/memory/foundation-manifest.md`:
+- Stack summary (from CLAUDE.md)
+- Conventions (from docs/)
+- Existing agents & skills (from .claude/)
+- Agent delegation map (which solo-dev agents delegate to which project agents)
+- Example code list (tagged with path, type, and when to replace)
+
+**State update:** `phase: FOUNDATION_READY`
+
+---
+
+### Step 4: User Input ← Interaction 1
+
+```
+Foundation detected:
+  Stack: {stack summary}
+  Agents: {N} existing agents will handle implementation
+  Examples: {N} example files tagged for replacement
+
+What product are you building on this foundation?
+Describe in 2-3 sentences: what it does, who it's for, and how it makes money.
+```
+
+User response → write initial docs/product/idea-brief.md → continue to Shared Steps.
+
+**State update:** `phase: READY`
+
+---
+
+### Replace-as-you-go (during Feature Development)
+
+Example code is NOT deleted during init. During `/solo-dev:next-feature`:
+
+1. **Before implementation:** Check if feature overlaps with tagged example code
+2. **During implementation:** Agents replace example files with real implementation
+3. **After completion:** Update foundation-manifest.md, remove replaced entries
+4. **After all features:** Final cleanup prompt for remaining unused examples
+
+---
+
+---
+
 ## Workflow 1: `/solo-dev:start-from-idea`
 
 Transforms a rough idea into a validated product concept + actionable roadmap.
@@ -524,6 +606,10 @@ Special states:
   ESCALATED       ← awaiting human decision
   ROLLED_BACK     ← feature reverted
   BLOCKED         ← dependency not complete
+
+Foundation states:
+  FOUNDATION_DETECTED  ← reading foundation docs
+  FOUNDATION_READY     ← manifest generated, awaiting product description
 ```
 
 ---

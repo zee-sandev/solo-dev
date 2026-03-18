@@ -95,6 +95,27 @@ Provide a prompt describing where and how to write API docs. Supports any format
 
 ---
 
+## Foundation Settings
+
+For projects initialized from a template (Foundation Mode).
+
+```yaml
+foundation:
+  delegate_agents: true    # Use template's agents for implementation
+  replace_examples: true   # Auto-replace example code during feature build
+  final_cleanup: true      # Prompt to remove unused examples after roadmap complete
+```
+
+| Setting | Default | Behavior |
+|---------|---------|---------|
+| `delegate_agents` | `true` | Delegate implementation to template's agents when available. Set `false` to always use solo-dev agents. |
+| `replace_examples` | `true` | Auto-replace tagged example code when building overlapping features. Set `false` to leave examples untouched. |
+| `final_cleanup` | `true` | After all roadmap features complete, prompt to remove remaining unused examples. Set `false` to skip. |
+
+These settings are only relevant when `onboarding_type` is `"foundation"` in the state file.
+
+---
+
 ## Project State
 
 State is automatically managed in `.claude/solo-dev-state.json`:
@@ -147,5 +168,10 @@ api_contracts:
     mode: "markdown"
     markdown:
       path: "docs/contracts"
+
+foundation:
+  delegate_agents: true
+  replace_examples: true
+  final_cleanup: true
 ---
 ```

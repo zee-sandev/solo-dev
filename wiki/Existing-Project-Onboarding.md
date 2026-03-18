@@ -1,6 +1,51 @@
 # Existing Project Onboarding
 
-When `/solo-dev:init` detects an existing codebase with no product docs, it enters **onboarding mode** — an analyze-first flow that understands your project before asking any questions.
+When `/solo-dev:init` detects an existing codebase with no product docs, it picks one of two paths based on what's already documented.
+
+---
+
+## Foundation Mode (Template Projects)
+
+If your project started from a well-documented template (has `CLAUDE.md` + `docs/` or `.claude/agents/`), solo-dev uses **Foundation Mode** — a faster path that reads existing documentation instead of analyzing from scratch.
+
+**Total user interactions:** 1
+
+### What solo-dev reads automatically
+
+| Source | Extracts |
+|--------|---------|
+| `CLAUDE.md` | Stack, conventions, architecture, development commands |
+| `docs/` | Architecture patterns, API structure, naming conventions |
+| `.claude/agents/` | Existing agent capabilities → delegates implementation to them |
+| `.claude/skills/` | Existing skill capabilities → uses them during feature builds |
+
+### What solo-dev asks you
+
+One question: **"What product are you building on this foundation?"**
+
+That's it. No stack analysis, no architecture inference, no multi-round cross-checks.
+
+### Agent Delegation
+
+solo-dev's implementation agents (frontend, backend, data, test) **delegate** to existing project agents when available. Project agents know the template's conventions better. solo-dev still handles all research, validation, and learning — the template doesn't provide those.
+
+### Example Code Handling
+
+Template example code (demo pages, sample modules, placeholder translations) is **NOT deleted upfront**. Instead:
+
+1. solo-dev **tags** example files during init
+2. During feature builds, agents **automatically replace** examples that overlap with real features
+3. After all roadmap features complete, solo-dev **prompts once** to remove any remaining unused examples
+
+This means example code serves as a reference while you build, and disappears naturally as real features replace it.
+
+See [Configuration](Configuration.md) for foundation settings.
+
+---
+
+## Standard Onboarding (Non-template Projects)
+
+When no `CLAUDE.md` or `.claude/agents/` is detected, solo-dev runs the full analysis-first onboarding below.
 
 **Total user interactions:** 3
 

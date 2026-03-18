@@ -62,6 +62,16 @@ If you already have notes, a spec, or requirements — `init` sets up the projec
 
 If solo-dev detects source files but no product docs, it automatically enters **onboarding mode**. See [Existing Project Onboarding](Existing-Project-Onboarding.md) for details.
 
+### 4. Starting from a project template
+
+```
+/solo-dev:init
+```
+
+If solo-dev detects `CLAUDE.md` + `docs/` or `.claude/agents/` but no product docs, it enters **foundation mode** — reads existing documentation, maps template agents, tags example code, and asks one question: "What product are you building on this foundation?"
+
+Template agents handle implementation (they know conventions better). Example code is replaced naturally as real features are built. See [Existing Project Onboarding](Existing-Project-Onboarding.md) for details.
+
 ## After Setup
 
 ```

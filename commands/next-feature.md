@@ -26,6 +26,10 @@ You are the orchestrator. Pick the next eligible feature, run all 8 phases in se
 4. Check if repomix repack is needed (solo-dev-state.json: repomix_repack_needed: true)
    - If yes: use repomix MCP to repack, update pack_id in state
 
+5. If onboarding_type is "foundation":
+   - Read docs/agents/memory/foundation-manifest.md
+   - Load example_code list and agent delegation map
+
 ## Phase 0: Market Validation
 Spawn market-validator agent. Provide: feature spec from roadmap, decisions.md#market, bv_learnings.md.
 - VIABLE → continue to Phase 1
@@ -45,7 +49,26 @@ Spawn persona-validator with the full spec.
 Before each round: memory-curator snapshots state + memory to docs/agents/memory/snapshots/pre-{feature-id}.json
 
 ## Phase 2: Parallel Implementation
-Spawn I1-I5 simultaneously. Provide each with:
+
+### Example Code Replacement (Foundation projects only)
+Before spawning impl agents, check foundation-manifest.md example_code list:
+- Does this feature overlap with any tagged example code?
+  - YES → include in agent instructions: "Replace {example_path} with real implementation. Remove example content entirely."
+  - NO → proceed normally
+
+### Agent Delegation (Foundation projects only)
+If project has existing .claude/agents/ (per foundation-manifest.md delegation map):
+- **DELEGATE** implementation to existing project agents instead of solo-dev impl agents
+- Project agents know the template's conventions (contract-first, 4-layer pattern, etc.) better
+- solo-dev impl agents (frontend-agent, backend-agent, etc.) become **FALLBACK only**
+  - Use solo-dev agents only when no matching project agent exists
+- Provide existing agents with: approved spec, file ownership, acceptance criteria, repomix pack_id
+- code-reviewer: **MERGE** — run both solo-dev's and project's code-reviewer
+
+If project has NO .claude/agents/: use solo-dev agents as normal (I1-I5).
+
+### Standard Implementation
+Spawn impl agents (delegated or solo-dev) simultaneously. Provide each with:
 - docs/specs/{feature-id}.md (approved spec)
 - File ownership boundaries (strict — no overlap)
 - Acceptance criteria from spec
@@ -131,11 +154,21 @@ Then orchestrator:
 - Mark feature COMPLETE in roadmap.md
 - Update state: phase → COMPLETE, current_feature → null
 
+### Example Code Cleanup (Foundation projects only)
+After marking feature COMPLETE:
+- Update foundation-manifest.md: remove entries from example_code that were replaced
+- If ALL roadmap features are now COMPLETE → run **Final Cleanup**:
+  - List remaining unused example code from foundation-manifest.md
+  - If any remain, ask user once: "These template examples are unused: {list}. Remove them? [Y/n]"
+  - If yes: delete files, update manifest
+  - If no: leave as-is
+
 Print completion summary:
 ```
 ✅ Feature Complete: {feature-name}
    Phases: 8/8
    Demo: docs/demos/{feature-id}/
+   {If foundation: "Examples replaced: {N} files"}
    Next feature: {next-feature-name or "all features complete"}
 ```
 

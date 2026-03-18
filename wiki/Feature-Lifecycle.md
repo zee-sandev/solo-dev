@@ -105,6 +105,9 @@ Each agent:
 
 `backend-agent` writes API contracts first → other agents validate before building (see [Agent Feedback Protocol](Agent-Feedback-Protocol.md) L1).
 
+!!! note "Foundation Projects"
+    If initialized from a template with existing `.claude/agents/`, solo-dev **delegates** implementation to the template's agents (they know the conventions better). solo-dev's implementation agents become fallback only. Example code from the template is automatically replaced when a real feature overlaps with it.
+
 ---
 
 ## Phase 3: Code Review Loop

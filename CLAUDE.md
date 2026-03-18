@@ -131,3 +131,5 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Index-first memory:** Only ~200 token index loads at session start. Everything else on-demand.
 - **Bundled skill fallbacks:** Try external plugin first, fall back to bundled ~70% version.
 - **market-validator is advisor only:** Provides data-backed input but human always decides on conflicts.
+- **Foundation-aware init:** When CLAUDE.md + docs/ or .claude/agents/ detected, read existing docs instead of re-analyzing. Delegate implementation to template's agents.
+- **Replace-as-you-go:** Example code from templates is tagged, not deleted. Auto-replaced during feature implementation. Final cleanup prompt after all roadmap features complete.

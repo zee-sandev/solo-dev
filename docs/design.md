@@ -21,6 +21,38 @@
 
 ---
 
+## Foundation-Aware Design
+
+When a project starts from a well-documented template/boilerplate (has CLAUDE.md + docs/ or .claude/agents/):
+
+| Principle | Meaning |
+|-----------|---------|
+| **Read, don't re-analyze** | If CLAUDE.md describes the stack, trust it — don't run analysis agents |
+| **Delegate, don't replace** | If template has agents that know conventions, let them handle implementation |
+| **Replace, don't delete** | Example code stays until real features naturally replace it |
+| **1 question, not 3** | Foundation projects need only "what are you building?" |
+
+### Agent Delegation (Foundation Projects)
+
+| solo-dev agent | If project has | Action |
+|----------------|---------------|--------|
+| frontend-agent | Any frontend/web agent | **DELEGATE** |
+| backend-agent | Any api/backend agent | **DELEGATE** |
+| data-agent | Any database/migration agent | **DELEGATE** |
+| test-agent | Any test-runner agent | **DELEGATE** |
+| ui-agent | (no equivalent) | USE solo-dev |
+| code-reviewer | Any code-reviewer agent | **MERGE** both |
+
+Research + Validation + Learning agents → always solo-dev (template doesn't provide these).
+
+### Replace-as-you-go
+
+Template example code (demo pages, sample modules) is tagged during init, not deleted.
+- During feature build: agents auto-replace overlapping examples with real implementation
+- After all features complete: prompt to remove remaining unused examples
+
+---
+
 ## Plugin Structure
 
 ```
