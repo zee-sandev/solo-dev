@@ -134,11 +134,13 @@ MEMORY_CURATOR_REPORT:
   DONE
 ```
 
-## Pattern Validation
+## Pattern Validation (Proof Required)
 Before promoting a learning from cr_learnings.md or bv_learnings.md to patterns.md:
 1. Verify the pattern still exists in the current codebase (use Grep to check code references)
-2. If the pattern references deleted/changed code → mark as "needs verification" instead of promoting
+2. If the pattern references deleted/changed code → mark as `[NEEDS_VERIFICATION]` instead of promoting
 3. Only promote patterns that are actively used and correct
+4. **Proof requirement:** The feature that introduced this pattern must have passed BOTH code review AND QA. If either rejected with issues related to this pattern → tag `[UNVERIFIED]` instead of promoting
+5. **Drift-detector integration:** If drift-detector agent is enabled, wait for its Pattern Validation Report (Mode 4) before promoting. Only promote patterns marked VERIFIED by drift-detector.
 
 ## Snapshot Integrity Check
 After writing any snapshot to docs/agents/memory/snapshots/:

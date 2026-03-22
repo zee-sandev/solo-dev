@@ -30,6 +30,35 @@ Read `gap_check` config from `.claude/solo-dev.local.md`:
 - `max_rounds`: Maximum gap checks before escalation (default: 3). Prevents infinite loops.
 - Round count persists across phases (Phase 2.5 + post-CR + post-QA share the same counter)
 
+## Content Validation
+
+Content validation extends gap-checker beyond file-existence checks to verify file content. This runs for **all projects** (not just monorepo). For single-package projects, only content validation runs (cross-package checks are skipped).
+
+Read `gap_check.content_validation` from `.claude/solo-dev.local.md` (default: true). When false, skip this section.
+
+For every modified file reported by implementation agents:
+1. File must be > 10 lines (not a stub/placeholder)
+2. File must contain function/class/handler definitions (not just imports or comments)
+3. Compare change type from Impact Map against actual content:
+   - type: `endpoint` → must have route handler / HTTP method decorator
+   - type: `page` → must have component/template export
+   - type: `schema` → must have table/model/migration definition
+   - type: `worker` → must have job handler / queue consumer
+   - type: `config` → must have actual configuration values
+   - type: `type` → must have type/interface definition
+   - type: `middleware` → must have middleware function
+   - type: `hook` → must have hook/lifecycle handler
+4. If content doesn't match expected type → `CONTENT_GAP` (severity: CRITICAL)
+
+### Content Validation Output (added to GAP_CHECK_REPORT)
+```
+CONTENT_GAPS:
+  - file: "apps/api/src/routes/profile.ts"
+    expected_type: endpoint
+    issue: "File has only imports and comments (8 lines, no route handler)"
+    target_agent: backend-agent
+```
+
 ## Before Starting
 1. Read `.claude/solo-dev-state.json` — get `workspace.packages` list
 2. Read `docs/specs/{feature-id}.md` — find the **Impact Map** section

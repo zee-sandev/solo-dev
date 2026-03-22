@@ -76,6 +76,21 @@ When REJECT: send targeted CR_FEEDBACK to specific agents (not broadcast).
 Only request fixes for the files that need changing.
 On re-review: only check files that were changed — not full re-review.
 
+## Import Chain Check (on re-review only)
+When re-reviewing after a REJECT → fix cycle:
+1. For each changed file: Grep for all files that import/require it
+2. Check if any exported function signatures changed (name, parameters, return type)
+3. If signature changed AND callers were not updated → flag as CRITICAL:
+   ```
+   IMPORT_CHAIN_BREAK:
+     changed_file: "src/services/profile.ts"
+     changed_export: "getProfile(id: string) → getProfile(id: string, tenantId: string)"
+     affected_callers:
+       - "src/routes/profile.ts:15" — still calls getProfile(id) without tenantId
+     fix: "Update caller to pass tenantId parameter"
+     target_agent: backend-agent
+   ```
+
 ## REJECT Threshold
 - 1 or more CRITICAL findings → automatic REJECT
 - 3 or more HIGH findings → automatic REJECT
