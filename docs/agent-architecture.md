@@ -1,6 +1,6 @@
 # solo-dev — Agent Architecture
 
-> 18 agents organized in 4 layers. Each agent has a defined role, skills, file ownership, and communication protocol.
+> 20 agents organized in 4 layers. Each agent has a defined role, skills, file ownership, and communication protocol.
 
 ---
 
@@ -14,8 +14,9 @@
                          │
          ┌───────────────┼───────────────┐
          ▼               ▼               ▼
-   RESEARCH LAYER   VALIDATION LAYER   LEARNING LAYER
-   R1, R2, R3       MV, PV, BV, SR, GC  MC, SE
+   RESEARCH LAYER   VALIDATION LAYER      LEARNING LAYER
+   R1, R2, R3       MV, PV, BV, SR, GC,   MC, SE
+                    ST, DD
          │               │
          └───────┬───────┘
                  ▼
@@ -274,6 +275,42 @@ SECURITY_REPORT:
 **Triggers:** Post-implementation (mandatory), post-CR fix, post-QA fix. Round counter is cumulative.
 
 **Loop:** Configurable via `gap_check.min_rounds` (default: 1) and `gap_check.max_rounds` (default: 3) in `.claude/solo-dev.local.md`. On exceeding max → escalate to orchestrator.
+
+---
+
+### Smoke Tester
+**ID:** `smoke-tester`
+**Model:** inherit (Sonnet)
+**Color:** orange
+**When:** Phase 2.6 — after gap-checker PASS, before code review. Also post-CR fix and post-QA fix.
+
+**Role:** Runtime verification agent. Builds the project, starts the dev server, and tests endpoints against API contracts. Catches false DONE reports by verifying code actually runs. Manages port conflicts (kills known dev servers only when configured).
+
+**File ownership:** None (read-only verification + Bash for build/server/curl)
+
+**Output:** SMOKE_TEST_REPORT with PASS/FAIL/PARTIAL verdict and targeted feedback for specific agents on failure.
+
+**On FAIL:** Targeted feedback (BUILD_FEEDBACK, SERVER_FEEDBACK, ENDPOINT_FEEDBACK, VALIDATION_FEEDBACK) to responsible agents. Re-runs only failed steps. Max rounds from `smoke_test.max_rounds` config.
+
+---
+
+### Drift Detector
+**ID:** `drift-detector`
+**Model:** inherit (Sonnet)
+**Color:** yellow
+**When:** Multiple lifecycle points — session start (Mode 3), after spec produced (Mode 1), Phase 2.7 (Mode 2), post-ship (Mode 4).
+
+**Role:** Detects inconsistencies that cause agent divergence: vague spec criteria, contract drift during implementation, stale memory patterns, and unverified pattern promotion.
+
+**File ownership:** None (read-only validation + Bash for checksums/git)
+
+**4 Modes:**
+1. **Spec Clarity Check** — flags vague acceptance criteria before implementation
+2. **Contract Drift Check** — detects contract changes that leave agents working against stale versions
+3. **Memory Drift Check** — finds stale patterns, contradictions, and YAML/markdown sync issues
+4. **Pattern Validation Check** — requires CR+QA proof before promoting patterns
+
+**Output:** Mode-specific reports (SPEC_CLARITY_REPORT, CONTRACT_DRIFT_REPORT, MEMORY_DRIFT_REPORT, PATTERN_VALIDATION_REPORT)
 
 ---
 

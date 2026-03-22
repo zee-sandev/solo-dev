@@ -24,6 +24,10 @@
 | **Security sole ownership** | Security reviewer is the single owner of all security checks — no duplication across agents |
 | **Business validation parallel** | Business validator runs parallel with implementation (after design approval), not sequentially after QA |
 | **Cross-package completeness via gap-checker** | In monorepo projects, a dedicated gap-checker agent validates that every package listed in the Impact Map has corresponding implementation changes. Runs between implementation and code review. Prevents the common failure mode where agents implement only one side of a feature (e.g., API without frontend) |
+| **Runtime verification via smoke-tester** | Agents report DONE but orchestrator now verifies: build succeeds, server starts, endpoints respond correctly. Port management with safeguards (only kills known dev servers). |
+| **Drift detection via drift-detector** | 4-mode agent catches: vague specs (Mode 1), contract drift (Mode 2), stale memory (Mode 3), unverified patterns (Mode 4). Prevents the compounding of bad assumptions across features. |
+| **QA runtime + E2E via Playwright** | QA validator enhanced from static-only to 3-layer: static analysis → API runtime tests → E2E browser tests. Playwright always used for E2E regardless of project stack. |
+| **Content validation in gap-checker** | Gap-checker now verifies file content matches expected type, not just file existence. Runs for all projects (not just monorepo). |
 
 ---
 
@@ -72,7 +76,7 @@ solo-dev/
 │   ├── backend-patterns/     # Bundled fallback for ecc:backend-patterns
 │   ├── security/             # Bundled fallback for ecc:security-review
 │   └── tdd/                  # Bundled fallback for ecc:tdd-workflow
-├── agents/                   # 18 agents
+├── agents/                   # 20 agents
 ├── commands/                 # 8 commands
 ├── hooks/
 │   ├── hooks.json

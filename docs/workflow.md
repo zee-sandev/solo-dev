@@ -512,6 +512,43 @@ If rounds >= max_rounds → escalate to human.
 
 ---
 
+### Phase 2.6: Smoke Test
+
+**Agent:** `smoke-tester`
+
+After gap-checker PASS (or directly after implementation for non-monorepo projects), smoke-tester verifies runtime behavior:
+
+1. **Build verification** — runs `npm run build` / `go build` / equivalent
+2. **Server start** — launches dev server, polls for readiness
+3. **Happy path** — tests all contract endpoints via curl
+4. **Error path** — tests auth failures, invalid input, 404s
+
+**Config:** `smoke_test` in `.claude/solo-dev.local.md`
+- PASS → Phase 2.7
+- FAIL → targeted feedback → fix → re-test (max `smoke_test.max_rounds`)
+- PARTIAL (no contract) → proceed with warning
+
+**State update:** `phase: SMOKE_TEST`
+
+---
+
+### Phase 2.7: Contract Drift Check
+
+**Agent:** `drift-detector` (Mode 2)
+
+Verifies API contracts haven't changed during implementation:
+
+1. Reads contract checksums recorded at Phase 2 start
+2. Computes current checksums
+3. If drift detected → identifies affected agents
+
+- STABLE → Phase 3
+- DRIFTED → notify affected agents → block until re-validated
+
+**State update:** `phase: CONTRACT_DRIFT_CHECK`
+
+---
+
 ### Phase 3: Code Review Loop
 
 **Agent:** code-reviewer (runs after all I agents DONE)
@@ -637,6 +674,8 @@ QUEUED
   → DESIGN_LOOP (rounds 1-3)
   → IMPLEMENTATION + BUSINESS_VALIDATION (parallel)
   → GAP_CHECK (monorepo only)
+  → SMOKE_TEST
+  → CONTRACT_DRIFT_CHECK
   → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
   → QA_LOOP (rounds 1-3)
   → FINAL_ACCEPTANCE (rounds 1-2)
@@ -709,8 +748,8 @@ Feature effort classification determines phase ordering:
 
 | Effort | Phases Run | Notes |
 |--------|-----------|-------|
-| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 3+5 → 8 | Skip design loop, skip QA loop |
-| **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 3+5 → 4 → 7 → 8 | Full pipeline |
+| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 2.6 → 2.7 → 3+5 → 8 | Skip design loop, skip QA loop |
+| **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 2.6 → 2.7 → 3+5 → 4 → 7 → 8 | Full pipeline |
 | **L** (Large) | Standard + extended review | Extra CR round budget |
 | **XL** (Extra Large) | Decompose first | Orchestrator suggests decomposition before starting |
 
