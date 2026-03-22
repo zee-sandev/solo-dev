@@ -5,7 +5,7 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://zee-sandev.github.io/solo-dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**solo-dev** is a Claude Code plugin that orchestrates 17 specialized agents through a structured development lifecycle. You bring the idea; it handles market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
+**solo-dev** is a Claude Code plugin that orchestrates 18 specialized agents through a structured development lifecycle. You bring the idea; it handles market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
 
 **[Read the full documentation →](https://zee-sandev.github.io/solo-dev/)**
 
@@ -225,17 +225,18 @@ flowchart TD
 
     subgraph RESEARCH["  Research & Validation  "]
         P0["Phase 0 · Market Validation<br/>Is this worth building?"]:::research
-        P12["Phase 1 · Design Loop<br/>product · ux · tech research<br/>Persona vote 3/3 · max 5 rounds"]:::research
+        P12["Phase 1 · Design Loop<br/>product · ux · tech research<br/>Persona vote 3/3 · max 3 rounds"]:::research
     end
 
-    subgraph IMPL["  Implementation  "]
+    subgraph IMPL["  Implementation + Business Validation  "]
         P2["Phase 2 · Parallel Build<br/>frontend · backend · ui · data · test<br/>Strict file ownership · contract validation"]:::impl
+        BV["Business Validation (parallel)<br/>Business logic · Compliance · Competitive gaps"]:::quality
     end
 
     subgraph QUALITY["  Quality Gate  "]
-        P3["Phase 3 · Code Review<br/>4 dimensions · max 3 rounds"]:::quality
-        P45["Phase 4+5 · QA + Security<br/>Parallel · SaaS checklist"]:::quality
-        P6["Phase 6 · Business Validation<br/>Completeness · competitive gaps"]:::quality
+        GC["Gap Check<br/>Cross-package completeness<br/>gap-checker agent"]:::quality
+        P3["Phase 3 · Code Review + Security<br/>CR: 4 dimensions · SR: Threat modeling<br/>Parallel · max 3 rounds"]:::quality
+        P45["Phase 4+5 · QA<br/>Functional correctness"]:::quality
         P7["Phase 7 · Final Acceptance<br/>Persona vote 3/3"]:::quality
         P8["Phase 8 · Demo + Ship<br/>Playwright video · docs"]:::quality
     end
@@ -249,10 +250,12 @@ flowchart TD
     P0 -->|VIABLE| P12
     P0 -.->|NOT VIABLE| U
     P12 -->|APPROVED| P2
-    P2 --> P3
+    P12 -->|APPROVED| BV
+    P2 --> GC
+    BV --> GC
+    GC --> P3
     P3 --> P45
-    P45 --> P6
-    P6 --> P7
+    P45 --> P7
     P7 -->|APPROVED| P8
     P7 -.->|REJECTED| P12
     P8 --> SHIP([Ship]):::terminal
@@ -261,14 +264,14 @@ flowchart TD
     SE -.->|Improved strategies| O
 ```
 
-### Agent Roster (17 agents)
+### Agent Roster (18 agents)
 
 | Layer | Agents | What they do |
 |-------|--------|-------------|
 | **Research** | `orchestrator` · `product-researcher` · `ux-researcher` · `tech-architect` | Coordinate, research markets, design UX, plan architecture |
-| **Validation** | `market-validator` · `persona-validator` · `business-validator` · `security-reviewer` | Gate quality — commercial viability, user fit, business logic, security |
+| **Validation** | `market-validator` · `persona-validator` · `business-validator` · `security-reviewer` · `gap-checker` | Gate quality — commercial viability with 3-tier verdicts, user fit, business logic/compliance/competitive gaps (parallel with implementation), sole owner of all security checks, cross-package implementation completeness in monorepo projects |
 | **Implementation** | `frontend-agent` · `backend-agent` · `ui-agent` · `data-agent` · `test-agent` | Build in parallel with strict file ownership and contract validation |
-| **Learning** | `code-reviewer` · `qa-validator` · `memory-curator` · `strategy-evolver` | Review quality, compress memory, improve strategies over time |
+| **Learning** | `code-reviewer` · `qa-validator` · `memory-curator` · `strategy-evolver` | 4 dimensions: logic correctness, maintainability, scalability, tech debt. Compress memory, improve strategies over time |
 
 > **Foundation projects:** If your template includes its own `.claude/agents/`, solo-dev delegates implementation to them and focuses on research, validation, and learning.
 
@@ -324,6 +327,13 @@ api_contracts:
     mode: markdown
     markdown:
       path: docs/contracts
+
+# Cross-package gap check (monorepo projects)
+# Validates implementation completeness across all affected packages
+gap_check:
+  enabled: true        # false to disable
+  min_rounds: 1        # minimum checks per feature (1-5)
+  max_rounds: 3        # max before escalation (1-10)
 
 # Foundation mode settings (template projects only)
 foundation:
@@ -410,7 +420,7 @@ For deeper details, see the [`docs/`](./docs) directory or the [online documenta
 | Document | Covers |
 |----------|--------|
 | [Design](docs/design.md) | Full system design and principles |
-| [Agent Architecture](docs/agent-architecture.md) | All 17 agents — roles, ownership, skills |
+| [Agent Architecture](docs/agent-architecture.md) | All 18 agents — roles, ownership, skills |
 | [Memory Flow](docs/memory-flow.md) | Memory layers, token budgets, session flow |
 | [Agent Feedback](docs/agent-feedback-flow.md) | Inter-agent communication protocols |
 | [Workflow](docs/workflow.md) | Phase-by-phase lifecycle and loop rules |

@@ -77,7 +77,7 @@ This generates docs/agents/memory/index.md (~200 tokens) from the YAML source.
 - Mark patterns with frequency: how many features used this pattern
 
 ### 4. Clean cr_learnings.md and bv_learnings.md
-- If a learning has been applied consistently (>3 features), promote to patterns.md
+- If a learning has been applied consistently (>2 features AND pattern matches current tech stack), promote to patterns.md
 - Remove learnings that are no longer relevant (codebase changed)
 
 ### 5. Update performance-log.md
@@ -133,3 +133,35 @@ MEMORY_CURATOR_REPORT:
   GLOBAL: {N} universal patterns → global memory
   DONE
 ```
+
+## Pattern Validation
+Before promoting a learning from cr_learnings.md or bv_learnings.md to patterns.md:
+1. Verify the pattern still exists in the current codebase (use Grep to check code references)
+2. If the pattern references deleted/changed code → mark as "needs verification" instead of promoting
+3. Only promote patterns that are actively used and correct
+
+## Snapshot Integrity Check
+After writing any snapshot to docs/agents/memory/snapshots/:
+1. Read it back immediately
+2. Validate JSON parses correctly
+3. Verify file count matches expected number of memory files
+4. If validation fails → retry write, then report error to orchestrator
+
+## Learnings Quality Gate
+Before archiving or compressing learnings:
+- Mark any learnings that reference changed or deleted code as `[NEEDS_VERIFICATION]`
+- Do not promote stale learnings to patterns.md
+- During compression: preserve the `[NEEDS_VERIFICATION]` tag for human review
+
+## Post-Ship Feedback Template
+After each feature ships, create a feedback template:
+`docs/agents/memory/feedback/{feature-id}.md`:
+```markdown
+# {Feature Name} — Post-Ship Feedback
+Expected usage: [from spec]
+Actual usage: [USER TO FILL after 1-2 weeks]
+Surprises: [USER TO FILL]
+Would users miss it if removed? [USER TO FILL]
+Improvement ideas: [USER TO FILL]
+```
+This creates a user feedback loop — product-researcher reads these for future features.

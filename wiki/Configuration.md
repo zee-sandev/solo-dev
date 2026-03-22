@@ -95,6 +95,64 @@ Provide a prompt describing where and how to write API docs. Supports any format
 
 ---
 
+## Gap Check (Monorepo)
+
+Control cross-package completeness validation for monorepo projects.
+
+```yaml
+gap_check:
+  enabled: true       # set false to skip all gap checks
+  min_rounds: 1        # minimum gap checks per feature (1-5)
+  max_rounds: 3        # maximum before escalation (1-10)
+```
+
+### Settings
+
+| Setting | Default | Range | Behavior |
+|---------|---------|-------|---------|
+| `enabled` | `true` | `true` / `false` | Master switch. Set `false` to disable all gap checks (useful for single-package projects). |
+| `min_rounds` | `1` | 1-5 | Minimum gap checks per feature. At `1`, only post-implementation check runs. At `3`, forces re-check after CR and QA fixes too. |
+| `max_rounds` | `3` | 1-10 | Maximum total gap check rounds before escalating to human. Counter is cumulative across all trigger points. |
+
+### Trigger Points
+
+Gap-checker runs at up to 3 points per feature. The round counter is shared across all triggers:
+
+| Trigger | When | Why |
+|---------|------|-----|
+| **Post-Implementation** | After all impl agents DONE, before code review | Mandatory first check — catches missing packages |
+| **Post-CR Fix** | After code-reviewer REJECT → agents fix | Catches accidental package removal during CR fixes |
+| **Post-QA Fix** | After QA FAIL → agents fix | Catches broken cross-package completeness during QA fixes |
+
+### Example Configurations
+
+```yaml
+# Conservative (check everything)
+gap_check:
+  enabled: true
+  min_rounds: 3    # force all 3 trigger points
+  max_rounds: 5    # allow more retries
+
+# Minimal (post-impl only)
+gap_check:
+  enabled: true
+  min_rounds: 1
+  max_rounds: 2
+
+# Disabled (single-package or non-monorepo)
+gap_check:
+  enabled: false
+```
+
+### Skip Conditions
+
+Gap checks are automatically skipped when:
+- No `workspace` field in `solo-dev-state.json` (not a monorepo)
+- Impact map lists only 1 package (no cross-package gap possible)
+- `gap_check.enabled: false`
+
+---
+
 ## Foundation Settings
 
 For projects initialized from a template (Foundation Mode).
@@ -133,6 +191,14 @@ State is automatically managed in `.claude/solo-dev-state.json`:
   },
   "repomix_pack_id": "abc123",
   "stack": "nextjs",
+  "workspace": {
+    "type": "pnpm",
+    "packages": [
+      {"name": "api", "path": "apps/api", "type": "app"},
+      {"name": "web", "path": "apps/web", "type": "app"}
+    ]
+  },
+  "gap_check_rounds": 0,
   "last_updated": "2026-03-18T10:30:00Z"
 }
 ```
@@ -168,6 +234,11 @@ api_contracts:
     mode: "markdown"
     markdown:
       path: "docs/contracts"
+
+gap_check:
+  enabled: true
+  min_rounds: 1
+  max_rounds: 3
 
 foundation:
   delegate_agents: true

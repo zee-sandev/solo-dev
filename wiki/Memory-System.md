@@ -143,7 +143,13 @@ Project B starts, needs auth
 
 ## Strategy Files
 
-Maintained by `strategy-evolver`. Loaded by respective agents.
+Maintained by `strategy-evolver` (requires at least 2 completed features). Loaded by respective agents.
+
+**Strategy snapshots:** Before each evolution, the previous strategy is snapshotted so regressions can be detected and rolled back.
+
+**Pattern validation:** Strategy updates are validated against historical performance data to prevent untested patterns from entering the strategy files.
+
+**Post-ship feedback:** After each feature ships, a feedback template is generated for user input. This data feeds into the next strategy evolution cycle.
 
 ```markdown
 # Research Strategy — Updated 2026-03-18
@@ -160,7 +166,7 @@ Maintained by `strategy-evolver`. Loaded by respective agents.
 - Market size estimates: confidence 0.7
 - Competitor feature detection: confidence 0.85
 
-## Last evolved: 2026-03-18 | Features analyzed: 3
+## Last evolved: 2026-03-18 | Features analyzed: 2
 ```
 
 ---

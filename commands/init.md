@@ -303,6 +303,59 @@ mkdir -p docs/yaml
 mkdir -p .claude
 ```
 
+### Workspace Detection (all paths)
+
+Detect monorepo workspace structure:
+
+1. Check for workspace config files:
+   - `pnpm-workspace.yaml` → parse `packages:` globs
+   - `package.json` → check `workspaces` field
+   - `lerna.json` → parse `packages` field
+   - `turbo.json` → presence indicates turborepo
+   - `nx.json` → presence indicates Nx workspace
+   - `go.work` → parse workspace members (Go)
+   - `Cargo.toml` with `[workspace]` → parse members (Rust)
+
+2. If workspace config found:
+   - Resolve globs to actual package directories
+   - For each package: read its manifest (package.json, go.mod, Cargo.toml) to get name
+   - Build package list with: `{name, path, type}` where type is `app|package|lib|service|worker|cli|script`
+   - Classify by convention:
+     - `apps/*` → type: `app`
+     - `services/*` or `workers/*` → type: `service`
+     - `packages/*` or `libs/*` → type: `package`
+     - `scripts/*` or `tools/*` → type: `script`
+   - Classify by content signals (if convention is ambiguous):
+     - Has `bin` field in package.json → type: `cli`
+     - Has queue/worker keywords in entry file → type: `worker`
+     - Has cron/schedule config → type: `service`
+
+3. Store in `solo-dev-state.json`:
+   ```json
+   {
+     "workspace": {
+       "type": "pnpm|npm|yarn|lerna|turbo|nx|go|cargo",
+       "packages": [
+         {"name": "api", "path": "apps/api", "type": "app"},
+         {"name": "web", "path": "apps/web", "type": "app"},
+         {"name": "shared", "path": "packages/shared", "type": "package"}
+       ]
+     }
+   }
+   ```
+
+4. If NO workspace config found: omit `workspace` key entirely (single-package project).
+
+5. Display in init summary:
+   ```
+   Workspace:      pnpm monorepo (5 packages)
+     apps/api          (app)
+     apps/web          (app)
+     services/worker   (service)
+     packages/shared   (package)
+     scripts/migrate   (script)
+   ```
+
 ### Step 4 / Step 8: Create memory index
 
 Create docs/agents/memory/index.md:
@@ -341,6 +394,7 @@ Create .claude/solo-dev-state.json:
   "agents_status": {},
   "repomix_pack_id": "{pack-id or null}",
   "stack": "{detected-stack}",
+  "workspace": null,
   "last_updated": "{current-datetime}",
   "foundation": {
     "manifest": "docs/agents/memory/foundation-manifest.md",
@@ -380,6 +434,13 @@ api_contracts:
     mode: "markdown"  # "markdown" | "custom"
     markdown:
       path: "docs/contracts"
+
+gap_check:
+  enabled: true       # set false to skip all gap checks
+  min_rounds: 1        # minimum gap checks per feature (1-5)
+  max_rounds: 3        # maximum before escalation (1-10)
+  # Triggers: post-implementation (always), post-CR-fix, post-QA-fix
+  # Round counter is cumulative across all trigger points per feature
 ---
 ```
 
@@ -410,6 +471,7 @@ Onboarding:     New concept | Existing codebase
 Stack:          {stack}
 Repomix:        enabled (pack: {id}) | disabled
 Token budget:   {mode}
+Workspace:      {type} monorepo ({N} packages) | single-package
 
 Memory system:  ✅
 State file:     ✅

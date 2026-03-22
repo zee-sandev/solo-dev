@@ -51,6 +51,8 @@ requires_ack: true | false  # true = agent cannot proceed until acknowledged
 | `BV_FEEDBACK` | business-validator → orchestrator | Business gaps found |
 | `PERSONA_REJECTION` | persona-validator → research | Spec rejected with conditions |
 | `REVISION_COMPLETE` | research → persona-validator | Spec revised, re-evaluate |
+| `BACKEND_REPORT` | backend-agent → orchestrator | Backend implementation status with DONE/BLOCKED/NEEDS_CLARIFICATION |
+| `DATA_REPORT` | data-agent → orchestrator | Data layer implementation status with DONE/BLOCKED/NEEDS_CLARIFICATION |
 | `RESOLVED` | any → any | Issue resolved, continue |
 
 ---
@@ -122,14 +124,14 @@ Last updated: {date} by backend-agent
 ## Level 2: Quality Feedback
 
 ### When it runs
-- code-reviewer: after all I agents report DONE
-- qa-validator + security-reviewer: after code-reviewer APPROVE (parallel)
-- business-validator: after qa-validator PASS
+- code-reviewer + security-reviewer: after all I agents report DONE (parallel)
+- qa-validator: after code-reviewer APPROVE
+- business-validator: runs parallel with implementation (Phase 2), after design approval
 
 ### Code Review Feedback Flow
 
 ```
-code-reviewer runs 4 dimensions (security, maintainability, scalability, tech debt)
+code-reviewer runs 4 dimensions (logic, maintainability, scalability, tech debt)
         │
    ┌────┴────────┐
 APPROVE          REJECT
@@ -276,8 +278,26 @@ proceed to impl    PERSONA_REJECTION sent to research:
                 persona re-evaluates ONLY changed sections
                 (not full spec re-read)
                         │
-                max 5 rounds → human escalation
+                max 3 rounds → human escalation
 ```
+
+### Conflict Precedence Rule
+
+When multiple agents disagree, the orchestrator applies this precedence:
+
+```
+Security (security-reviewer) > Business (business-validator) > Persona (persona-validator) > Code (code-reviewer)
+```
+
+Security concerns always take priority. A security REJECT overrides all other APPROVEs.
+
+### Persona Rejection Severity
+
+Persona-validator rejections include severity level:
+- `REJECT_BLOCKING` — feature cannot ship in any form for this persona
+- `REJECT_DEGRADED` — feature works but delivers poor experience for this persona
+
+BLOCKING rejections must be resolved. DEGRADED rejections are presented to the user with business impact assessment for a ship/fix decision.
 
 ### Conflict Resolution (within design loop)
 
@@ -316,7 +336,7 @@ orchestrator surfaces CONFLICT_BRIEF to human:
 → Agents resume from that decision
 ```
 
-**Important:** market-validator is **advisor only** — it provides data-backed input but human makes the final call.
+**Important:** market-validator is a **gatekeeper with teeth** — it provides VIABLE/HIGH_RISK/BLOCKER verdicts. BLOCKER requires explicit user override to proceed. In conflict resolution, it provides data-backed recommendations but human makes the final call.
 
 ### Memory writes after design loop
 - All approved decisions → `docs/agents/memory/decisions.md`
@@ -330,7 +350,7 @@ orchestrator surfaces CONFLICT_BRIEF to human:
 ### Triggers
 | Loop | Max Retries | Escalation Trigger |
 |------|-------------|-------------------|
-| Design Loop | 5 rounds | personas still reject after round 5 |
+| Design Loop | 3 rounds | personas still reject after round 3 |
 | Code Review | 3 rounds | CR still rejects after round 3 |
 | QA Loop | 3 rounds | QA still fails after round 3 |
 | Final Acceptance | 2 rounds | personas reject implementation after round 2 |

@@ -81,3 +81,40 @@ Never implement auth from scratch without consulting Better Auth docs.
 - [ ] Multi-tenancy isolation enforced on all queries
 - [ ] TypeScript compiles without errors
 - [ ] No hardcoded secrets
+
+## Output Report
+```
+BACKEND_REPORT:
+  status: DONE | BLOCKED | NEEDS_CLARIFICATION
+  contracts_defined: [list of endpoint paths]
+  files_changed: [list of files created/modified]
+  blocking_reason: [if BLOCKED — what's preventing completion]
+  clarification_needed: [if NEEDS_CLARIFICATION — specific questions]
+```
+
+## Partial Failure Handling
+Every async operation must define its failure recovery strategy:
+- **Retry with backoff** — for transient failures (network timeout, rate limit)
+- **Compensation action** — for partial completions (payment succeeded but notification failed → retry notification, not payment)
+- **Dead-letter queue** — for persistent failures that need manual intervention
+
+Document the recovery strategy in the API contract under a "Failure Recovery" heading per endpoint.
+
+Never allow silent failures. If an async operation fails:
+- Log the failure with full context
+- Notify the caller (webhook callback, status field update, or error event)
+- Provide a retry mechanism (manual or automatic)
+
+## API Developer Experience
+Design APIs from the consumer's perspective:
+- Error messages must be **actionable**: "Missing required field: email" not "Validation error"
+- Pagination must be **consistent** across all list endpoints (same cursor/offset pattern)
+- Auth errors must explain **what permission is missing**: "Requires 'admin' role on organization" not just "Forbidden"
+- Include request examples in API contracts for non-obvious endpoints
+- Rate limit responses must include retry-after header value
+
+## Contract Validation Gate
+After writing an API contract:
+1. Request tech-architect review before frontend-agent starts building against it
+2. This is a HARD dependency in the orchestrator's DAG — frontend waits for validated contract
+3. If contract changes after frontend started → notify orchestrator immediately

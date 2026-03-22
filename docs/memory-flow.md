@@ -189,6 +189,12 @@ memory-curator identifies reusable patterns:
   "multi-tenant auth with Better Auth — tested pattern"
   │
   ▼
+Pattern validation before promotion:
+  - Pattern must have succeeded in 2+ features or projects
+  - No unresolved issues linked to the pattern
+  - Pattern is not stack-specific (or tagged with stack)
+  │
+  ▼
 Writes to: ~/.claude/solo-dev/global-memory/learnings/
   auth-patterns.md       ← auth patterns across projects
   billing-patterns.md    ← billing edge cases seen
@@ -207,9 +213,26 @@ Project B starts, needs auth
 
 ---
 
+## Post-Ship Feedback Template
+
+After each feature ships, memory-curator creates a feedback template:
+
+```
+docs/agents/memory/feedback/{feature-id}.md
+```
+
+This captures post-ship observations, user reactions, and performance metrics that feed into strategy evolution.
+
+---
+
 ## Strategy File Format
 
-Maintained by strategy-evolver. Loaded by respective agents.
+Maintained by strategy-evolver. Loaded by respective agents. Threshold: evolves after 2 features shipped (lowered from 3).
+
+Strategy snapshots are saved before each evolution for rollback:
+```
+~/.claude/solo-dev/strategies/snapshots/{date}-{strategy-name}.md
+```
 
 ```markdown
 # Research Strategy — Updated 2026-03-18
@@ -222,11 +245,14 @@ Maintained by strategy-evolver. Loaded by respective agents.
 - product-researcher: missing dunning/proration in billing features
 - ux-researcher: not checking mobile viewport for forms
 
+## Abandoned feature analysis
+- {feature-id}: abandoned because {reason} — lesson: {insight}
+
 ## Confidence calibration
 - Market size estimates: confidence 0.7 (use threshold:0.7 for research_synthesis)
 - Competitor feature detection: confidence 0.85
 
-## Last evolved: 2026-03-18 | Features analyzed: 3
+## Last evolved: 2026-03-18 | Features analyzed: 2
 ```
 
 ---

@@ -33,7 +33,8 @@ You are the orchestrator. Pick the next eligible feature, run all 8 phases in se
 ## Phase 0: Market Validation
 Spawn market-validator agent. Provide: feature spec from roadmap, decisions.md#market, bv_learnings.md.
 - VIABLE → continue to Phase 1
-- NOT_VIABLE → report to user, ask: remove from queue or revise?
+- HIGH_RISK → present risk summary to user, require acknowledgment before proceeding
+- BLOCKER → report to user, require explicit override to proceed (or remove from queue / revise)
 - Update state: phase → MARKET_VALIDATION
 
 ## Phase 1: Design Loop
@@ -43,7 +44,7 @@ Each produces their spec section. Synthesize into docs/specs/{feature-id}.md.
 Spawn persona-validator with the full spec.
 - 3/3 APPROVE → Phase 2
 - Any REJECT → research agents address all rejection points → re-vote
-- Max 5 rounds → human escalation (present CONFLICT_BRIEF)
+- Max 3 rounds → human escalation (present CONFLICT_BRIEF)
 - Update state: phase → DESIGN_LOOP, round → N
 
 Before each round: memory-curator snapshots state + memory to docs/agents/memory/snapshots/pre-{feature-id}.json
@@ -67,6 +68,12 @@ If project has existing .claude/agents/ (per foundation-manifest.md delegation m
 
 If project has NO .claude/agents/: use solo-dev agents as normal (I1-I5).
 
+### DAG-Based Dependency Analysis
+Before spawning agents, build a dependency graph of implementation tasks:
+- HARD dependencies: must complete before dependent task starts (e.g., DB schema before API routes)
+- SOFT dependencies: can proceed in parallel with coordination (e.g., frontend + backend with contract)
+Use DAG to determine optimal dispatch order.
+
 ### Standard Implementation
 Spawn impl agents (delegated or solo-dev) simultaneously. Provide each with:
 - docs/specs/{feature-id}.md (approved spec)
@@ -82,31 +89,34 @@ Wait for all agents to report DONE | BLOCKED | NEEDS_CLARIFICATION.
 - NEEDS_CLARIFICATION → answer and continue
 - Update state: phase → IMPLEMENTATION, agents_status → {...}
 
-## Phase 3: Code Review Loop
-Spawn code-reviewer with all changed files.
-- APPROVE → Phase 4+5 (parallel)
+## Phase 3: Code Review + Security Review (Parallel)
+Spawn code-reviewer AND security-reviewer simultaneously with all changed files.
+
+code-reviewer:
+- APPROVE → Phase 4
 - REJECT → send CR_FEEDBACK to specific agents → fix → re-check changed files only
 - Max 3 rounds → escalate
 - code-reviewer writes to cr_learnings.md
+
+security-reviewer (sole owner of all security checks):
+- APPROVE → continue
+- REJECT → SECURITY_ISSUE to relevant impl agents → fix → re-review
+
+Both must APPROVE to proceed.
 - Update state: phase → CODE_REVIEW, round → N
 
-## Phase 4+5: QA + Security (Parallel)
-Spawn qa-validator AND security-reviewer simultaneously.
+## Phase 4: QA
+Spawn qa-validator.
 
 qa-validator:
 - PASS → continue
 - FAIL → fix → CR re-check if code changed → QA re-run (max 3 rounds)
+- Update state: phase → QA_LOOP
 
-security-reviewer:
-- APPROVE → continue
-- REJECT → fix CRITICAL issues → re-review
-- Update state: phase → QA_SECURITY
-
-Both must pass to proceed.
-
-## Phase 6: Business Validation
-Spawn business-validator with implementation details + competitive-analysis.md.
-- APPROVE → Phase 7
+## Phase 6: Business Validation (runs parallel with Phase 2)
+Business-validator runs in parallel with implementation after design approval. Uses 3-hat evaluation (Operations/Compliance/Growth).
+Results are collected and merged at the Phase 7 gate.
+- APPROVE → continue to Phase 7
 - CRITICAL issues → back to impl agents → full loop
 - NON-CRITICAL → ask user: "Add to sprint or backlog?"
 - business-validator writes to bv_learnings.md
@@ -172,6 +182,16 @@ Print completion summary:
    {If foundation: "Examples replaced: {N} files"}
    Next feature: {next-feature-name or "all features complete"}
 ```
+
+## Adaptive Phase Ordering
+
+Classify feature effort from the roadmap spec before starting:
+- **S (Small):** Fast-track — skip Design Loop and QA Loop. Run Phase 0 → 2 → 3+Security → 8.
+- **M (Medium):** Standard pipeline — all phases.
+- **L (Large):** Standard + extended review budget.
+- **XL (Extra Large):** Suggest decomposition via `/solo-dev:decompose` before starting.
+
+Store effort classification in state: `feature_effort: S|M|L|XL`
 
 ## Token Budget Enforcement
 

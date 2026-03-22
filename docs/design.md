@@ -18,6 +18,12 @@
 | **Self-improving** | Agents evaluate performance, strategy-evolver updates strategies across sessions |
 | **Human-in-the-loop** | Conflicts and escalations always surface to human with full context |
 | **Loop until right** | No feature ships until every quality gate passes |
+| **DAG-based dispatching** | Agent dependencies modeled as a DAG — independent agents always run in parallel |
+| **Adaptive phase ordering** | Feature effort classification (S/M/L/XL) determines which phases run and in what order. Small features fast-track through fewer gates |
+| **Cost-aware execution** | Small features skip expensive phases (design loop, full QA) to avoid overhead exceeding feature value |
+| **Security sole ownership** | Security reviewer is the single owner of all security checks — no duplication across agents |
+| **Business validation parallel** | Business validator runs parallel with implementation (after design approval), not sequentially after QA |
+| **Cross-package completeness via gap-checker** | In monorepo projects, a dedicated gap-checker agent validates that every package listed in the Impact Map has corresponding implementation changes. Runs between implementation and code review. Prevents the common failure mode where agents implement only one side of a feature (e.g., API without frontend) |
 
 ---
 
@@ -66,7 +72,7 @@ solo-dev/
 │   ├── backend-patterns/     # Bundled fallback for ecc:backend-patterns
 │   ├── security/             # Bundled fallback for ecc:security-review
 │   └── tdd/                  # Bundled fallback for ecc:tdd-workflow
-├── agents/                   # 17 agents
+├── agents/                   # 18 agents
 ├── commands/                 # 8 commands
 ├── hooks/
 │   ├── hooks.json

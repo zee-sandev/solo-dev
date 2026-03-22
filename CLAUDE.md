@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 17 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
+This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 18 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
 
 ## Documentation Sync Rules
 
@@ -46,7 +46,7 @@ solo-dev/
 ├── .claude-plugin/plugin.json   # Plugin manifest
 ├── README.md                     # GitHub landing page
 ├── CLAUDE.md                     # This file
-├── agents/                       # 17 agent definitions
+├── agents/                       # 18 agent definitions
 ├── commands/                     # 8 command definitions
 ├── hooks/                        # hooks.json + scripts/
 ├── skills/                       # 6 bundled fallback skills
@@ -138,6 +138,32 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Strict file ownership:** Implementation agents never touch files owned by another agent.
 - **Index-first memory:** Only ~200 token index loads at session start. Everything else on-demand.
 - **Bundled skill fallbacks:** Try external plugin first, fall back to bundled ~70% version.
-- **market-validator is advisor only:** Provides data-backed input but human always decides on conflicts.
+- **market-validator is a gatekeeper with teeth:** Provides VIABLE/HIGH_RISK/BLOCKER verdicts. HIGH_RISK requires user acknowledgment, BLOCKER requires user override.
+- **Business validator runs parallel with implementation, not after QA:** 3-hat evaluation (Operations/Compliance/Growth) starts as soon as design is approved.
+- **Security reviewer is sole owner of all security checks:** No other agent performs security review. Runs parallel with code review. Includes threat modeling and supply chain checks.
+- **Design loop max 3 rounds (reduced from 5):** Tighter iteration to prevent over-engineering. Auto-escalation if same rejection repeats.
+- **DAG-based dependency analysis for parallel agent dispatching:** Independent agents always run in parallel. Hard vs soft dependency classification.
+- **Adaptive phase ordering by feature effort (S/M/L/XL):** Small features fast-track through fewer gates. XL features decompose before starting.
 - **Foundation-aware init:** When CLAUDE.md + docs/ or .claude/agents/ detected, read existing docs instead of re-analyzing. Delegate implementation to template's agents.
 - **Replace-as-you-go:** Example code from templates is tagged, not deleted. Auto-replaced during feature implementation. Final cleanup prompt after all roadmap features complete.
+- **Cross-package gap-checker for monorepo projects:** Dedicated agent validates implementation completeness across all affected packages. Prevents partial feature implementation.
+
+## Changelog Rules
+
+Every implementation session MUST write a changelog entry:
+
+1. **When to write:** After implementation is complete and tests pass, before commit
+2. **Where to write:** `docs/yaml/changelog.yaml` (source of truth) → then regenerate `CHANGELOG.md` via `bash hooks/scripts/yaml-to-markdown.sh changelog.yaml`
+3. **Entry format:**
+   ```yaml
+   - date: "YYYY-MM-DD"
+     type: added|changed|fixed|removed
+     description: "Clear, user-facing description of what changed"
+     feature_id: "optional — link to feature if applicable"
+   ```
+4. **Rules:**
+   - Write from user perspective, not developer perspective ("Add dark mode toggle" not "Implement ThemeProvider context")
+   - One entry per logical change, not per file
+   - Breaking changes MUST be flagged with `breaking: true`
+   - Group related changes under same date
+   - Include the version number if bumping plugin version

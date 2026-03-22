@@ -41,7 +41,9 @@ requires_ack: true | false
 | `QA_FAILURE` | qa-validator → impl agents | Functional test failures |
 | `SECURITY_ISSUE` | security-reviewer → impl agents | Security issues found |
 | `BV_FEEDBACK` | business-validator → orchestrator | Business gaps found |
-| `PERSONA_REJECTION` | persona-validator → research | Spec rejected with conditions |
+| `BACKEND_REPORT` | backend-agent → orchestrator | Implementation status with DONE/BLOCKED/NEEDS_CLARIFICATION vote |
+| `DATA_REPORT` | data-agent → orchestrator | Implementation status with DONE/BLOCKED/NEEDS_CLARIFICATION vote + compliance check |
+| `PERSONA_REJECTION` | persona-validator → research | Spec rejected — severity: `REJECT_BLOCKING` (stops pipeline) or `REJECT_DEGRADED` (can ship with known limitation) |
 | `REVISION_COMPLETE` | research → persona-validator | Spec revised, re-evaluate |
 | `RESOLVED` | any → any | Issue resolved, continue |
 
@@ -99,9 +101,11 @@ Runs during the Review phase after implementation is complete.
 
 ### Sequence
 
-1. `code-reviewer` runs after all I agents report DONE
-2. `qa-validator` + `security-reviewer` run after code-reviewer APPROVE (parallel)
-3. `business-validator` runs after qa-validator PASS
+1. `code-reviewer` + `security-reviewer` run in parallel after all I agents report DONE
+2. `business-validator` runs in parallel with implementation (Phase 2), findings feed into code review
+3. `qa-validator` runs after code review + security APPROVE
+
+**Conflict precedence:** When agents disagree, `security-reviewer` > `code-reviewer` > `business-validator` > `qa-validator`. The orchestrator enforces this ordering.
 
 ### Code Review Feedback
 
@@ -164,7 +168,7 @@ R1+R2+R3 produce spec
         → Research agent revises ONLY rejected sections
         → Sends REVISION_COMPLETE
         → Persona re-evaluates ONLY changed sections
-        → max 5 rounds → human escalation
+        → max 3 rounds → human escalation
 ```
 
 ### Conflict Resolution
@@ -196,7 +200,7 @@ YOUR OPTIONS
   D) Custom decision...
 ```
 
-**Important:** `market-validator` is advisor only — it provides data-backed input but human makes the final call.
+**Important:** `market-validator` is a 3-tier gatekeeper (VIABLE/HIGH_RISK/BLOCKER). HIGH_RISK requires user acknowledgment, BLOCKER requires user override. It provides evidence-based verdicts, not just advisory input.
 
 ### Memory Writes
 
@@ -214,7 +218,7 @@ YOUR OPTIONS
 
 | Loop | Max Rounds | Escalation |
 |------|-----------|------------|
-| Design Loop | 5 | Personas still reject |
+| Design Loop | 3 | Personas still reject |
 | Code Review | 3 | CR still rejects |
 | QA Loop | 3 | QA still fails |
 | Final Acceptance | 2 | Personas reject implementation |

@@ -60,3 +60,29 @@ You are the Data Agent (I4) in the solo-dev implementation layer. You own schema
 - [ ] Migration is reversible
 - [ ] No N+1 queries
 - [ ] Pagination on all list operations
+
+## Output Report
+```
+DATA_REPORT:
+  status: DONE | BLOCKED | NEEDS_CLARIFICATION
+  schema_changes: [list of tables/columns added or modified]
+  migrations: [list of migration files created]
+  files_changed: [list of files created/modified]
+  blocking_reason: [if BLOCKED]
+  clarification_needed: [if NEEDS_CLARIFICATION]
+```
+
+## Compliance Checklist
+Before marking schema work as DONE, verify:
+- [ ] PII fields (email, name, phone, address) are marked for encryption at rest
+- [ ] Tables containing user data have a documented data retention policy
+- [ ] GDPR right to delete: cascade delete path exists for all user-owned data (verify with `ON DELETE CASCADE` or documented manual steps)
+- [ ] Sensitive operations (payment, permission change, data export) have audit trail columns (actor_id, action, timestamp)
+- [ ] Regional data residency requirements are documented if applicable
+
+## Migration Verification
+After writing a migration:
+1. Run migration UP → verify schema state matches expectations
+2. Run migration DOWN → verify rollback produces clean previous state
+3. If DOWN fails or produces data loss → flag migration as **non-reversible** and document manual rollback procedure in migration file comments
+4. For destructive migrations (column removal, table drop, data transformation): document backup procedure BEFORE running

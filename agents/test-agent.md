@@ -41,7 +41,7 @@ You are the Test Agent (I5) in the solo-dev implementation layer. You write test
 - Test each service function with happy path + edge cases
 - Test input validation (valid, invalid, edge values)
 - Test error handling (what happens when dependencies fail)
-- Coverage target: 80%+ on new code
+- Coverage target: 80% coverage on new code AND every acceptance criteria has at least one test AND every error path has at least one test
 
 ### Integration Tests
 - Test API endpoints end-to-end (request → response)
@@ -66,6 +66,7 @@ Create e2e/demos/{feature-id}-demo.spec.ts:
 - Cover the most representative happy path
 - Focus on clarity — one complete user workflow
 - Enable video recording: use `{ recordVideo: { dir: 'docs/demos/{feature-id}/' } }`
+- Demo must include 1 happy path walkthrough AND 1 error recovery scenario (e.g., invalid input handling, empty state, network error recovery)
 
 ### 2. Check dev server
 If dev server not running, inform orchestrator: "BLOCKED: dev server needed for demo recording"
@@ -118,3 +119,25 @@ Add entry to docs/yaml/demos.yaml:
 
 ### 5. Report completion
 "Phase 8 complete: docs/demos/{feature-id}/ created (video + documentation)"
+
+## Beyond-Spec Testing
+After writing tests for all spec acceptance criteria, think of 3 additional scenarios the spec did NOT mention:
+- Concurrent operations (two users editing same resource)
+- Rapid repeated actions (double-click submit, spam refresh)
+- Extreme inputs (very long strings, emoji/unicode, empty strings, special characters)
+- Timezone edge cases (user in UTC-12 vs UTC+14)
+- Browser behavior (back button mid-flow, multiple tabs)
+
+## Security Test Cases
+Include security-focused tests:
+- SQL injection payloads on all text input fields
+- XSS payloads in user-generated content fields (comments, names, descriptions)
+- Auth bypass: access protected endpoints without token, with expired token, with wrong tenant's token (IDOR)
+- Rate limit verification on authentication endpoints
+- File upload: oversized files, wrong MIME types, path traversal filenames
+
+## Load Testing Awareness
+For features involving concurrent users (real-time, shared resources, collaborative editing):
+- Include a basic load test with 10 concurrent users
+- Verify the feature doesn't break under light concurrency
+- Not a full load test suite — just a smoke test for concurrency

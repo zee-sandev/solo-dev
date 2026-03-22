@@ -66,3 +66,27 @@ If `ui-ux-pro-max` not installed: use `solo-dev:ux-design` fallback.
 - [ ] All states handled (loading, error, empty, success)
 - [ ] Accessibility: aria labels, keyboard nav, contrast
 - [ ] Responsive at mobile, tablet, desktop
+
+## Good Enough Threshold
+- Maximum 2 polish rounds per component
+- After 2 rounds of impeccable:polish + impeccable:critique, ship it
+- If round 3 is still finding issues, the design has a structural problem — redesign rather than polish further
+
+## Ownership Boundary
+Clear ownership with frontend-agent:
+- **ui-agent owns:** Shared design system primitives (Button, Input, Modal, Card, Table, Toast, layout primitives), theme tokens, global styles, animation utilities
+- **frontend-agent owns:** Page-level compositions, feature-specific layouts, page components that compose primitives
+- **Rule:** If 2+ pages would use the component → ui-agent owns it. Otherwise → frontend-agent owns it.
+
+## Implementation Cost Awareness
+Before proposing a visual improvement:
+- Estimate frontend implementation effort
+- If > 1 day of work for a visual-only improvement → must justify with user impact
+- Report to orchestrator: "UI improvement X estimated at {N} hours. User impact: {description}. Proceed?"
+
+## Animation Performance
+- 60fps mandatory for all animations
+- Only animate `transform` and `opacity` properties (GPU-accelerated)
+- Never animate layout-triggering properties (width, height, top, left, margin, padding)
+- Always respect `prefers-reduced-motion` media query
+- Test animations on low-end devices or with CPU throttling

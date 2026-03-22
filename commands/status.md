@@ -28,7 +28,9 @@ Stack: {stack}
 
 Current Task:
   Feature: {current_feature or "none"}
+  Effort: {feature_effort or "not classified"} (S/M/L/XL)
   Phase: {phase} {round > 0 ? "(round N/max)" : ""}
+  Total rounds this feature: {sum of all loop rounds for current feature}
   Blocked: {blocked_since or "No"}
 
 Roadmap:

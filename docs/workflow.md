@@ -423,8 +423,9 @@ Validates:
 - Ships in ≤2 weeks, no external dep with >2-week risk
 
 ```
-VIABLE → proceed to Phase 1
-NOT_VIABLE → research agents revise or remove from queue
+VIABLE     → proceed to Phase 1
+HIGH_RISK  → requires user acknowledgment before proceeding
+BLOCKER    → requires explicit user override (or remove from queue)
 ```
 
 **State update:** `phase: MARKET_VALIDATION, feature: {id}`
@@ -446,7 +447,7 @@ memory-curator: snapshot state + memory
 persona-validator evaluates (all 3 personas)
   → 3/3 APPROVE → Phase 2
   → Any REJECT → research revises → re-vote
-  → Max 5 rounds → human escalation
+  → Max 3 rounds → human escalation
 ```
 
 **State update:** `phase: DESIGN_LOOP, round: N`
@@ -457,6 +458,7 @@ persona-validator evaluates (all 3 personas)
 ### Phase 2: Parallel Implementation
 
 **Agents:** I1-I5 (frontend, backend, ui, data, test) — strictly parallel
+**Pre-step:** DAG-based dependency analysis classifies task dependencies as HARD (must complete first) or SOFT (can proceed in parallel). Orchestrator uses this to determine optimal agent dispatch order.
 
 ```
 Each agent receives:
@@ -482,12 +484,42 @@ All agents report DONE → orchestrator collects → Phase 3
 
 ---
 
+### Phase 2.5: Cross-Package Gap Check (monorepo only)
+
+**Agent:** gap-checker
+**When:** Multiple trigger points. Skipped for single-package projects.
+**Config:** `gap_check.min_rounds` (default: 1), `gap_check.max_rounds` (default: 3) in `.claude/solo-dev.local.md`
+
+```
+Trigger 1: Post-Implementation (mandatory first check)
+  Reads impact map → verifies every listed package has changes
+    → PASS → Phase 3
+    → FAIL → targeted feedback → agents fix → re-validate
+
+Trigger 2: Post-CR Fix
+  After code-reviewer REJECT → agents fix → gap-checker re-verifies
+    → Catches accidental package removal during CR fixes
+
+Trigger 3: Post-QA Fix
+  After QA FAIL → agents fix → gap-checker re-verifies
+    → Catches broken cross-package completeness during QA fixes
+
+Round counter is cumulative across all triggers per feature.
+If rounds >= max_rounds → escalate to human.
+```
+
+**State update:** `phase: GAP_CHECK, gap_check_rounds: {N}`
+
+---
+
 ### Phase 3: Code Review Loop
 
 **Agent:** code-reviewer (runs after all I agents DONE)
+**Note:** security-reviewer runs in parallel with code-reviewer (not after)
 
 ```
-Reviews 4 dimensions: SECURITY, MAINTAINABILITY, SCALABILITY, TECH DEBT
+Reviews 4 dimensions: LOGIC, MAINTAINABILITY, SCALABILITY, TECH DEBT
+(Security removed — sole responsibility of security-reviewer)
   → APPROVE → Phase 4
   → REJECT → targeted CR_FEEDBACK to specific agents
              agents fix → CR re-checks changed files only
@@ -500,7 +532,7 @@ Writes learnings to `cr_learnings.md` after each round.
 
 ---
 
-### Phase 4: QA Loop (parallel with Phase 5)
+### Phase 4: QA Loop
 
 **Agent:** qa-validator
 
@@ -516,13 +548,14 @@ Runs functional + business logic + integration + performance checklist
 
 ---
 
-### Phase 5: Security Review (parallel with Phase 4)
+### Phase 5: Security Review (parallel with Code Review — Phase 3)
 
-**Agent:** security-reviewer
+**Agent:** security-reviewer — **sole owner of all security checks**
 
 ```
-Runs SaaS security checklist:
-  auth, multi-tenancy, payment, API, PII
+Runs parallel with code-reviewer (not after).
+SaaS security checklist + threat modeling + supply chain checks:
+  auth, multi-tenancy, payment, API, PII, dependencies
   → APPROVE → continue
   → REJECT → SECURITY_ISSUE to relevant impl agents
              agents fix → security re-reviews
@@ -532,14 +565,15 @@ Runs SaaS security checklist:
 
 ---
 
-### Phase 6: Business Validation
+### Phase 6: Business Validation (parallel with Phase 2)
 
-**Agent:** business-validator (runs after Phase 4 + 5 both pass)
+**Agent:** business-validator (runs parallel with implementation, after design approval)
 
 ```
+3-hat evaluation: Operations / Compliance / Growth
 Reviews: business completeness, real-world correctness,
-         competitive gaps, enhancement opportunities
-  → APPROVE → Phase 7
+         competitive gaps, enhancement opportunities, compliance
+  → APPROVE → continue (results merged at Phase 7 gate)
   → CRITICAL issues → return to impl agents
   → NON-CRITICAL → orchestrator asks user: sprint or backlog?
 ```
@@ -548,7 +582,7 @@ Reviews: business completeness, real-world correctness,
 
 ---
 
-### Phase 7: Final Acceptance
+### Phase 7: Final Acceptance (after QA + Business Validation + Security all pass)
 
 **Agent:** persona-validator (re-evaluates working implementation)
 
@@ -600,11 +634,11 @@ After marking feature COMPLETE:
 ```
 QUEUED
   → MARKET_VALIDATION
-  → DESIGN_LOOP (rounds 1-5)
-  → IMPLEMENTATION
-  → CODE_REVIEW (rounds 1-3)
-  → QA_LOOP + SECURITY_REVIEW (parallel, rounds 1-3)
-  → BUSINESS_VALIDATION
+  → DESIGN_LOOP (rounds 1-3)
+  → IMPLEMENTATION + BUSINESS_VALIDATION (parallel)
+  → GAP_CHECK (monorepo only)
+  → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
+  → QA_LOOP (rounds 1-3)
   → FINAL_ACCEPTANCE (rounds 1-2)
   → DEMO_GENERATION
   → COMPLETE
@@ -625,7 +659,7 @@ Foundation states:
 
 | Loop | Max Retries | On Exceed |
 |------|-------------|-----------|
-| Design Loop | 5 rounds | Human escalation (cannot continue automatically) |
+| Design Loop | 3 rounds | Human escalation (cannot continue automatically) |
 | Code Review | 3 rounds | Architectural review escalation |
 | QA Loop | 3 rounds | Re-enter Design Loop |
 | Final Acceptance | 2 rounds | Re-enter Design Loop entirely |
@@ -666,6 +700,19 @@ Foundation states:
 
 7. Log rollback to docs/agents/memory/decisions.md
 ```
+
+---
+
+## Adaptive Phase Ordering
+
+Feature effort classification determines phase ordering:
+
+| Effort | Phases Run | Notes |
+|--------|-----------|-------|
+| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 3+5 → 8 | Skip design loop, skip QA loop |
+| **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 3+5 → 4 → 7 → 8 | Full pipeline |
+| **L** (Large) | Standard + extended review | Extra CR round budget |
+| **XL** (Extra Large) | Decompose first | Orchestrator suggests decomposition before starting |
 
 ---
 

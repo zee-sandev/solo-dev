@@ -17,17 +17,17 @@ flowchart TD
 
     subgraph RESEARCH["  Research & Validation  "]
         P0["Market Validation<br/>Is this idea worth building?"]:::research
-        P12["Design Loop<br/>product-researcher · ux-researcher · tech-architect<br/>Persona vote 3/3 · L3 feedback · max 5 rounds"]:::research
+        P12["Design Loop<br/>product-researcher · ux-researcher · tech-architect<br/>Persona vote 3/3 · L3 feedback · max 3 rounds"]:::research
     end
 
-    subgraph IMPL["  Implementation  "]
+    subgraph IMPL["  Implementation + Business Validation  "]
         P2["Implementation Swarm<br/>frontend · backend · ui · data · test — all parallel<br/>Strict file ownership · L1 contract feedback"]:::impl
+        BV["Business Validation (parallel)<br/>Business logic · Compliance · Competitive gaps<br/>3-hat evaluation"]:::quality
     end
 
     subgraph QUALITY["  Quality Gate  "]
-        P3["Code Review<br/>Security · Maintainability · Scalability · Tech Debt<br/>L2 feedback · max 3 rounds"]:::quality
-        P45["QA + Security<br/>Functional correctness + SaaS security checklist<br/>Parallel · L2 feedback"]:::quality
-        P6["Business Validation<br/>Completeness · Real-world correctness · Competitive gaps<br/>Advisory findings"]:::quality
+        P3["Code Review + Security (parallel)<br/>CR: Logic · Maintainability · Scalability · Tech Debt<br/>SR: Threat modeling · Supply chain · Operational security<br/>L2 feedback · max 3 rounds"]:::quality
+        P45["QA<br/>Functional correctness · Business logic verification"]:::quality
         P7["Final Acceptance<br/>Persona vote 3/3 · max 2 rounds"]:::quality
         P8["Demo Generation<br/>Playwright video + demo.md"]:::quality
     end
@@ -41,10 +41,12 @@ flowchart TD
     P0 -->|APPROVE| P12
     P0 -.->|REJECT| U
     P12 -->|3/3 APPROVE| P2
-    P2 --> P3
+    P12 -->|3/3 APPROVE| BV
+    P2 --> GC["Gap Check<br/>Cross-package completeness"]:::quality
+    BV --> GC
+    GC --> P3
     P3 --> P45
-    P45 --> P6
-    P6 --> P7
+    P45 --> P7
     P7 -->|3/3 APPROVE| P8
     P7 -.->|REJECT| P12
     P8 --> SHIP([Ship]):::terminal
@@ -68,7 +70,7 @@ Validates the feature is worth building before any design work begins.
 - Can ship in ≤2 weeks
 - No external dependency with >2-week integration risk
 
-**Output:** `VIABLE` → Phase 1 | `NOT_VIABLE` → research agents revise or remove from queue
+**Output:** `VIABLE` → Phase 1 | `HIGH_RISK` → requires user acknowledgment | `BLOCKER` → requires user override or removal from queue
 
 ---
 
@@ -84,7 +86,7 @@ Validates the feature is worth building before any design work begins.
 3. `persona-validator` evaluates (all 3 personas vote)
    - 3/3 APPROVE → Phase 2
    - Any REJECT → research revises → re-vote
-   - Max 5 rounds → human escalation
+   - Max 3 rounds → human escalation
 
 **Output:** `docs/specs/{feature-id}.md`
 
@@ -110,47 +112,69 @@ Each agent:
 
 ---
 
-## Phase 3: Code Review Loop
+### Phase 2.5: Cross-Package Gap Check (monorepo only)
 
-**Agent:** `code-reviewer`
+**Agent:** gap-checker
+**Config:** `gap_check.min_rounds` (default: 1), `gap_check.max_rounds` (default: 3) in `.claude/solo-dev.local.md`
 
-Reviews 4 dimensions in sequence:
-1. **Security** — hardcoded secrets, input validation, injection, auth, OWASP
+Validates that every package listed in the Impact Map has corresponding implementation changes. Skipped for single-package projects.
+
+**Trigger points** (round counter is cumulative across all triggers):
+
+| Trigger | When | Why |
+|---------|------|-----|
+| **Post-Implementation** | After all impl agents DONE, before code review | Mandatory first check — catches missing packages |
+| **Post-CR Fix** | After code-reviewer REJECT → agents fix | Catches accidental package removal during CR fixes |
+| **Post-QA Fix** | After QA FAIL → agents fix | Catches broken cross-package completeness during QA fixes |
+
+On FAIL → targeted feedback to specific agents → fix → re-verify. On exceeding `max_rounds` → escalate to human.
+
+---
+
+## Phase 3: Code Review + Security (parallel)
+
+**Agents:** `code-reviewer` + `security-reviewer` (run in parallel)
+
+**Code reviewer** reviews 4 dimensions (stack-aware limits):
+1. **Logic Correctness** — algorithm correctness, edge cases, error paths
 2. **Maintainability** — function size, file size, nesting, naming
 3. **Scalability** — N+1 queries, indexes, pagination, stateless ops
 4. **Tech Debt** — any types, TODOs, duplication, error handling
 
-- APPROVE → Phase 4
-- REJECT → targeted `CR_FEEDBACK` to specific agents → fix → re-review changed files only
+**Security reviewer** (sole owner of all security):
+- Threat modeling, supply chain analysis, operational security
+- Auth & identity, multi-tenancy, payment, API, PII
+
+- Both APPROVE → Phase 4
+- CR REJECT → targeted `CR_FEEDBACK` to specific agents → fix → re-review changed files only
+- Security REJECT → agents fix → security re-reviews
 - Max 3 rounds → architectural review escalation
 
 ---
 
-## Phase 4 + 5: QA + Security (parallel)
+## Phase 4 + 5: QA Validation
 
-**Agents:** `qa-validator` + `security-reviewer` (run in parallel)
+**Agent:** `qa-validator`
 
 **QA checks:** Functional correctness, business logic, integration, performance
-**Security checks:** Auth & identity, multi-tenancy, payment, API, PII
 
-- Both APPROVE → Phase 6
+> **Note:** Security review now runs in parallel with code review (Phase 3). Business validation runs in parallel with implementation (Phase 2).
+
+- APPROVE → Phase 7 (Final Acceptance)
 - QA FAIL → agents fix → CR re-checks → QA re-runs (max 3 rounds → re-enter Design Loop)
-- Security REJECT → agents fix → security re-reviews
 
 ---
 
-## Phase 6: Business Validation
+## Business Validation (parallel with Phase 2)
 
-**Agent:** `business-validator`
+**Agent:** `business-validator` (runs in parallel with implementation, not sequentially after QA)
 
-Reviews 4 dimensions:
-1. Business logic completeness
+Reviews using 3-hat evaluation:
+1. Business logic completeness and compliance
 2. Real-world correctness (domain-specific edge cases)
-3. Competitive gap analysis
-4. Enhancement opportunities (20% effort → 80% value)
+3. Competitive gap analysis and enhancement opportunities
 
-- APPROVE → Phase 7
-- CRITICAL issues → return to impl agents
+- Findings feed into code review (Phase 3) — CRITICAL issues block CR approval
 - NON-CRITICAL → orchestrator asks user: "Add to this sprint or backlog?"
 
 ---
@@ -195,7 +219,7 @@ After shipping, solo-dev adds a changelog entry to `docs/yaml/changelog.yaml` an
 
 | Loop | Max Rounds | On Exceed |
 |------|-----------|-----------|
-| Design Loop | 5 | Human escalation |
+| Design Loop | 3 | Human escalation |
 | Code Review | 3 | Architectural review escalation |
 | QA Loop | 3 | Re-enter Design Loop |
 | Final Acceptance | 2 | Re-enter Design Loop entirely |
@@ -212,11 +236,12 @@ After shipping, solo-dev adds a changelog entry to `docs/yaml/changelog.yaml` an
 ```
 QUEUED
   → MARKET_VALIDATION
-  → DESIGN_LOOP (rounds 1-5)
+  → DESIGN_LOOP (rounds 1-3)
   → IMPLEMENTATION
+  → GAP_CHECK (monorepo only)
   → CODE_REVIEW (rounds 1-3)
-  → QA_LOOP + SECURITY_REVIEW (parallel, rounds 1-3)
-  → BUSINESS_VALIDATION
+  → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
+  → QA_LOOP (rounds 1-3)
   → FINAL_ACCEPTANCE (rounds 1-2)
   → DEMO_GENERATION
   → COMPLETE

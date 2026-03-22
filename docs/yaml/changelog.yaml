@@ -1,12 +1,68 @@
 version: 1
-entries: []
+entries:
+  - date: "2026-03-23"
+    type: added
+    description: "New gap-checker agent validates cross-package implementation completeness in monorepo projects"
+    feature_id: "v0.4.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Monorepo workspace detection during project initialization"
+    feature_id: "v0.4.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Impact Map requirement in tech-architect specs for multi-package features"
+    feature_id: "v0.4.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Workflow adds Phase 2.5 (Gap Check) between implementation and code review for monorepo projects"
+    feature_id: "v0.4.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "Market validator upgraded from advisory to 3-tier gatekeeper (VIABLE/HIGH_RISK/BLOCKER)"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "Business validator now runs parallel with implementation for earlier feedback"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "Orchestrator enhanced with DAG-based parallel dispatching and adaptive phase ordering"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "Security reviewer is now sole owner of all security checks across the system"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "All implementation agents now report structured completion status (DONE/BLOCKED/NEEDS_CLARIFICATION)"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: changed
+    description: "Design loop reduced from 5 to 3 maximum rounds"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: added
+    description: "Trend prediction and disruption risk analysis in product research"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: added
+    description: "Compliance checklist (GDPR, data retention, PII) in business and data validation"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: added
+    description: "Build-vs-buy analysis as first step in technical architecture"
+    feature_id: "v0.3.0"
+  - date: "2026-03-19"
+    type: added
+    description: "Post-ship user feedback template for measuring feature adoption"
+    feature_id: "v0.3.0"
 # Schema per entry:
 #   feature_id: "A1"
 #   feature_name: "Feature Name"
-#   version: null                    # User can set semantic version
+#   version: null
 #   date: "2026-03-19"
 #   summary: "What changed"
 #   changes:
-#     - type: "added"               # added|changed|fixed|removed|deprecated
+#     - type: "added"
 #       description: "Description of change"
 #   breaking_changes: []
