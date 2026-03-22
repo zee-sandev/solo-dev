@@ -71,6 +71,8 @@ Before Phase 2 (Implementation), analyze inter-agent dependencies and classify e
 4. ui-agent (design system) — SOFT, can run parallel with all
 5. test-agent (tests) — SOFT for unit tests, HARD for integration/E2E (needs working endpoints)
 6. **gap-checker (cross-package validation) — HARD depends on ALL impl agents completing**
+7. **smoke-tester (runtime verification) — HARD depends on gap-checker completing**
+8. **drift-detector Mode 2 (contract drift) — HARD depends on smoke-tester completing**
 
 ## Cross-Package Gap Check Gate
 
@@ -103,6 +105,63 @@ When QA FAILs and agents fix code:
 - Current round >= `max_rounds` → escalate instead of re-checking
 
 **State update on gap check:** `phase: GAP_CHECK, gap_check_rounds: {N}`
+
+## Smoke Test Gate (Phase 2.6)
+
+After gap-checker PASS, dispatch smoke-tester BEFORE code review.
+
+### Trigger Points
+**1. Phase 2.6 — Post-Gap-Check (after gap-checker PASS)**
+- Read `smoke_test` config from `.claude/solo-dev.local.md`
+- If `smoke_test.enabled: false` → skip
+- Dispatch smoke-tester agent
+- On PASS → proceed to Phase 2.7 (Contract Drift Check)
+- On FAIL → targeted feedback → agents fix → re-run failed steps only
+- Track rounds in `solo-dev-state.json` under `smoke_test_rounds`
+
+**2. Post-CR Fix** — After code-reviewer REJECT → agents fix → smoke-tester re-verifies
+**3. Post-QA Fix** — After QA FAIL → agents fix → smoke-tester re-verifies
+
+**State update on smoke test:** `phase: SMOKE_TEST, smoke_test_rounds: {N}`
+
+## Contract Drift Check Gate (Phase 2.7)
+
+After smoke-tester PASS, dispatch drift-detector Mode 2 BEFORE code review.
+
+### Contract Checksum Tracking
+At the START of Phase 2 (before dispatching impl agents):
+- Compute `sha256sum` of all files in `docs/contracts/`
+- Store in `solo-dev-state.json` under `contract_checksums`:
+  ```json
+  {
+    "contract_checksums": {
+      "docs/contracts/A1-api.md": "sha256:abc123"
+    }
+  }
+  ```
+
+### Trigger Points
+**1. Phase 2.7 — Post-Smoke-Test**
+- Read `drift_detection` config from `.claude/solo-dev.local.md`
+- If `drift_detection.contract_checksum: false` → skip
+- Dispatch drift-detector (Mode 2: Contract Drift Check)
+- On STABLE → proceed to Phase 3 (Code Review)
+- On DRIFTED → notify affected agents → block until they re-validate against new contract
+
+**2. Post-CR Fix** — Re-check after code fixes
+**3. Post-QA Fix** — Re-check after QA fixes
+
+**Precondition:** `phase: SMOKE_TEST` must be PASS before dispatching drift-detector.
+
+**State update on drift check:** `phase: CONTRACT_DRIFT_CHECK, drift_status: CLEAN|DRIFTED`
+
+## Spec Clarity Gate (Phase 1, in Design Loop)
+
+After R1/R2/R3 produce spec, BEFORE persona-validator:
+- If `drift_detection.spec_clarity: true` → dispatch drift-detector (Mode 1)
+- On PASS → proceed to persona-validator
+- On NEEDS_REVISION → return spec to research agents → they fix vague criteria → drift-detector re-checks
+- This is NOT a design loop round — it's a spec revision within the current round
 
 ## Adaptive Phase Ordering
 
@@ -149,7 +208,7 @@ If total rounds > 5:
 
 ## Phase Management
 Follow the workflow defined in docs/workflow.md exactly.
-State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION → GAP_CHECK → CODE_REVIEW → QA_SECURITY → BUSINESS_VALIDATION → FINAL_ACCEPTANCE → DEMO_GENERATION → COMPLETE
+State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION → GAP_CHECK → SMOKE_TEST → CONTRACT_DRIFT_CHECK → CODE_REVIEW → QA_SECURITY → BUSINESS_VALIDATION → FINAL_ACCEPTANCE → DEMO_GENERATION → COMPLETE
 
 **Key timing changes:**
 - Business Validator runs **parallel with Implementation** (after design approval), NOT after QA
@@ -189,7 +248,7 @@ When solo-dev-state.json has `onboarding_type: "foundation"` and the project has
 
 **Always solo-dev** (template never provides these):
 - Research agents: product-researcher, ux-researcher, tech-architect
-- Validation agents: market-validator, persona-validator, business-validator, security-reviewer
+- Validation agents: market-validator, persona-validator, business-validator, security-reviewer, gap-checker, smoke-tester, drift-detector
 - Learning agents: memory-curator, strategy-evolver
 
 **Delegation rules:**
