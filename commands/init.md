@@ -441,6 +441,47 @@ gap_check:
   max_rounds: 3        # maximum before escalation (1-10)
   # Triggers: post-implementation (always), post-CR-fix, post-QA-fix
   # Round counter is cumulative across all trigger points per feature
+
+smoke_test:
+  enabled: true
+  timeout: 30              # seconds to wait for server start
+  kill_port: false         # auto-kill dev server on busy port (only known dev servers)
+  retry_server: 1          # retries if server fails to start
+  error_paths: true        # test auth fail, invalid input, 404
+  max_rounds: 3            # max fix rounds before escalation
+
+drift_detection:
+  enabled: true
+  spec_clarity: true       # check spec before implementation
+  contract_checksum: true  # track contract changes during impl
+  memory_check: true       # check stale patterns at session start
+  pattern_proof: true      # require proof before promoting patterns
+  vague_keywords:
+    - fast
+    - easy
+    - secure
+    - good
+    - scalable
+    - simple
+    - clean
+
+qa_runtime:
+  api:
+    enabled: true
+    timeout_per_test: 10   # seconds
+    max_total_timeout: 300 # seconds
+  e2e:
+    enabled: true
+    framework: playwright
+    browser: chromium
+    headless: true
+    timeout_per_test: 30   # seconds
+    max_total_timeout: 600 # seconds
+    retry_flaky: 1
+    artifacts:
+      screenshots: on_failure
+      trace: on_failure
+      video: optional
 ---
 ```
 

@@ -27,10 +27,17 @@ Launch in parallel: backend-agent (first — defines contracts), then frontend-a
 
 Wait for all to report DONE. If any blocks on a contract mismatch, resolve via backend-agent before others continue.
 
-**Phase 3: Code Review**
-Delegate to code-reviewer. Max 3 rounds. Round 4 → architectural review (escalate to tech-architect first, then human if still blocked).
+**Phase 2.5: Gap Check (monorepo only)**
+Dispatch gap-checker to verify cross-package completeness. Content validation runs for all projects.
 
-Send targeted CR_FEEDBACK only to agents with failing files.
+**Phase 2.6: Smoke Test**
+Dispatch smoke-tester. Build verification + runtime endpoint testing. On FAIL → targeted feedback → fix → re-test.
+
+**Phase 2.7: Contract Drift Check**
+Dispatch drift-detector (Mode 2). Verify contracts haven't changed since impl started. On DRIFTED → notify affected agents.
+
+**Phase 3: Code Review + Security (parallel)**
+Delegate code-reviewer and security-reviewer simultaneously.
 
 **Phase 4–5: QA + Security (parallel)**
 Delegate qa-validator and security-reviewer simultaneously.

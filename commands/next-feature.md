@@ -89,6 +89,25 @@ Wait for all agents to report DONE | BLOCKED | NEEDS_CLARIFICATION.
 - NEEDS_CLARIFICATION → answer and continue
 - Update state: phase → IMPLEMENTATION, agents_status → {...}
 
+## Phase 2.5: Gap Check (monorepo)
+See orchestrator for full gap-check logic. If monorepo + multi-package impact map → dispatch gap-checker.
+- PASS → Phase 2.6
+- FAIL → targeted fix → re-check
+- Update state: phase → GAP_CHECK
+
+## Phase 2.6: Smoke Test
+Dispatch smoke-tester agent.
+- PASS → Phase 2.7
+- FAIL → targeted feedback → agents fix → re-run failed steps
+- PARTIAL (build pass, endpoints skipped due to no contract) → proceed with warning
+- Update state: phase → SMOKE_TEST
+
+## Phase 2.7: Contract Drift Check
+Dispatch drift-detector (Mode 2: Contract Drift Check).
+- STABLE → Phase 3
+- DRIFTED → notify affected agents → block until re-validated
+- Update state: phase → CONTRACT_DRIFT_CHECK
+
 ## Phase 3: Code Review + Security Review (Parallel)
 Spawn code-reviewer AND security-reviewer simultaneously with all changed files.
 
