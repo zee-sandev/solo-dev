@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 18 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
+This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 20 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
 
 ## Documentation Sync Rules
 
@@ -46,7 +46,7 @@ solo-dev/
 ├── .claude-plugin/plugin.json   # Plugin manifest
 ├── README.md                     # GitHub landing page
 ├── CLAUDE.md                     # This file
-├── agents/                       # 18 agent definitions
+├── agents/                       # 20 agent definitions
 ├── commands/                     # 8 command definitions
 ├── hooks/                        # hooks.json + scripts/
 ├── skills/                       # 6 bundled fallback skills
@@ -147,6 +147,9 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Foundation-aware init:** When CLAUDE.md + docs/ or .claude/agents/ detected, read existing docs instead of re-analyzing. Delegate implementation to template's agents.
 - **Replace-as-you-go:** Example code from templates is tagged, not deleted. Auto-replaced during feature implementation. Final cleanup prompt after all roadmap features complete.
 - **Cross-package gap-checker for monorepo projects:** Dedicated agent validates implementation completeness across all affected packages. Prevents partial feature implementation.
+- **Runtime verification via smoke-tester:** Build + server + endpoint testing after implementation. Port management with safeguards. Catches false DONE reports.
+- **Drift detection via drift-detector:** 4-mode detection for vague specs, contract drift, stale memory, and unverified patterns.
+- **QA enhanced with runtime + E2E:** Static → API runtime → Playwright E2E. Three-layer testing pipeline.
 
 ## Changelog Rules
 

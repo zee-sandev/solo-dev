@@ -5,7 +5,7 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://zee-sandev.github.io/solo-dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**solo-dev** is a Claude Code plugin that orchestrates 18 specialized agents through a structured development lifecycle. You bring the idea; it handles market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
+**solo-dev** is a Claude Code plugin that orchestrates 20 specialized agents through a structured development lifecycle. You bring the idea; it handles market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
 
 **[Read the full documentation →](https://zee-sandev.github.io/solo-dev/)**
 
@@ -235,6 +235,8 @@ flowchart TD
 
     subgraph QUALITY["  Quality Gate  "]
         GC["Gap Check<br/>Cross-package completeness<br/>gap-checker agent"]:::quality
+        ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
+        DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
         P3["Phase 3 · Code Review + Security<br/>CR: 4 dimensions · SR: Threat modeling<br/>Parallel · max 3 rounds"]:::quality
         P45["Phase 4+5 · QA<br/>Functional correctness"]:::quality
         P7["Phase 7 · Final Acceptance<br/>Persona vote 3/3"]:::quality
@@ -253,7 +255,9 @@ flowchart TD
     P12 -->|APPROVED| BV
     P2 --> GC
     BV --> GC
-    GC --> P3
+    GC --> ST
+    ST --> DCH
+    DCH --> P3
     P3 --> P45
     P45 --> P7
     P7 -->|APPROVED| P8
@@ -264,12 +268,12 @@ flowchart TD
     SE -.->|Improved strategies| O
 ```
 
-### Agent Roster (18 agents)
+### Agent Roster (20 agents)
 
 | Layer | Agents | What they do |
 |-------|--------|-------------|
 | **Research** | `orchestrator` · `product-researcher` · `ux-researcher` · `tech-architect` | Coordinate, research markets, design UX, plan architecture |
-| **Validation** | `market-validator` · `persona-validator` · `business-validator` · `security-reviewer` · `gap-checker` | Gate quality — commercial viability with 3-tier verdicts, user fit, business logic/compliance/competitive gaps (parallel with implementation), sole owner of all security checks, cross-package implementation completeness in monorepo projects |
+| **Validation** | `market-validator` · `persona-validator` · `business-validator` · `security-reviewer` · `gap-checker` · `smoke-tester` · `drift-detector` | Gate quality — commercial viability with 3-tier verdicts, user fit, business logic/compliance/competitive gaps (parallel with implementation), sole owner of all security checks, cross-package implementation completeness in monorepo projects, runtime verification via build + server + endpoint testing, drift detection across 4 modes (vague specs, contract drift, stale memory, unverified patterns) |
 | **Implementation** | `frontend-agent` · `backend-agent` · `ui-agent` · `data-agent` · `test-agent` | Build in parallel with strict file ownership and contract validation |
 | **Learning** | `code-reviewer` · `qa-validator` · `memory-curator` · `strategy-evolver` | 4 dimensions: logic correctness, maintainability, scalability, tech debt. Compress memory, improve strategies over time |
 
@@ -340,6 +344,28 @@ foundation:
   delegate_agents: true
   replace_examples: true
   final_cleanup: true
+
+# Smoke testing — build + server + endpoint verification after implementation
+smoke_test:
+  enabled: true
+  port: 3000                # dev server port to verify
+  timeout_seconds: 30       # max wait for server to start
+  endpoints: []             # additional endpoints to probe (auto-detected if empty)
+
+# Contract drift detection — verify API contracts are unchanged after implementation
+drift_detection:
+  enabled: true
+  modes:                    # which drift modes to run
+    - vague_specs
+    - contract_drift
+    - stale_memory
+    - unverified_patterns
+
+# QA runtime settings — three-layer testing pipeline
+qa_runtime:
+  static: true              # Phase 1: static analysis
+  api_runtime: true         # Phase 2: API runtime checks via smoke-tester
+  e2e: true                 # Phase 3: Playwright E2E for critical flows
 ```
 
 ---
@@ -420,7 +446,7 @@ For deeper details, see the [`docs/`](./docs) directory or the [online documenta
 | Document | Covers |
 |----------|--------|
 | [Design](docs/design.md) | Full system design and principles |
-| [Agent Architecture](docs/agent-architecture.md) | All 18 agents — roles, ownership, skills |
+| [Agent Architecture](docs/agent-architecture.md) | All 20 agents — roles, ownership, skills |
 | [Memory Flow](docs/memory-flow.md) | Memory layers, token budgets, session flow |
 | [Agent Feedback](docs/agent-feedback-flow.md) | Inter-agent communication protocols |
 | [Workflow](docs/workflow.md) | Phase-by-phase lifecycle and loop rules |
