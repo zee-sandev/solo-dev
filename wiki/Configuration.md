@@ -153,6 +153,97 @@ Gap checks are automatically skipped when:
 
 ---
 
+## Smoke Test
+
+Runtime verification after implementation — builds the project, starts the dev server, and tests critical endpoints before code review.
+
+```yaml
+smoke_test:
+  enabled: true
+  timeout: 30
+  kill_port: false
+  retry_server: 1
+  error_paths: true
+  max_rounds: 3
+```
+
+### Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `smoke_test.enabled` | `true` | Master switch |
+| `smoke_test.timeout` | `30` | Seconds to wait for server start |
+| `smoke_test.kill_port` | `false` | Auto-kill dev server on busy port (only known dev servers) |
+| `smoke_test.retry_server` | `1` | Retries if server fails to start |
+| `smoke_test.error_paths` | `true` | Test auth fail, invalid input, 404 |
+| `smoke_test.max_rounds` | `3` | Max fix rounds before escalation |
+
+---
+
+## Drift Detection
+
+Detects spec, contract, memory, and pattern drift across multiple pipeline phases.
+
+```yaml
+drift_detection:
+  enabled: true
+  spec_clarity: true
+  contract_checksum: true
+  memory_check: true
+  pattern_proof: true
+  vague_keywords: [fast, easy, secure, good, scalable, simple, clean]
+```
+
+### Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `drift_detection.enabled` | `true` | Master switch |
+| `drift_detection.spec_clarity` | `true` | Check spec before implementation |
+| `drift_detection.contract_checksum` | `true` | Track contract changes during impl |
+| `drift_detection.memory_check` | `true` | Check stale patterns at session start |
+| `drift_detection.pattern_proof` | `true` | Require proof before promoting patterns |
+| `drift_detection.vague_keywords` | `[fast, easy, secure, good, scalable, simple, clean]` | Words flagged as vague |
+
+---
+
+## QA Runtime
+
+Controls runtime API and E2E browser test execution during the QA phase.
+
+```yaml
+qa_runtime:
+  api:
+    enabled: true
+    timeout_per_test: 10
+    max_total_timeout: 300
+  e2e:
+    enabled: true
+    framework: playwright
+    browser: chromium
+    headless: true
+    timeout_per_test: 30
+    max_total_timeout: 600
+    retry_flaky: 1
+```
+
+### Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `qa_runtime.api.enabled` | `true` | Enable API runtime tests |
+| `qa_runtime.api.timeout_per_test` | `10` | Seconds per test |
+| `qa_runtime.api.max_total_timeout` | `300` | Total seconds for all API tests |
+| `qa_runtime.e2e.enabled` | `true` | Enable E2E browser tests |
+| `qa_runtime.e2e.framework` | `playwright` | E2E framework |
+| `qa_runtime.e2e.browser` | `chromium` | Browser for E2E |
+| `qa_runtime.e2e.headless` | `true` | Run headless |
+| `qa_runtime.e2e.timeout_per_test` | `30` | Seconds per E2E test |
+| `qa_runtime.e2e.max_total_timeout` | `600` | Total seconds for all E2E tests |
+| `qa_runtime.e2e.retry_flaky` | `1` | Retry count for flaky tests |
+
+---
+
 ## Foundation Settings
 
 For projects initialized from a template (Foundation Mode).
@@ -239,6 +330,36 @@ gap_check:
   enabled: true
   min_rounds: 1
   max_rounds: 3
+
+smoke_test:
+  enabled: true
+  timeout: 30
+  kill_port: false
+  retry_server: 1
+  error_paths: true
+  max_rounds: 3
+
+drift_detection:
+  enabled: true
+  spec_clarity: true
+  contract_checksum: true
+  memory_check: true
+  pattern_proof: true
+  vague_keywords: [fast, easy, secure, good, scalable, simple, clean]
+
+qa_runtime:
+  api:
+    enabled: true
+    timeout_per_test: 10
+    max_total_timeout: 300
+  e2e:
+    enabled: true
+    framework: playwright
+    browser: chromium
+    headless: true
+    timeout_per_test: 30
+    max_total_timeout: 600
+    retry_flaky: 1
 
 foundation:
   delegate_agents: true

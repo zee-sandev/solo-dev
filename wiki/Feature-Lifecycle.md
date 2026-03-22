@@ -44,7 +44,9 @@ flowchart TD
     P12 -->|3/3 APPROVE| BV
     P2 --> GC["Gap Check<br/>Cross-package completeness"]:::quality
     BV --> GC
-    GC --> P3
+    GC --> ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
+    ST --> DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
+    DCH --> P3
     P3 --> P45
     P45 --> P7
     P7 -->|3/3 APPROVE| P8
@@ -128,6 +130,36 @@ Validates that every package listed in the Impact Map has corresponding implemen
 | **Post-QA Fix** | After QA FAIL → agents fix | Catches broken cross-package completeness during QA fixes |
 
 On FAIL → targeted feedback to specific agents → fix → re-verify. On exceeding `max_rounds` → escalate to human.
+
+---
+
+### Phase 2.6: Smoke Test
+
+**Agent:** `smoke-tester`
+**Config:** `smoke_test.max_rounds` (default: 3) in `.claude/solo-dev.local.md`
+
+Builds the project, starts the dev server, and tests critical endpoints to verify the implementation runs correctly at runtime. Catches build failures, server startup errors, and broken endpoints before code review.
+
+**What it checks:**
+1. Project builds without errors
+2. Dev server starts within `smoke_test.timeout` seconds
+3. Critical happy-path endpoints respond correctly
+4. Error paths respond correctly (auth fail, invalid input, 404) — when `smoke_test.error_paths: true`
+
+On FAIL → targeted feedback to specific implementation agents → fix → re-smoke. On exceeding `max_rounds` → escalate to human.
+
+---
+
+### Phase 2.7: Contract Drift Check
+
+**Agent:** `drift-detector` (Contract Drift mode)
+**Config:** `drift_detection.contract_checksum` in `.claude/solo-dev.local.md`
+
+Verifies that API contracts defined at the start of implementation have not changed during the implementation phase. A checksum of each contract file is compared against the baseline recorded before implementation began.
+
+**Why it matters:** Implementation agents sometimes quietly revise contracts to match what they built rather than what was designed. This gate catches that drift before it reaches code review.
+
+On DRIFT DETECTED → flag to orchestrator → user decision: accept new contract or revert implementation.
 
 ---
 
@@ -223,6 +255,8 @@ After shipping, solo-dev adds a changelog entry to `docs/yaml/changelog.yaml` an
 | Code Review | 3 | Architectural review escalation |
 | QA Loop | 3 | Re-enter Design Loop |
 | Final Acceptance | 2 | Re-enter Design Loop entirely |
+| Smoke Test | 3 | Human escalation |
+| Drift Check | 3 | Human escalation |
 
 **Infinite loop prevention:**
 - Each round MUST produce a diff (something must change)
@@ -239,6 +273,8 @@ QUEUED
   → DESIGN_LOOP (rounds 1-3)
   → IMPLEMENTATION
   → GAP_CHECK (monorepo only)
+  → SMOKE_TEST (rounds 1-3)
+  → CONTRACT_DRIFT_CHECK
   → CODE_REVIEW (rounds 1-3)
   → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
   → QA_LOOP (rounds 1-3)

@@ -1,6 +1,6 @@
 # Agent Architecture
 
-solo-dev uses 18 agents organized into 4 layers. Each agent has a defined role, skill set, file ownership boundaries, and memory read/write rules.
+solo-dev uses 20 agents organized into 4 layers. Each agent has a defined role, skill set, file ownership boundaries, and memory read/write rules.
 
 ## Layer Overview
 
@@ -12,8 +12,8 @@ solo-dev uses 18 agents organized into 4 layers. Each agent has a defined role, 
                          │
          ┌───────────────┼───────────────┐
          ▼               ▼               ▼
-   RESEARCH LAYER   VALIDATION LAYER   LEARNING LAYER
-   R1, R2, R3       MV, PV, BV, SR, GC  MC, SE
+   RESEARCH LAYER   VALIDATION LAYER        LEARNING LAYER
+   R1, R2, R3       MV, PV, BV, SR, GC, ST, DD  MC, SE
          │               │
          └───────┬───────┘
                  ▼
@@ -132,6 +132,34 @@ solo-dev uses 18 agents organized into 4 layers. Each agent has a defined role, 
 | **Output** | `GAP_CHECK_REPORT` with PASS/FAIL verdict and targeted fix instructions for specific agents |
 | **Triggers** | Post-implementation (mandatory), post-CR fix, post-QA fix. Round counter is cumulative. |
 | **Loop** | Configurable: `gap_check.min_rounds` (default: 1), `gap_check.max_rounds` (default: 3). On exceeding max → escalate to orchestrator |
+
+### Smoke Tester
+
+| | |
+|---|---|
+| **ID** | `smoke-tester` |
+| **Model** | inherit |
+| **Color** | orange |
+| **When** | Phase 2.6 — after Gap Check, before Code Review |
+| **Role** | Runtime verification agent. Builds the project, starts the dev server, and tests critical endpoints. On FAIL sends targeted feedback to the relevant implementation agents. |
+| **File ownership** | None (read-only verification agent) |
+| **Input** | Implementation agent reports, API contracts from `docs/contracts/{feature}-api.md` |
+| **Output** | `SMOKE_TEST_REPORT` with PASS/FAIL verdict and targeted fix instructions |
+| **Triggers** | Post-Gap Check (mandatory), post-CR fix, post-QA fix |
+| **Loop** | Configurable: `smoke_test.max_rounds` (default: 3). On exceeding max → escalate to orchestrator |
+
+### Drift Detector
+
+| | |
+|---|---|
+| **ID** | `drift-detector` |
+| **Model** | inherit |
+| **Color** | yellow |
+| **When** | Multiple phases — spec clarity (Phase 1), contract drift (Phase 2.7), memory drift (session start), pattern validation (Phase 3) |
+| **Role** | Detects drift across 4 dimensions: Spec Clarity (flags vague language before implementation), Contract Drift (verifies contracts unchanged during implementation), Memory Drift (checks stale patterns at session start), Pattern Validation (requires proof before promoting patterns) |
+| **File ownership** | None (read-only validation agent) |
+| **Input** | Spec files, API contracts, memory files, pattern registry |
+| **Output** | `DRIFT_REPORT` with dimension-specific findings and PASS/FAIL per dimension |
 
 ---
 
