@@ -56,6 +56,38 @@ entries:
     type: added
     description: "Post-ship user feedback template for measuring feature adoption"
     feature_id: "v0.3.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Smoke-tester agent for runtime verification — builds project, starts server, tests endpoints against contracts"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Drift-detector agent for contract/memory/spec drift detection across 4 modes"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Phase 2.6 (Smoke Test) and Phase 2.7 (Contract Drift Check) in feature lifecycle"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "QA validator enhanced with API runtime testing and E2E Playwright browser testing"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Gap-checker enhanced with content validation for all projects (not just monorepo)"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Code-reviewer enhanced with import chain check on re-review cycles"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Memory-curator requires proof (CR+QA pass) before promoting patterns"
+    feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Configuration options for smoke_test, drift_detection, and qa_runtime"
+    feature_id: "v0.5.0"
 # Schema per entry:
 #   feature_id: "A1"
 #   feature_name: "Feature Name"

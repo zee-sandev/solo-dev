@@ -7,9 +7,9 @@ echo "--- test-agents ---"
 
 AGENTS_DIR="$PLUGIN_DIR/agents"
 
-# Test 1: Expected agent count is 18
+# Test 1: Expected agent count is 20
 agent_count=$(ls "$AGENTS_DIR"/*.md 2>/dev/null | wc -l | tr -d ' ')
-assert_eq "18" "$agent_count" "agent count should be 18"
+assert_eq "20" "$agent_count" "agent count should be 20"
 
 # Test 2: All expected agent files exist
 EXPECTED_AGENTS=(
@@ -18,6 +18,7 @@ EXPECTED_AGENTS=(
   code-reviewer.md
   data-agent.md
   frontend-agent.md
+  drift-detector.md
   gap-checker.md
   market-validator.md
   memory-curator.md
@@ -29,6 +30,7 @@ EXPECTED_AGENTS=(
   strategy-evolver.md
   tech-architect.md
   test-agent.md
+  smoke-tester.md
   ui-agent.md
   ux-researcher.md
 )
@@ -47,5 +49,13 @@ done
 # Test 4: gap-checker specific validation
 assert_file_contains "$AGENTS_DIR/gap-checker.md" "gap" "gap-checker mentions gap"
 assert_file_contains "$AGENTS_DIR/gap-checker.md" "description" "gap-checker has description"
+
+# Test 5: smoke-tester specific validation
+assert_file_contains "$AGENTS_DIR/smoke-tester.md" "smoke" "smoke-tester mentions smoke"
+assert_file_contains "$AGENTS_DIR/smoke-tester.md" "runtime" "smoke-tester mentions runtime"
+
+# Test 6: drift-detector specific validation
+assert_file_contains "$AGENTS_DIR/drift-detector.md" "drift" "drift-detector mentions drift"
+assert_file_contains "$AGENTS_DIR/drift-detector.md" "checksum" "drift-detector mentions checksum"
 
 report "test-agents"
