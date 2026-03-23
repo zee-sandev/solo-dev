@@ -13,6 +13,12 @@ All notable changes to this project will be documented in this file.
 - Drift-detector agent for contract/memory/spec drift detection across 4 modes
 - Phase 2.6 (Smoke Test) and Phase 2.7 (Contract Drift Check) in feature lifecycle
 - Configuration options for smoke_test, drift_detection, and qa_runtime
+- Visual quality system — design profile collection during init with live localhost preview, design token enforcement, and Phase 2.8 Visual QA gate
+- Navigation/menu pattern selection during init — sidebar, top-nav, collapsible, role-based menus, breadcrumbs, cmd+K search
+- Visual Direction section in ux-researcher output — translates design profile into concrete per-feature visual decisions
+- Intelligent demo system — 3-level demos (clips, journeys, showcase), 7 demo types, demo staleness detection, 3 audience layers
+- Self-refinement loops — cross-agent critique for critical outputs, self-critique checklists, 3 intensity levels (light/standard/thorough)
+- Smart skill selection — stack-aware skill mapping per agent and orchestrator skill discovery before implementation
 
 ### Changed
 
@@ -21,6 +27,8 @@ All notable changes to this project will be documented in this file.
 - Gap-checker enhanced with content validation for all projects (not just monorepo)
 - Code-reviewer enhanced with import chain check on re-review cycles
 - Memory-curator requires proof (CR+QA pass) before promoting patterns
+- Gap-checker, smoke-tester, and code-reviewer are now protocol-agnostic — support REST, GraphQL, gRPC, oRPC, tRPC, WebSocket
+- Showcase command rewritten for journey demos and role-based capability views
 
 ## [2026-03-19]
 

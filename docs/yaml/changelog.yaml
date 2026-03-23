@@ -88,6 +88,38 @@ entries:
     type: added
     description: "Configuration options for smoke_test, drift_detection, and qa_runtime"
     feature_id: "v0.5.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Visual quality system — design profile collection during init with live localhost preview, design token enforcement, and Phase 2.8 Visual QA gate"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Navigation/menu pattern selection during init — sidebar, top-nav, collapsible, role-based menus, breadcrumbs, cmd+K search"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Visual Direction section in ux-researcher output — translates design profile into concrete per-feature visual decisions"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Intelligent demo system — 3-level demos (clips, journeys, showcase), 7 demo types, demo staleness detection, 3 audience layers"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Self-refinement loops — cross-agent critique for critical outputs, self-critique checklists, 3 intensity levels (light/standard/thorough)"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: added
+    description: "Smart skill selection — stack-aware skill mapping per agent and orchestrator skill discovery before implementation"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Gap-checker, smoke-tester, and code-reviewer are now protocol-agnostic — support REST, GraphQL, gRPC, oRPC, tRPC, WebSocket"
+    feature_id: "v0.6.0"
+  - date: "2026-03-23"
+    type: changed
+    description: "Showcase command rewritten for journey demos and role-based capability views"
+    feature_id: "v0.6.0"
 # Schema per entry:
 #   feature_id: "A1"
 #   feature_name: "Feature Name"
