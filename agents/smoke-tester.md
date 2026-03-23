@@ -68,19 +68,26 @@ Read `smoke_test` from `.claude/solo-dev.local.md`:
 4. If `api_contracts.output.mode: "custom"` → skip Steps 3+4, report `SKIPPED: custom contract format`
 
 - Read contract from `docs/contracts/{feature-id}-api.md`
-- For every endpoint in contract:
-  - Send request per contract example (use curl via Bash)
-  - Verify status code matches expected
-  - Verify response body contains expected fields (JSON path check)
-  - Verify response is not empty/null
+- Detect the protocol from the contract content (REST endpoints, GraphQL operations, gRPC services, RPC procedures, WebSocket events, etc.)
+- For every operation in contract, test using the appropriate method:
+  - **REST:** `curl` with HTTP method, path, headers, body → verify status code + response fields
+  - **GraphQL:** `curl` POST to GraphQL endpoint with query/mutation → verify `data` field, no `errors`
+  - **gRPC:** `grpcurl` (if available) or skip with `SKIPPED: grpcurl not installed` → verify response message
+  - **Other protocols:** Read contract examples and replicate via curl/CLI tool → verify expected response shape
+- For all protocols: verify response is not empty/null and contains expected fields
 
 ### Step 4: Error Path Test
-Only if `error_paths: true` in config.
+Only if `error_paths: true` in config. Adapt error expectations to the project's protocol:
 
-- For every endpoint:
-  - Send request without auth header → must get 401 or 403
-  - Send invalid input (empty body, wrong types) → must get 400 or 422 with error message
-  - Send request for non-existent resource ID → must get 404
+- **REST:** 401/403 for auth, 400/422 for validation, 404 for not found
+- **GraphQL:** `errors` array with appropriate error codes/messages
+- **gRPC:** appropriate gRPC status codes (UNAUTHENTICATED, INVALID_ARGUMENT, NOT_FOUND)
+- **Other:** verify error response matches contract's error format
+
+For every operation:
+  - Send request without auth → must get auth error (protocol-appropriate)
+  - Send invalid input → must get validation error with message
+  - Request non-existent resource → must get not-found error
 
 ### Step 5: Cleanup
 - Kill dev server process (by PID recorded in Step 2)
@@ -95,17 +102,21 @@ SMOKE_TEST_REPORT:
   port: {N}
   pid: {N}
 
+  protocol: REST | GraphQL | gRPC | other
+
   HAPPY_PATH:
-    - endpoint: "POST /api/profile"
+    - operation: "POST /api/profile"          # REST example
       status: PASS | FAIL | SKIPPED
       expected: "201, {name, email}"
       actual: "201, {name, email}"
+    # - operation: "mutation createProfile"    # GraphQL example
+    # - operation: "ProfileService.Create"     # gRPC example
 
   ERROR_PATH:
-    - endpoint: "POST /api/profile (no auth)"
+    - operation: "POST /api/profile (no auth)"
       status: PASS | FAIL | SKIPPED
-      expected: 401
-      actual: 401
+      expected: "auth error (401)"
+      actual: "401"
 
   VERDICT: PASS | FAIL | PARTIAL (build passed, endpoints skipped)
   CLEANUP: "server killed (pid {N})"

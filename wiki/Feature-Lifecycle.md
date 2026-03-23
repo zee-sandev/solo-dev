@@ -46,7 +46,8 @@ flowchart TD
     BV --> GC
     GC --> ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
     ST --> DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
-    DCH --> P3
+    DCH --> VQA["Visual QA<br/>Screenshot capture + design token check<br/>Navigation verification"]:::quality
+    VQA --> P3
     P3 --> P45
     P45 --> P7
     P7 -->|3/3 APPROVE| P8
@@ -163,6 +164,31 @@ On DRIFT DETECTED → flag to orchestrator → user decision: accept new contrac
 
 ---
 
+### Phase 2.8: Visual QA
+
+**Condition:** `design_profile` configured in `.claude/solo-dev.local.md` AND `visual_qa.enabled: true`
+**Config:** `visual_qa` in `.claude/solo-dev.local.md`
+
+Captures screenshots of all new/changed pages and verifies visual quality against the user's design profile. Ensures consistent visual identity across features.
+
+**What it checks:**
+1. **Design tokens** — no hardcoded colors, spacing, or radius outside the token system
+2. **Responsive** — layout works at mobile (375px), tablet (768px), desktop (1440px)
+3. **Dark mode** — renders correctly (if `design_profile.dark_mode` is `both`)
+4. **Spacing** — consistent spacing scale used throughout
+5. **Typography** — heading hierarchy follows design tokens
+6. **Interactive states** — hover, focus, active, disabled all exist
+7. **Loading/empty/error** — all states are implemented
+8. **Navigation** — matches `design_profile.navigation` (pattern, menu structure, role-based, mobile adaptation)
+
+On PASS → Phase 3. On FAIL → targeted feedback to `ui-agent` / `frontend-agent` → fix → re-check (max 2 rounds, then proceed with warnings).
+
+If `visual_qa.user_preview: true` → screenshots shown to user for approval before proceeding.
+
+**Skip conditions:** No `design_profile`, `visual_qa.enabled: false`, effort=S, API-only feature.
+
+---
+
 ## Phase 3: Code Review + Security (parallel)
 
 **Agents:** `code-reviewer` + `security-reviewer` (run in parallel)
@@ -257,6 +283,7 @@ After shipping, solo-dev adds a changelog entry to `docs/yaml/changelog.yaml` an
 | Final Acceptance | 2 | Re-enter Design Loop entirely |
 | Smoke Test | 3 | Human escalation |
 | Drift Check | 3 | Human escalation |
+| Visual QA | 2 | Proceed with warnings (non-blocking) |
 
 **Infinite loop prevention:**
 - Each round MUST produce a diff (something must change)
@@ -275,7 +302,7 @@ QUEUED
   → GAP_CHECK (monorepo only)
   → SMOKE_TEST (rounds 1-3)
   → CONTRACT_DRIFT_CHECK
-  → CODE_REVIEW (rounds 1-3)
+  → VISUAL_QA (if design_profile configured, max 2 rounds)
   → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
   → QA_LOOP (rounds 1-3)
   → FINAL_ACCEPTANCE (rounds 1-2)

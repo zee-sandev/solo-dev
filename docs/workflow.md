@@ -542,10 +542,50 @@ Verifies API contracts haven't changed during implementation:
 2. Computes current checksums
 3. If drift detected → identifies affected agents
 
-- STABLE → Phase 3
+- STABLE → Phase 2.8
 - DRIFTED → notify affected agents → block until re-validated
 
 **State update:** `phase: CONTRACT_DRIFT_CHECK`
+
+---
+
+### Phase 2.8: Visual QA
+
+**Condition:** `design_profile` exists in `.claude/solo-dev.local.md` AND `visual_qa.enabled: true`
+
+Captures screenshots of all new/changed pages and verifies visual quality against the user's design profile. Ensures design tokens are used consistently, responsive layouts work, and navigation matches the user's chosen pattern.
+
+```
+1. Screenshot capture (Playwright):
+   - States: empty, loaded, error, mobile (375px), desktop (1440px)
+   - Dark mode variants (if design_profile.dark_mode is "both")
+
+2. Visual checklist verification:
+   - Design tokens: no hardcoded colors/sizes
+   - Responsive: mobile/tablet/desktop breakpoints
+   - Spacing: consistent spacing scale
+   - Typography: heading hierarchy follows tokens
+   - Interactive states: hover, focus, active, disabled
+   - Loading/empty/error states exist
+
+3. Navigation verification (first feature or nav changes):
+   - Nav pattern matches design_profile.navigation.pattern
+   - Menu structure matches design_profile.navigation.menu_structure
+   - Role-based filtering works
+   - Mobile adaptation works
+   - Breadcrumbs show correct path
+
+4. Results:
+   PASS → Phase 3
+   FAIL → targeted feedback → fix → re-check (max 2 rounds)
+   After 2 rounds → proceed with warnings (non-blocking)
+
+5. Optional: user_preview → show screenshots to user for approval
+```
+
+**Skip conditions:** No design_profile, visual_qa disabled, effort=S, API-only feature
+
+**State update:** `phase: VISUAL_QA`
 
 ---
 
@@ -676,6 +716,7 @@ QUEUED
   → GAP_CHECK (monorepo only)
   → SMOKE_TEST
   → CONTRACT_DRIFT_CHECK
+  → VISUAL_QA (if design_profile configured)
   → CODE_REVIEW + SECURITY_REVIEW (parallel, rounds 1-3)
   → QA_LOOP (rounds 1-3)
   → FINAL_ACCEPTANCE (rounds 1-2)
@@ -748,8 +789,8 @@ Feature effort classification determines phase ordering:
 
 | Effort | Phases Run | Notes |
 |--------|-----------|-------|
-| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 3+5 → 8 | Skip design loop, skip Phase 2.6 (Smoke Test), skip Phase 2.7 (Drift Check), skip QA loop |
-| **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 2.6 → 2.7 → 3+5 → 4 → 7 → 8 | Full pipeline |
+| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 3+5 → 8 | Skip design loop, skip Phase 2.6 (Smoke Test), skip Phase 2.7 (Drift Check), skip Phase 2.8 (Visual QA), skip QA loop |
+| **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 2.6 → 2.7 → 2.8 → 3+5 → 4 → 7 → 8 | Full pipeline |
 | **L** (Large) | Standard + extended review | Extra CR round budget |
 | **XL** (Extra Large) | Decompose first | Orchestrator suggests decomposition before starting |
 

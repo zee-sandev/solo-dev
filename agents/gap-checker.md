@@ -39,15 +39,16 @@ Read `gap_check.content_validation` from `.claude/solo-dev.local.md` (default: t
 For every modified file reported by implementation agents:
 1. File must be > 10 lines (not a stub/placeholder)
 2. File must contain function/class/handler definitions (not just imports or comments)
-3. Compare change type from Impact Map against actual content:
-   - type: `endpoint` → must have route handler / HTTP method decorator
-   - type: `page` → must have component/template export
-   - type: `schema` → must have table/model/migration definition
-   - type: `worker` → must have job handler / queue consumer
-   - type: `config` → must have actual configuration values
-   - type: `type` → must have type/interface definition
-   - type: `middleware` → must have middleware function
-   - type: `hook` → must have hook/lifecycle handler
+3. Compare change type from Impact Map against actual content.
+   First, read `stack` from `.claude/solo-dev-state.json` and examine the project's actual code patterns (imports, decorators, function signatures) to understand which protocol/framework is used (REST, GraphQL, gRPC, oRPC, tRPC, etc.). Then validate content against the detected patterns:
+   - type: `endpoint` → must have request handler definition (REST route, GraphQL resolver, gRPC service method, RPC procedure, WebSocket handler, or equivalent for the project's protocol)
+   - type: `page` → must have component/template/view export (React component, Vue SFC, Svelte component, server template, or equivalent)
+   - type: `schema` → must have table/model/migration/type definition (ORM model, SQL migration, Protobuf message, GraphQL type definition, or equivalent)
+   - type: `worker` → must have job handler / queue consumer / background task definition
+   - type: `config` → must have actual configuration values (not empty or placeholder)
+   - type: `type` → must have type/interface/struct definition
+   - type: `middleware` → must have middleware/interceptor/plugin function
+   - type: `hook` → must have hook/lifecycle/event handler
 4. If content doesn't match expected type → `CONTENT_GAP` (severity: CRITICAL)
 
 ### Content Validation Output (added to GAP_CHECK_REPORT)
@@ -55,7 +56,7 @@ For every modified file reported by implementation agents:
 CONTENT_GAPS:
   - file: "apps/api/src/routes/profile.ts"
     expected_type: endpoint
-    issue: "File has only imports and comments (8 lines, no route handler)"
+    issue: "File has only imports and comments (8 lines, no request handler found)"
     target_agent: backend-agent
 ```
 

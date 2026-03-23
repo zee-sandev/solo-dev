@@ -237,6 +237,7 @@ flowchart TD
         GC["Gap Check<br/>Cross-package completeness<br/>gap-checker agent"]:::quality
         ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
         DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
+        VQA["Visual QA<br/>Screenshot capture + design token check"]:::quality
         P3["Phase 3 · Code Review + Security<br/>CR: 4 dimensions · SR: Threat modeling<br/>Parallel · max 3 rounds"]:::quality
         P45["Phase 4+5 · QA<br/>Functional correctness"]:::quality
         P7["Phase 7 · Final Acceptance<br/>Persona vote 3/3"]:::quality
@@ -257,7 +258,8 @@ flowchart TD
     BV --> GC
     GC --> ST
     ST --> DCH
-    DCH --> P3
+    DCH --> VQA
+    VQA --> P3
     P3 --> P45
     P45 --> P7
     P7 -->|APPROVED| P8

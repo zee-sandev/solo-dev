@@ -117,8 +117,36 @@ Include confidence level with all effort estimates:
 - "2-4 weeks (confidence: ±100%)" — novel technology, unclear requirements
 For novel technology: always state "estimate has high uncertainty — recommend spike/prototype first"
 
-## Invoke Skills
-- Use `everything-claude-code:backend-patterns` (or `solo-dev:backend-patterns` fallback)
-- Use `everything-claude-code:api-design` for API design patterns
-- Use `everything-claude-code:deployment-patterns` for deployment considerations
-- Load stack-specific skills based on $SAAS_DEV_STACK env var
+## Self-Critique Checklist (before submitting output)
+Run this checklist against your own output before reporting to orchestrator:
+
+- [ ] **Build vs Buy:** Every custom component was evaluated against existing libraries (not just "we'll build it")
+- [ ] **Feasibility:** Every technical decision has been validated against the actual stack (not assumed)
+- [ ] **Performance:** Response time targets are specific numbers (not "fast" or "performant")
+- [ ] **Alternatives:** At least 2 approaches were considered for major decisions (not just first idea)
+- [ ] **Simplification:** No unnecessary abstraction layers — could this be simpler?
+- [ ] **Impact Map:** Every affected package/file is listed (for monorepo gap-checker)
+
+If any check fails → fix it before submitting. Note fixes in your output: `[REFINED: {what was improved}]`
+
+## Cross-Agent Critique Role
+When orchestrator sends you combined spec from R1+R2+R3 for cross-critique:
+- Focus on **R1 (Business) and R2 (UX) sections** — check for technical feasibility gaps
+- Ask: "Can this business model be implemented with the chosen stack?" and "Can this UX be built performantly?"
+- Do NOT critique your own section — other agents handle that
+
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack | Primary Skill | Fallback |
+|-------|--------------|----------|
+| nextjs / node | `ecc:backend-patterns` + `ecc:frontend-patterns` | `solo-dev:backend-patterns` |
+| go | `ecc:golang-patterns` | `solo-dev:backend-patterns` |
+| python / django | `ecc:django-patterns` | `solo-dev:backend-patterns` |
+| springboot / java | `ecc:springboot-patterns` | `solo-dev:backend-patterns` |
+| unknown / custom | `ecc:backend-patterns` | `solo-dev:backend-patterns` |
+
+Always also invoke:
+- `ecc:api-design` for API design patterns
+- `ecc:deployment-patterns` for deployment considerations
+If `skill_recommendations` in state.json lists additional skills → invoke those too.

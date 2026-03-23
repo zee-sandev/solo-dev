@@ -38,6 +38,53 @@ Structure your output as a spec section covering:
 - Interaction design notes (key UI behaviors)
 - Accessibility requirements
 - Mobile considerations
+- **Visual Direction** (see below)
+
+## Visual Direction (REQUIRED in every spec)
+
+Read `design_profile` from `.claude/solo-dev.local.md` and translate user's visual preferences into concrete implementation decisions for this specific feature.
+
+### Before Writing Visual Direction
+1. Read `design_profile.style` — understand the overall aesthetic
+2. Read `design_profile.navigation` — understand nav pattern, menu structure, role-based menu preferences
+3. Read `design_profile.color_scheme` / `brand_colors` — understand the palette
+4. Read `design_profile.density`, `border_radius`, `animation`, `dark_mode` — component-level preferences
+
+### Visual Direction Section Format
+
+```markdown
+## Visual Direction
+
+### Component Style
+- Cards: {describe card appearance based on design_profile — shadows, radius, bg, borders}
+- Buttons: {filled/outlined/ghost variants, height based on density}
+- Forms: {input style, label position, focus states}
+- Tables: {row style, header treatment, density}
+
+### Layout Pattern
+- Page layout: {based on navigation.pattern — sidebar width, content area behavior}
+- List views: {card grid vs table based on density and style}
+- Detail views: {layout columns, sidebar meta}
+- Empty states: {illustration + CTA style matching overall aesthetic}
+
+### Navigation Integration
+- Menu placement: {where this feature appears in nav, based on navigation.menu_structure}
+- Breadcrumb path: {exact breadcrumb trail for this feature}
+- Active state: {how nav indicates current feature}
+- Role visibility: {which roles see this feature's menu items, based on navigation.role_based_menu}
+- Mobile nav: {how navigation.mobile_adaptation applies to this feature}
+
+### Interaction Patterns
+- Loading: {skeleton screens / spinners / shimmer based on style}
+- Transitions: {duration and easing based on animation preference}
+- Feedback: {toast / inline / modal based on style}
+- Micro-interactions: {hover effects, press states based on animation level}
+
+### Reference
+[Based on design_profile: {style}, {color_scheme}, {density}]
+```
+
+If `design_profile` is empty or not set: skip Visual Direction section and note "No design profile configured — ui-agent will use framework defaults."
 
 ## After Completing
 Write observed UX patterns and persona insights to docs/agents/memory/persona_insights.md.
@@ -70,7 +117,25 @@ Design for users who use the product incorrectly:
 - What if they try to use a feature that requires setup without setting up first?
 - Design guardrails, not just happy paths
 
+## Self-Critique Checklist (before submitting output)
+Run this checklist against your own output before reporting to orchestrator:
+
+- [ ] **Completeness:** Every user journey has entry point, steps, AND exit point (not just happy path)
+- [ ] **Error states:** Every form/interaction has an error state defined (not just "handle errors")
+- [ ] **Accessibility:** Every interactive element has keyboard navigation + screen reader consideration
+- [ ] **User diversity:** Journey works for novice AND expert users (not just one persona)
+- [ ] **Simplification:** No step can be removed without losing functionality? If yes, remove it
+
+If any check fails → fix it before submitting. Note fixes in your output: `[REFINED: {what was improved}]`
+
+## Cross-Agent Critique Role
+When orchestrator sends you combined spec from R1+R2+R3 for cross-critique:
+- Focus on **R1 (Business) and R3 (Tech) sections** — check for UX gaps
+- Ask: "Does this business model create friction for users?" and "Does this tech approach allow a smooth user experience?"
+- Do NOT critique your own section — other agents handle that
+
 ## Invoke Skills
 - Use `ui-ux-pro-max` (or `solo-dev:ux-design` fallback) for design decisions
 - Use `impeccable:critique` for evaluating proposed designs
 - Use `impeccable:onboard` for onboarding flow design
+- If `skill_recommendations` in `.claude/solo-dev-state.json` lists additional skills → invoke those too

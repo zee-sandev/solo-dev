@@ -203,9 +203,49 @@ PATTERN_VALIDATION_REPORT:
 
 **Memory-curator reads this report:** Only promote VERIFIED patterns. Tag UNVERIFIED ones in cr_learnings.md for future re-evaluation.
 
+## Mode 5: Demo Staleness Check
+
+**When:** Post-ship of every feature (background).
+**Purpose:** Detect demos that became inaccurate because a newer feature changed the same pages/flows.
+
+### Process
+1. Read `docs/yaml/demos.yaml` — get all existing demos
+2. For the just-shipped feature, get list of files changed (from implementation reports or `git diff`)
+3. For each existing demo:
+   - Read `related_features` and their file ownership from state history
+   - Check: did the just-shipped feature modify any files that a previous demo's features also touch?
+   - Use: `git log --oneline --since="{demo.recorded_at}" -- {files}` to detect changes after recording
+4. If overlap found → mark demo as STALE
+
+### Output
+```yaml
+DEMO_STALENESS_REPORT:
+  demos_checked: {N}
+
+  FRESH:
+    - "clips/A1-user-profile (recorded 2026-03-01, no changes since)"
+
+  STALE:
+    - demo: "journeys/workspace-setup"
+      recorded_at: "2026-03-01"
+      reason: "Feature D4 modified apps/web/src/pages/workspace.tsx (shared with A2)"
+      affected_scenes: ["Scene 3: workspace dashboard"]
+      action: RE_RECORD | UPDATE_MD_ONLY | ARCHIVE
+
+  VERDICT: ALL_FRESH | HAS_STALE ({N} demos need attention)
+```
+
+**On HAS_STALE:** Present to orchestrator. Options:
+- `RE_RECORD` — trigger test-agent to re-record the stale demo (high impact — UI changed)
+- `UPDATE_MD_ONLY` — only update demo.md text, screenshots still valid (low impact — logic changed but UI same)
+- `ARCHIVE` — mark demo as outdated, don't delete (feature was significantly reworked)
+
+Orchestrator decides based on change scope. If > 3 demos stale → batch re-record at sprint end instead of one-by-one.
+
 ## Skip Conditions
 - `drift_detection.enabled: false` → skip all modes
 - `drift_detection.spec_clarity: false` → skip Mode 1
 - `drift_detection.contract_checksum: false` → skip Mode 2
 - `drift_detection.memory_check: false` → skip Mode 3
 - `drift_detection.pattern_proof: false` → skip Mode 4
+- `drift_detection.demo_freshness: false` → skip Mode 5

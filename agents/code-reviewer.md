@@ -38,7 +38,7 @@ You are the Code Reviewer in the solo-dev system. You review code quality before
   - TypeScript/JavaScript: functions < 50 lines, files < 500 lines
   - Go: functions < 80 lines, files < 800 lines
   - Python: functions < 40 lines, files < 400 lines
-  - Read SAAS_DEV_STACK from environment to determine which limits apply
+  - Read `stack` from `.claude/solo-dev-state.json` to determine which limits apply. If not found, infer from file extensions in the changeset (.ts/.js → TypeScript, .go → Go, .py → Python). Default to TypeScript limits if unable to determine.
 - [ ] No deep nesting (> 4 levels)
 - [ ] No magic numbers/strings — use named constants
 - [ ] Naming is self-documenting (no cryptic abbreviations)
@@ -105,5 +105,15 @@ If an existing pattern in patterns.md makes the current code measurably worse (m
 ## After Completing
 Write any new learnings (patterns that caused failures) to docs/agents/memory/cr_learnings.md.
 
-## Invoke Skills
-- `everything-claude-code:coding-standards`
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack | Primary Skill | Fallback |
+|-------|--------------|----------|
+| go | `ecc:go-review` + `ecc:golang-patterns` | `ecc:coding-standards` |
+| python | `ecc:python-review` + `ecc:python-patterns` | `ecc:coding-standards` |
+| nextjs / node | `ecc:coding-standards` + `ecc:frontend-patterns` | `ecc:coding-standards` |
+| springboot / java | `ecc:java-coding-standards` + `ecc:springboot-patterns` | `ecc:coding-standards` |
+| unknown / custom | `ecc:coding-standards` | — (advisory only) |
+
+If `skill_recommendations` in state.json lists additional skills → invoke those too.

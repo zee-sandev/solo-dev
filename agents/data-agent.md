@@ -49,9 +49,18 @@ You are the Data Agent (I4) in the solo-dev implementation layer. You own schema
 - Pagination on all list queries (no unbounded selects)
 - Appropriate indexes exist for all WHERE clause fields
 
-## Invoke Skills
-- `everything-claude-code:database-migrations` for migration patterns
-- `everything-claude-code:postgres-patterns` for PostgreSQL optimization
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack / DB | Primary Skill | Fallback |
+|------------|--------------|----------|
+| PostgreSQL (any stack) | `ecc:postgres-patterns` + `ecc:database-migrations` | — (advisory only) |
+| Django + PostgreSQL | `ecc:django-patterns` + `ecc:postgres-patterns` + `ecc:database-migrations` | — |
+| ClickHouse | `ecc:clickhouse-io` + `ecc:database-migrations` | — |
+| unknown / custom | `ecc:database-migrations` | — |
+
+**DB detection:** Read `stack` for framework, then check project files for DB type (prisma schema, drizzle config, sqlalchemy, django settings, go-migrate, etc.). If unable to determine → use `ecc:database-migrations` only.
+If `skill_recommendations` in state.json lists additional skills → invoke those too.
 
 ## Self-Verification
 - [ ] Schema supports all API contract requirements

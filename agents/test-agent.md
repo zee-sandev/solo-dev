@@ -54,71 +54,257 @@ You are the Test Agent (I5) in the solo-dev implementation layer. You write test
 - Cover: happy path, error states, edge cases from persona feedback
 - Use Page Object Model pattern
 
-## Invoke Skills
-- `everything-claude-code:tdd` (or `solo-dev:tdd` fallback)
-- `everything-claude-code:e2e-testing` for Playwright patterns
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack | Primary Skill | Fallback |
+|-------|--------------|----------|
+| nextjs / node | `ecc:tdd` + `ecc:e2e-testing` | `solo-dev:tdd` |
+| go | `ecc:go-test` + `ecc:golang-testing` | `solo-dev:tdd` |
+| python / django | `ecc:python-testing` + `ecc:django-tdd` | `solo-dev:tdd` |
+| springboot / java | `ecc:springboot-tdd` | `solo-dev:tdd` |
+| unknown / custom | `ecc:tdd` | `solo-dev:tdd` |
+
+Always also invoke: `ecc:e2e-testing` for Playwright E2E patterns (all stacks use Playwright for E2E).
+If `skill_recommendations` in state.json lists additional skills → invoke those too.
 
 ## Phase 8: Demo Generation
-After Final Acceptance passes, generate the feature demo:
+After Final Acceptance passes, generate demos using the Intelligent Demo System.
 
-### 1. Write Playwright demo scenario
-Create e2e/demos/{feature-id}-demo.spec.ts:
-- Cover the most representative happy path
-- Focus on clarity — one complete user workflow
-- Enable video recording: use `{ recordVideo: { dir: 'docs/demos/{feature-id}/' } }`
-- Demo must include 1 happy path walkthrough AND 1 error recovery scenario (e.g., invalid input handling, empty state, network error recovery)
+### Step 1: Demo Decision — Choose Demo Type
+Read the feature context and decide which demo types to generate:
 
-### 2. Check dev server
+```yaml
+DEMO_DECISION_INPUTS:
+  feature_effort: S | M | L | XL           # from spec
+  has_ui: bool                              # does feature touch frontend?
+  has_roles: bool                           # different behavior per role?
+  epic_id: string | null                    # from features.yaml grouping
+  related_features: [feature-ids]           # features in same epic
+  related_features_done: bool               # all related features shipped?
+  is_sprint_end: bool                       # last feature in current sprint?
+  shares_pages_with: [feature-ids]          # features touching same routes/pages
+```
+
+**Decision rules (evaluate in order):**
+
+| Condition | Demo Type | Reason |
+|-----------|-----------|--------|
+| effort=S AND related_features_done=false | `SKIP_VIDEO` | Too small for standalone — will be in journey later |
+| effort=S AND no related features | `FEATURE_CLIP` | Small but standalone |
+| effort=M/L/XL | `FEATURE_CLIP` | Always worth a clip |
+| related_features_done=true | `FEATURE_CLIP` + `JOURNEY_DEMO` | Epic complete — record journey |
+| has_roles=true | Add `ROLE_PERSPECTIVES` to any demo type | Show each role's view |
+| has_ui=false | `API_DEMO` instead of video | Use terminal recording format |
+| is_sprint_end=true | Add `PRODUCT_SHOWCASE` trigger | Notify orchestrator to run showcase |
+| shares_pages_with other shipped features | Consider `CROSS_EPIC_JOURNEY` | Features interact on same page |
+
+### Step 2: Demo Seed Data — Realistic Content
+Before recording, generate realistic demo data (NOT test data):
+
+1. Read the feature spec for domain context
+2. Generate seed data that matches the product domain:
+   ```yaml
+   DEMO_SEED:
+     users:
+       owner: { name: "Sarah Chen", email: "sarah@acme.co", role: "Owner" }
+       member: { name: "Alex Rivera", email: "alex@acme.co", role: "Editor" }
+       viewer: { name: "Jordan Lee", email: "jordan@acme.co", role: "Viewer" }
+     workspace: { name: "Acme Design Studio" }
+     content:
+       - title: "Q4 Marketing Campaign"
+       - title: "Brand Redesign Proposal"
+   ```
+3. Use seed data in all demo scenarios — never use "test", "foo", "bar", "user1"
+4. If feature has roles → create seed user per role
+
+### Step 3: Check Dev Server
 If dev server not running, inform orchestrator: "BLOCKED: dev server needed for demo recording"
 
-### 3. Run demo recording
+### Step 4: Generate Demo by Type
+
+#### Type A: Feature Clip (single feature)
+Create `e2e/demos/{feature-id}-demo.spec.ts`:
+- Playwright config: `viewport: { width: 1280, height: 720 }`, video recording enabled
+- Use `page.waitForTimeout(800)` between major steps (human-readable pace)
+- Capture screenshot at each key moment: `page.screenshot({ path: 'docs/demos/clips/{feature-id}/screenshots/{step-name}.png' })`
+- Cover: 1 happy path + 1 error recovery
+- If `has_roles`: repeat flow for each role, annotating role switches
+
+Run:
 ```bash
-npx playwright test e2e/demos/{feature-id}-demo.spec.ts --headed
+npx playwright test e2e/demos/{feature-id}-demo.spec.ts
 ```
-Video saved to: docs/demos/{feature-id}/demo.mp4
+Video saved to: `docs/demos/clips/{feature-id}/clip.webm`
 
-If Playwright not installed:
-- Skip video
-- Write demo.md only
-- Note: "⚠️ Playwright not installed — video skipped. Install with: npm install -D @playwright/test"
+#### Type B: Journey Demo (epic/flow complete)
+Create `e2e/demos/journeys/{epic-id}-journey.spec.ts`:
+- Combines ALL features in the epic into one continuous flow
+- Organized by scenes (1 scene per logical step)
+- Role switches between scenes where applicable
+- Use seed data consistently across scenes
+- Capture screenshot per scene
+- Slower pace: `page.waitForTimeout(1200)` between scenes
 
-### 4. Write demo.md
-Create docs/demos/{feature-id}/demo.md:
+Run:
+```bash
+npx playwright test e2e/demos/journeys/{epic-id}-journey.spec.ts
+```
+Video saved to: `docs/demos/journeys/{epic-id}/journey.webm`
+
+#### Type C: API Demo (no UI)
+Create `docs/demos/api/{feature-id}/api-demo.md`:
+- Document request/response flow using realistic seed data
+- Show different role perspectives (Owner token vs Member token)
+- Include error cases
+- If `asciinema` is available: record terminal session to `.cast` file
+- If not available: write comprehensive markdown with curl examples
+
+#### Type D: Cross-Epic Journey
+When `shares_pages_with` detects features from different epics interacting:
+- Create journey that shows how features from different epics work together on shared pages
+- Name: `{shared-concept}-combined-journey` (e.g., "access-control-roles-and-plans")
+
+### Step 5: Generate Annotations
+For every demo (clip or journey), generate an annotations file:
+
+Create `docs/demos/{type}/{id}/annotations.yaml`:
+```yaml
+annotations:
+  - timestamp: "0:00"
+    type: scene_title
+    text: "Scene 1: Owner creates workspace"
+
+  - timestamp: "0:05"
+    type: action
+    text: "Filling in workspace details"
+    screenshot: "screenshots/01-create-workspace.png"
+
+  - timestamp: "0:12"
+    type: role_switch
+    text: "Switching to Member perspective"
+    from_role: Owner
+    to_role: Member
+
+  - timestamp: "0:20"
+    type: callout
+    text: "Notice: Member sees limited menu — no Settings tab"
+
+  - timestamp: "0:25"
+    type: result
+    text: "Workspace collaboration is working"
+```
+
+Use annotations to generate subtitle file: `{id}.srt` (for video players that support subtitles).
+
+### Step 6: Write Demo Documentation
+Generate 3 audience layers from the same demo data:
+
+#### demo.md (Product — default)
 ```markdown
-# {Feature Name}
+# {Feature/Journey Name}
 
 ## What is it?
-[1-2 clear sentences explaining what this feature does]
+[1-2 sentences — product perspective]
 
 ## Why it's useful
-- [concrete benefit 1 — tied to a real user pain point]
-- [concrete benefit 2]
-- [concrete benefit 3]
+- [benefit tied to user pain point]
 
-## Real-world example
-[Step-by-step walkthrough of how a real user uses this feature:
-  1. User does X
-  2. System responds with Y
-  3. User can now Z
-]
+## User Journey
+### Scene 1: {Description}
+![{scene}](screenshots/{step}.png)
+{What the user does and sees}
+
+### Scene 2: {Description} (Role: {role})
+![{scene}](screenshots/{step}.png)
+{What this role sees differently}
 
 ## Demo
-See demo.mp4 in this folder for a recorded walkthrough.
+Video: [clip.webm](clip.webm) | Subtitles: [{id}.srt]({id}.srt)
 ```
 
-### 4b. Update Demos Index
-Add entry to docs/yaml/demos.yaml:
-  - feature_id: current feature ID
-  - feature_name: feature display name
-  - path: "docs/demos/{feature-id}/"
-  - has_video: true (or false if Playwright unavailable)
-  - video_path: "docs/demos/{feature-id}/demo.mp4" (or null)
-  - doc_path: "docs/demos/{feature-id}/demo.md"
-  - recorded_at: current date
-  - description: 1-line summary of what the demo shows
+#### demo-technical.md (Developer)
+```markdown
+# {Feature Name} — Technical Demo
 
-### 5. Report completion
-"Phase 8 complete: docs/demos/{feature-id}/ created (video + documentation)"
+## API Flow
+{curl examples with actual request/response from demo}
+
+## Key Implementation Details
+- Endpoint: {route} → {handler file}
+- Auth: {middleware used}
+- Response time: {observed during demo}
+
+## Files Changed
+{list from implementation agent reports}
+```
+
+#### demo-onboarding.md (End User — tutorial style)
+```markdown
+# How to: {Feature action verb}
+
+## Step 1: {Action}
+![Step 1](screenshots/{step}.png)
+Click the **{button name}** button to get started.
+
+## Step 2: {Action}
+![Step 2](screenshots/{step}.png)
+Fill in your {field} and click **Save**.
+
+## What happens next
+{Expected result}
+
+## Troubleshooting
+- If you see {error}: {fix}
+```
+
+Only generate `demo-technical.md` and `demo-onboarding.md` for M+ effort features. S features get `demo.md` only.
+
+### Step 7: Update Demos Index
+Add entry to `docs/yaml/demos.yaml`:
+```yaml
+- feature_id: "{feature-id}"
+  feature_name: "{display name}"
+  demo_type: clip | journey | api        # NEW
+  epic_id: "{epic-id or null}"           # NEW
+  role_perspectives: [Owner, Member]      # NEW
+  related_features: [A1, A2, A3]          # NEW
+  path: "docs/demos/clips/{feature-id}/"
+  has_video: true
+  video_path: "docs/demos/clips/{feature-id}/clip.webm"   # FIXED: .webm not .mp4
+  screenshots_dir: "docs/demos/clips/{feature-id}/screenshots/"  # NEW
+  annotations_path: "docs/demos/clips/{feature-id}/annotations.yaml"  # NEW
+  doc_path: "docs/demos/clips/{feature-id}/demo.md"
+  doc_technical_path: "docs/demos/clips/{feature-id}/demo-technical.md"  # NEW (null for S)
+  doc_onboarding_path: "docs/demos/clips/{feature-id}/demo-onboarding.md"  # NEW (null for S)
+  recorded_at: "{date}"
+  description: "{1-line summary}"
+  seed_data: "{seed description}"          # NEW
+  baseline_screenshots: true               # NEW — available for visual regression
+```
+
+### Step 8: Report
+```yaml
+DEMO_REPORT:
+  feature: {feature-id}
+  demo_type: FEATURE_CLIP | JOURNEY_DEMO | API_DEMO | SKIP_VIDEO
+  video: docs/demos/{type}/{id}/clip.webm (or null)
+  screenshots: {N} captured
+  annotations: {N} entries
+  docs_generated: [demo.md, demo-technical.md, demo-onboarding.md]
+  roles_covered: [Owner, Member]
+  seed_data: "Acme Design Studio scenario"
+  journey_triggered: true | false
+  journey_features: [A1, A2, A3] (if journey)
+  showcase_triggered: true | false (if sprint end)
+  DONE
+```
+
+### Fallbacks
+- Playwright not installed → skip video, generate demo.md + screenshots via API testing only, warn user
+- asciinema not installed → API demos use markdown-only format
+- Dev server won't start → skip video, generate docs from spec + implementation data only
+- headless environment detected → always use headless mode (never `--headed`)
 
 ## Beyond-Spec Testing
 After writing tests for all spec acceptance criteria, think of 3 additional scenarios the spec did NOT mention:

@@ -75,9 +75,18 @@ SECURITY_REPORT:
   blocking_count: {N critical + high issues}
 ```
 
-## Invoke Skills
-- Use `everything-claude-code:security-review` (or `solo-dev:security` fallback)
-- Use stack-specific security skill based on $SAAS_DEV_STACK
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack | Primary Skill | Fallback |
+|-------|--------------|----------|
+| nextjs / node | `ecc:security-review` | `solo-dev:security` |
+| python / django | `ecc:django-security` + `ecc:security-review` | `solo-dev:security` |
+| springboot / java | `ecc:springboot-security` + `ecc:security-review` | `solo-dev:security` |
+| go | `ecc:security-review` | `solo-dev:security` |
+| unknown / custom | `ecc:security-review` | `solo-dev:security` |
+
+If `skill_recommendations` in state.json lists additional skills → invoke those too.
 
 ## Creative Threat Modeling
 For each feature, brainstorm 3 specific ways an attacker could abuse THIS feature:

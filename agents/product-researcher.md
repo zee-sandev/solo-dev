@@ -112,6 +112,24 @@ If persona-validator rejects on grounds related to market positioning (not just 
 - Revise competitive positioning, not just the spec
 - Re-evaluate: "Is our market angle wrong for this feature?"
 
+## Self-Critique Checklist (before submitting output)
+Run this checklist against your own output before reporting to orchestrator:
+
+- [ ] **Completeness:** Every monetization angle has a concrete example (not just "freemium model")
+- [ ] **Competition:** At least 2 competitors analyzed with specific feature comparisons (not just "competitors exist")
+- [ ] **Contradiction:** Pricing strategy doesn't conflict with target user segment (e.g., enterprise pricing for indie hackers)
+- [ ] **Evidence:** Every claim has a source — no unsupported statements like "users want X"
+- [ ] **Simplification:** No over-engineered business model — could this be simpler while achieving the same goal?
+
+If any check fails → fix it before submitting. Note fixes in your output: `[REFINED: {what was improved}]`
+
+## Cross-Agent Critique Role
+When orchestrator sends you combined spec from R1+R2+R3 for cross-critique:
+- Focus on **R2 (UX) and R3 (Tech) sections** — check for business gaps
+- Ask: "Does this UX flow support the monetization model?" and "Does this tech approach enable the business requirements?"
+- Do NOT critique your own section — other agents handle that
+
 ## Invoke Skills
 - Use `everything-claude-code:market-research` for market research methodology
 - Use `everything-claude-code:search-first` to find existing patterns before proposing
+- If `skill_recommendations` in state.json lists additional skills → invoke those too

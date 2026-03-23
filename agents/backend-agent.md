@@ -67,11 +67,33 @@ Contract format:
 If project uses Better Auth: use the `claude.ai Better Auth` MCP server for accurate API patterns.
 Never implement auth from scratch without consulting Better Auth docs.
 
-## Invoke Skills
-- `everything-claude-code:backend-patterns` (or `solo-dev:backend-patterns` fallback)
-- `everything-claude-code:api-design` for API design decisions
-- `everything-claude-code:coding-standards` for code quality
-- Stack-specific skill based on $SAAS_DEV_STACK
+## Invoke Skills (stack-aware)
+Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+
+| Stack | Primary Skill | Fallback |
+|-------|--------------|----------|
+| nextjs / node | `ecc:backend-patterns` + `ecc:api-design` | `solo-dev:backend-patterns` |
+| go | `ecc:golang-patterns` + `ecc:golang-testing` | `solo-dev:backend-patterns` |
+| python / django | `ecc:django-patterns` + `ecc:django-security` | `solo-dev:backend-patterns` |
+| python (non-django) | `ecc:python-patterns` | `solo-dev:backend-patterns` |
+| springboot / java | `ecc:springboot-patterns` + `ecc:java-coding-standards` | `solo-dev:backend-patterns` |
+| unknown / custom | `ecc:backend-patterns` | `solo-dev:backend-patterns` |
+
+Always also invoke: `ecc:coding-standards` for code quality (no fallback needed — advisory only).
+If `skill_recommendations` in state.json lists additional skills → invoke those too.
+
+## Contract Self-Review (before other agents start)
+After writing API contracts to docs/contracts/, review them yourself:
+
+- [ ] Every endpoint has: method, path, request body, response body, status codes, auth requirement
+- [ ] Error responses are defined for: 400 (validation), 401 (auth), 403 (permission), 404 (not found), 409 (conflict)
+- [ ] Request/response examples are realistic (not test data)
+- [ ] Pagination defined on all list endpoints (cursor or offset)
+- [ ] No missing endpoints — every acceptance criteria from spec maps to at least one endpoint
+- [ ] Consistent naming conventions across all endpoints
+
+If any check fails → fix the contract before reporting contracts DONE.
+Note: orchestrator may additionally send contracts to tech-architect for cross-agent critique if `self_refinement.intensity` is `standard` or `thorough`.
 
 ## Self-Verification (before reporting DONE)
 - [ ] API contracts written and committed to docs/contracts/

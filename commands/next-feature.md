@@ -104,9 +104,23 @@ Dispatch smoke-tester agent.
 
 ## Phase 2.7: Contract Drift Check
 Dispatch drift-detector (Mode 2: Contract Drift Check).
-- STABLE → Phase 3
+- STABLE → Phase 2.8
 - DRIFTED → notify affected agents → block until re-validated
 - Update state: phase → CONTRACT_DRIFT_CHECK
+
+## Phase 2.8: Visual QA
+If `design_profile` exists in `.claude/solo-dev.local.md` AND `visual_qa.enabled: true`:
+
+1. Capture screenshots of new/changed pages using Playwright (empty, loaded, error, mobile, desktop states)
+2. If `dark_mode: both` → capture dark mode variants
+3. Run visual checklist: design tokens, responsive, spacing, typography, interactive states, navigation pattern
+4. Verify navigation matches `design_profile.navigation` (pattern, menu structure, role-based, breadcrumbs)
+5. PASS → Phase 3
+6. FAIL → targeted feedback to ui-agent/frontend-agent → fix → re-screenshot (max 2 rounds, then proceed with warnings)
+7. If `visual_qa.user_preview: true` → show screenshots to user for approval
+
+Skip if: no design_profile, visual_qa disabled, effort=S, or API-only feature.
+- Update state: phase → VISUAL_QA
 
 ## Phase 3: Code Review + Security Review (Parallel)
 Spawn code-reviewer AND security-reviewer simultaneously with all changed files.
@@ -149,32 +163,43 @@ Spawn persona-validator to evaluate the working implementation.
 - Update state: phase → FINAL_ACCEPTANCE, round → N
 
 ## Phase 8: Demo Generation + Ship
-Spawn test-agent to:
-1. Write Playwright scenario for feature happy path
-2. Check dev server is running (if not: prompt user to start it)
-3. Record demo video via Playwright recordVideo
-4. Write docs/demos/{feature-id}/demo.md
 
-demo.md structure:
-```markdown
-# {Feature Name}
+Orchestrator prepares demo context, then spawns test-agent:
 
-## What is it?
-[1-2 sentences]
+**Context preparation (orchestrator does this):**
+1. Read features.yaml → find epic_id, related features, check if epic complete
+2. Check if last feature in sprint → is_sprint_end
+3. Check if feature has role-based behavior → has_roles
+4. Check file overlap with other shipped features → shares_pages_with
+5. Pass full context to test-agent
 
-## Why it's useful
-- [benefit 1]
-- [benefit 2]
-- [benefit 3]
+**test-agent generates demos using its Demo Intelligence system:**
+- Decides demo type: FEATURE_CLIP, JOURNEY_DEMO, API_DEMO, or SKIP_VIDEO
+- Generates realistic seed data (not test data)
+- Records with screenshots at each key moment
+- Creates annotations (subtitles for video)
+- Generates 3 audience layers: product (demo.md), technical (demo-technical.md), onboarding (demo-onboarding.md)
+- For journey demos: combines all epic features into one continuous multi-role flow
+- For API-only features: terminal recording or curl documentation
 
-## Real-world example
-[Step-by-step walkthrough of actual usage]
+**After test-agent completes:**
+- Dispatch drift-detector Mode 5 (background) — check if new feature made old demos stale
+- If sprint end → auto-generate showcase
 
-## Demo
-[demo.mp4 — recorded with Playwright]
+**Output structure:**
+```
+docs/demos/
+├── clips/{feature-id}/        # per-feature clips
+│   ├── clip.webm, demo.md, demo-technical.md, demo-onboarding.md
+│   ├── screenshots/, annotations.yaml, {id}.srt
+├── journeys/{epic-id}/        # epic journey demos (when epic completes)
+│   ├── journey.webm, journey.md, screenshots/, annotations.yaml
+├── api/{feature-id}/          # API-only features
+│   ├── api-demo.md, api-demo.cast (if asciinema available)
+└── showcase/                  # sprint-end product showcase
 ```
 
-If Playwright not installed: skip video, write demo.md only, warn user.
+If Playwright not installed: skip video, generate docs from spec + implementation data, warn user.
 
 Then orchestrator:
 - git commit: "feat({feature-id}): {feature-name}\n\n{brief description of what was built}"
@@ -197,7 +222,10 @@ Print completion summary:
 ```
 ✅ Feature Complete: {feature-name}
    Phases: 8/8
-   Demo: docs/demos/{feature-id}/
+   Demo: {demo type} — docs/demos/{type}/{id}/
+   {If journey triggered: "Journey demo: docs/demos/journeys/{epic-id}/"}
+   {If stale demos found: "⚠️ {N} existing demos need re-recording"}
+   {If sprint end: "Showcase updated: docs/showcase/"}
    {If foundation: "Examples replaced: {N} files"}
    Next feature: {next-feature-name or "all features complete"}
 ```

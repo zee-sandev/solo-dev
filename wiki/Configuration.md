@@ -191,6 +191,7 @@ drift_detection:
   contract_checksum: true
   memory_check: true
   pattern_proof: true
+  demo_freshness: true
   vague_keywords: [fast, easy, secure, good, scalable, simple, clean]
 ```
 
@@ -203,7 +204,166 @@ drift_detection:
 | `drift_detection.contract_checksum` | `true` | Track contract changes during impl |
 | `drift_detection.memory_check` | `true` | Check stale patterns at session start |
 | `drift_detection.pattern_proof` | `true` | Require proof before promoting patterns |
+| `drift_detection.demo_freshness` | `true` | Check if existing demos became stale after new features ship |
 | `drift_detection.vague_keywords` | `[fast, easy, secure, good, scalable, simple, clean]` | Words flagged as vague |
+
+---
+
+## Self-Refinement
+
+Controls internal quality improvement loops. Agents refine their own outputs before presenting to external reviewers or downstream agents.
+
+```yaml
+self_refinement:
+  enabled: true
+  intensity: standard        # light | standard | thorough
+  max_rounds: 3
+```
+
+### Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `self_refinement.enabled` | `true` | Master switch |
+| `self_refinement.intensity` | `standard` | Refinement depth (see below) |
+| `self_refinement.max_rounds` | `3` | Maximum internal refinement rounds per output |
+
+### Intensity Levels
+
+| Intensity | Method | Rounds | Effect on Design Loop | S Effort |
+|-----------|--------|--------|----------------------|----------|
+| `light` | Self-critique checklist only | 1 | Design loop max: 3 (unchanged) | Skip refinement |
+| `standard` | Cross-agent critique for critical outputs (spec, contracts), self-critique for rest | 2 | Design loop max: 2 (reduced) | Self-critique only (1 round) |
+| `thorough` | Cross-agent critique for all critical outputs | 3 | Design loop max: 2 (reduced) | Self-critique only (1 round) |
+
+### What Gets Refined
+
+| Output | Intensity: light | Intensity: standard | Intensity: thorough |
+|--------|-----------------|--------------------|--------------------|
+| Design spec (R1+R2+R3) | Self-critique | Cross-agent (R agents critique each other) | Cross-agent |
+| API contracts | Self-critique | Cross-agent (tech-architect reviews) | Cross-agent |
+| Market analysis | Self-critique | Self-critique | Self-critique |
+| Roadmap | — | Self-critique | Cross-agent |
+| Demo scripts | — | — | — |
+
+---
+
+## Design Profile
+
+Visual design preferences collected during `init`. Ensures all features ship with consistent, user-approved visual identity.
+
+```yaml
+design_profile:
+  style: "modern-minimal"
+  color_scheme: "neutral-warm"
+  brand_colors:
+    primary: "#2563EB"
+    secondary: "#10B981"
+    accent: "#F59E0B"
+  typography: "clean-sans"
+  density: "comfortable"
+  border_radius: "rounded"
+  animation: "subtle"
+  dark_mode: "both"
+  reference_sites: []
+  navigation:
+    pattern: "sidebar-collapsible"
+    menu_structure: "feature-grouped"
+    mobile_adaptation: "slide-over"
+    breadcrumbs: true
+    role_based_menu: true
+    notification_badges: true
+    search_spotlight: true
+```
+
+### Style Presets
+
+| Preset | Description |
+|--------|-------------|
+| `modern-minimal` | Clean, airy, generous whitespace, rounded corners, subtle shadows |
+| `corporate` | Structured, sharp edges, formal typography, dense information |
+| `bold-creative` | Vibrant colors, expressive typography, gradient accents |
+| `editorial` | Typography-focused, content-first, elegant serif headings |
+| `brutalist` | Raw, high-contrast, monospace, bold borders |
+| `custom` | User-defined via reference sites or manual specification |
+
+### Navigation Settings
+
+| Setting | Values | Description |
+|---------|--------|-------------|
+| `navigation.pattern` | `sidebar` / `top-nav-tabs` / `sidebar-collapsible` / `top-nav-side-sub` / `bottom-tab-bar` | Navigation layout pattern |
+| `navigation.menu_structure` | `feature-grouped` / `workflow-ordered` / `flat-search` | How menu items are organized |
+| `navigation.mobile_adaptation` | Auto-resolved from pattern | Mobile responsive behavior |
+| `navigation.breadcrumbs` | `true` / `false` | Show breadcrumb navigation |
+| `navigation.role_based_menu` | `true` / `false` | Filter menu items by user role |
+| `navigation.notification_badges` | `true` / `false` | Show unread counts on menu items |
+| `navigation.search_spotlight` | `true` / `false` | cmd+K global search overlay |
+
+### Other Settings
+
+| Setting | Default | Values | Description |
+|---------|---------|--------|-------------|
+| `style` | — | See presets above | Overall visual aesthetic |
+| `color_scheme` | — | `neutral-warm` / `ocean` / `forest` / `monochrome` / `brand-colors` | Color palette |
+| `brand_colors.*` | — | Hex colors | Custom brand colors (when color_scheme is `brand-colors`) |
+| `typography` | `clean-sans` | `clean-sans` / `classic-serif` / `mixed` / `system` | Typography style |
+| `density` | `comfortable` | `compact` / `comfortable` / `spacious` | UI density (affects spacing) |
+| `border_radius` | `rounded` | `sharp` / `slightly-rounded` / `rounded` / `pill` | Corner radius style |
+| `animation` | `subtle` | `none` / `subtle` / `expressive` | Animation intensity |
+| `dark_mode` | `both` | `light-only` / `dark-only` / `both` | Dark mode support |
+| `reference_sites` | `[]` | URLs | Sites the user likes the style of |
+
+### How It Works
+
+1. **During `init`:** Interactive visual preview on localhost — user sees rendered examples and picks choices
+2. **During design (ux-researcher):** Reads `design_profile` → writes Visual Direction section in spec
+3. **During implementation (ui-agent):** Generates design tokens from profile → enforces token usage
+4. **During implementation (frontend-agent):** Implements navigation pattern from profile
+5. **During Visual QA (Phase 2.8):** Verifies implementation matches profile
+
+---
+
+## Visual QA
+
+Runtime visual quality verification after implementation — captures screenshots, checks design token usage, responsive behavior, and navigation consistency.
+
+```yaml
+visual_qa:
+  enabled: true
+  screenshot_states: ["empty", "loaded", "error", "mobile", "desktop"]
+  checklist:
+    design_tokens: true
+    responsive: true
+    dark_mode: true
+    spacing_consistency: true
+    typography_hierarchy: true
+    interactive_states: true
+    loading_empty_error: true
+  user_preview: false
+```
+
+### Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `visual_qa.enabled` | `true` | Master switch |
+| `visual_qa.screenshot_states` | `["empty", "loaded", "error", "mobile", "desktop"]` | States to capture |
+| `visual_qa.checklist.design_tokens` | `true` | Verify no hardcoded colors/sizes |
+| `visual_qa.checklist.responsive` | `true` | Check mobile/tablet/desktop |
+| `visual_qa.checklist.dark_mode` | `true` | Check dark mode (if design_profile.dark_mode is "both") |
+| `visual_qa.checklist.spacing_consistency` | `true` | Verify consistent spacing scale |
+| `visual_qa.checklist.typography_hierarchy` | `true` | Verify heading/font hierarchy |
+| `visual_qa.checklist.interactive_states` | `true` | Verify hover, focus, active, disabled |
+| `visual_qa.checklist.loading_empty_error` | `true` | Verify all states exist |
+| `visual_qa.user_preview` | `false` | Show screenshots to user before code review |
+
+### Skip Conditions
+
+Visual QA is automatically skipped when:
+- `design_profile` is not configured
+- `visual_qa.enabled: false`
+- Feature effort is S (fast-track)
+- Feature has no UI (API-only)
 
 ---
 
@@ -374,7 +534,48 @@ drift_detection:
   contract_checksum: true
   memory_check: true
   pattern_proof: true
+  demo_freshness: true
   vague_keywords: [fast, easy, secure, good, scalable, simple, clean]
+
+self_refinement:
+  enabled: true
+  intensity: standard
+  max_rounds: 3
+
+design_profile:
+  style: ""
+  color_scheme: ""
+  brand_colors:
+    primary: ""
+    secondary: ""
+    accent: ""
+  typography: "clean-sans"
+  density: "comfortable"
+  border_radius: "rounded"
+  animation: "subtle"
+  dark_mode: "both"
+  reference_sites: []
+  navigation:
+    pattern: ""
+    menu_structure: ""
+    mobile_adaptation: ""
+    breadcrumbs: true
+    role_based_menu: false
+    notification_badges: true
+    search_spotlight: false
+
+visual_qa:
+  enabled: true
+  screenshot_states: ["empty", "loaded", "error", "mobile", "desktop"]
+  checklist:
+    design_tokens: true
+    responsive: true
+    dark_mode: true
+    spacing_consistency: true
+    typography_hierarchy: true
+    interactive_states: true
+    loading_empty_error: true
+  user_preview: false
 
 qa_runtime:
   api:

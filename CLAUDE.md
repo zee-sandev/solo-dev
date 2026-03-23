@@ -150,6 +150,7 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Runtime verification via smoke-tester:** Build + server + endpoint testing after implementation. Port management with safeguards. Catches false DONE reports.
 - **Drift detection via drift-detector:** 4-mode detection for vague specs, contract drift, stale memory, and unverified patterns.
 - **QA enhanced with runtime + E2E:** Static → API runtime → Playwright E2E. Three-layer testing pipeline.
+- **Visual Quality System via design_profile:** Interactive visual preview during init collects user's style/color/navigation/component preferences. ux-researcher translates into Visual Direction per feature. ui-agent enforces design tokens. Visual QA (Phase 2.8) verifies screenshots against profile before code review.
 
 ## Changelog Rules
 

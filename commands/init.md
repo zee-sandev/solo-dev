@@ -456,6 +456,7 @@ drift_detection:
   contract_checksum: true  # track contract changes during impl
   memory_check: true       # check stale patterns at session start
   pattern_proof: true      # require proof before promoting patterns
+  demo_freshness: true     # check if existing demos became stale after new features
   vague_keywords:
     - fast
     - easy
@@ -464,6 +465,46 @@ drift_detection:
     - scalable
     - simple
     - clean
+
+self_refinement:
+  enabled: true
+  intensity: standard        # light | standard | thorough
+  max_rounds: 3              # maximum internal refinement rounds
+
+design_profile:
+  style: ""                  # modern-minimal | corporate | bold-creative | editorial | brutalist | custom
+  color_scheme: ""           # neutral-warm | ocean | forest | monochrome | brand-colors
+  brand_colors:
+    primary: ""              # hex color if color_scheme is brand-colors
+    secondary: ""
+    accent: ""
+  typography: "clean-sans"   # clean-sans | classic-serif | mixed | system
+  density: "comfortable"     # compact | comfortable | spacious
+  border_radius: "rounded"   # sharp | slightly-rounded | rounded | pill
+  animation: "subtle"        # none | subtle | expressive
+  dark_mode: "both"          # light-only | dark-only | both
+  reference_sites: []        # URLs the user likes the style of
+  navigation:
+    pattern: ""              # sidebar | top-nav-tabs | sidebar-collapsible | top-nav-side-sub | bottom-tab-bar
+    menu_structure: ""       # feature-grouped | workflow-ordered | flat-search
+    mobile_adaptation: ""    # auto-resolved from pattern (slide-over | hamburger | bottom-bar | responsive-collapse)
+    breadcrumbs: true
+    role_based_menu: false
+    notification_badges: true
+    search_spotlight: false   # cmd+K search
+
+visual_qa:
+  enabled: true
+  screenshot_states: ["empty", "loaded", "error", "mobile", "desktop"]
+  checklist:
+    design_tokens: true       # verify no hardcoded colors/sizes
+    responsive: true          # mobile/tablet/desktop
+    dark_mode: true           # if design_profile.dark_mode is "both"
+    spacing_consistency: true
+    typography_hierarchy: true
+    interactive_states: true  # hover, focus, active, disabled
+    loading_empty_error: true
+  user_preview: false         # show screenshots to user before code review
 
 qa_runtime:
   api:
@@ -510,6 +551,162 @@ After detecting stack, auto-populate `runtime` fields in solo-dev.local.md:
    - Default: 3000 (Node), 8080 (Go/Java), 8000 (Python), 5173 (Vite)
 4. Write resolved values to `runtime.*` in config
 5. If stack is unknown/custom and no scripts detected → leave empty with comment `# could not auto-detect, smoke-tester will prompt`
+
+### Step 6.5 / Step 10.5: Design Profile (Visual Preferences)
+
+Collect the user's visual design preferences through an interactive preview system. This ensures all features ship with a consistent, user-approved visual identity.
+
+#### Preview System
+
+Generate a temporary HTML preview page and serve it on localhost for each round. The user sees real rendered examples — not text descriptions.
+
+```bash
+mkdir -p .claude/solo-dev-preview   # temporary, gitignored
+# Generate HTML preview → serve via: npx serve .claude/solo-dev-preview -p 4321 --no-clipboard
+# Or fallback: python3 -m http.server 4321 -d .claude/solo-dev-preview
+```
+
+After all rounds complete, kill the preview server and delete `.claude/solo-dev-preview/`.
+
+#### Round 1: Style Direction
+
+Generate an HTML page showing 5 style presets. Each preset renders a mini dashboard with: sidebar + header + content area with cards, sample buttons (primary/secondary/ghost), form input, table row, and a color palette strip.
+
+Presets:
+- **A) Modern Minimal** — clean, airy, generous whitespace, rounded corners, subtle shadows
+- **B) Corporate** — structured, sharp edges, formal typography, dense information
+- **C) Bold Creative** — vibrant colors, expressive typography, gradient accents
+- **D) Editorial** — typography-focused, content-first, elegant serif headings
+- **E) Brutalist** — raw, high-contrast, monospace, bold borders
+
+```
+เปิดดูตัวอย่างที่ localhost:4321
+
+เลือก style ที่ใกล้เคียงกับที่ต้องการ:
+  A) Modern Minimal
+  B) Corporate
+  C) Bold Creative
+  D) Editorial
+  E) Brutalist
+
+หรือบอกว่าต้องการปรับอย่างไร เช่น:
+  "ชอบ A แต่อยากให้สีเข้มกว่านี้"
+  "ไม่ตรงเลย — อยากได้แบบ Linear.app"
+```
+
+If user provides a reference URL: fetch the page, analyze its visual style (colors, typography, spacing, border-radius), generate a preview that approximates that style, and show for confirmation.
+
+#### Round 2: Color Palette
+
+Update preview page with 4 color scheme options that match the chosen style. Each shows the same card + button + form components in different palettes.
+
+```
+เลือก color palette:
+  1) Neutral Warm
+  2) Ocean
+  3) Forest
+  4) Monochrome
+
+หรือ:
+  - ใส่ brand colors (hex codes): primary, secondary, accent
+  - "ชอบ 2 แต่อยากให้ accent เป็นสีส้ม"
+```
+
+#### Round 3: Navigation & Menu Pattern
+
+Update preview page with navigation pattern options. Each pattern shows both desktop AND mobile views side by side. This round has 2 parts:
+
+**Part 1 — Navigation Pattern:**
+
+Show 5 patterns with real rendered layouts:
+- **A) Sidebar (Persistent)** — always-visible sidebar, best for SaaS dashboards
+- **B) Top Nav + Tabs** — horizontal nav with tab sections, best for content-heavy apps
+- **C) Sidebar Collapsible** — icon-only → expands on hover/click, space-efficient
+- **D) Top Nav + Side Sub-nav** — top for main sections, sidebar for sub-pages
+- **E) Bottom Tab Bar** — mobile-first, thumb-friendly, 4-5 items max
+
+Each pattern preview includes:
+- Desktop layout with sample menu items
+- Mobile adaptation (how it responds on small screens)
+- Active state highlighting (shows which menu item is selected)
+- Breadcrumb display
+- Notification badges on menu items (unread count, dot indicator)
+
+**Part 2 — Menu Structure:**
+
+After user picks a nav pattern, update preview to show 3 menu structure options using that pattern:
+
+- **1) Feature-grouped** — menu items grouped by domain (CONTENT: Posts, Pages, Media / AUDIENCE: Contacts, Campaigns)
+- **2) Workflow-ordered** — menu items follow user workflow steps (Create → Manage → Publish → Measure)
+- **3) Flat + Search** — minimal menu with cmd+K spotlight search for deep navigation
+
+Each structure preview shows:
+- Section headers / dividers
+- Icon + label for each menu item
+- Role-based differences (Admin vs Member views side by side)
+- Nested sub-items (if applicable)
+
+```
+ส่วนที่ 1 — Navigation Pattern:
+  A) Sidebar (persistent)
+  B) Top Nav + Tabs
+  C) Sidebar Collapsible
+  D) Top Nav + Side Sub-nav
+  E) Bottom Tab Bar (mobile-first)
+
+ส่วนที่ 2 — Menu Structure:
+  1) Feature-grouped
+  2) Workflow-ordered
+  3) Flat + Search
+
+หรือบอกเพิ่มเติม:
+  "ชอบ C + 1 แต่อยากมี breadcrumb ด้วย"
+  "อยากได้แบบ Notion — sidebar with nested pages"
+  "ต้องมี role-based menu: admin เห็นมากกว่า user"
+```
+
+#### Round 4: Component Details
+
+Update preview with component variations using chosen style + colors + navigation:
+
+- **Border Radius:** sharp | slightly-rounded | rounded | pill (show same button/card in each)
+- **Density:** compact | comfortable | spacious (show same card with different padding/spacing)
+- **Animation:** none | subtle | expressive (hover buttons to preview)
+- **Dark Mode:** light only | dark only | both (toggle to preview)
+
+```
+เลือกแต่ละข้อ:
+  Border Radius: A) Sharp  B) Slight  C) Rounded  D) Pill
+  Density:       A) Compact  B) Comfortable  C) Spacious
+  Animation:     A) None  B) Subtle  C) Expressive
+  Dark Mode:     A) Light only  B) Dark only  C) Both
+```
+
+#### Round 5: Final Confirmation
+
+Generate a full-page preview combining ALL choices — a complete dashboard page with:
+- The chosen navigation pattern (clickable)
+- Content area with cards, table, form in the chosen style/colors
+- Components with chosen radius/density
+- Mobile responsive view
+- Role-based menu differences
+- Active states + breadcrumbs + notification badges
+
+```
+เปิดดู final preview ที่ localhost:4321
+
+ทุกอย่างตรงตามที่ต้องการมั้ย?
+  A) ใช่ — บันทึกเลย
+  B) ปรับ — (บอกว่าอยากเปลี่ยนอะไร)
+```
+
+If user says "ปรับ" → update and re-show until confirmed.
+
+#### Save Design Profile
+
+After user confirms, save `design_profile` to `.claude/solo-dev.local.md` config (see config template below).
+
+Cleanup: kill preview server, delete `.claude/solo-dev-preview/`.
 
 ### Step 7 / Step 11: Repomix setup
 

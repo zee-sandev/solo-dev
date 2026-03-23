@@ -96,6 +96,8 @@ Add entry for completed feature:
 If a pattern is applicable to any SaaS project (not project-specific), write to:
 ~/.claude/solo-dev/global-memory/learnings/{pattern-name}.md
 
+**Before writing:** Verify the directory exists (`ls ~/.claude/solo-dev/global-memory/learnings/`). If it doesn't exist, create it first. If creation fails (permissions, etc.), skip global memory update and log a warning in the report — do NOT fail the entire curation.
+
 Format:
 ```markdown
 ---
