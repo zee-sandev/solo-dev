@@ -40,25 +40,32 @@ Read `smoke_test` from `.claude/solo-dev.local.md`:
 ## Verification Steps
 
 ### Step 1: Build Verification
-- Detect build command from stack (npm run build, go build, mvn package, cargo build, python -m py_compile)
-- Run build command
+- Read `runtime.build_command` from `.claude/solo-dev.local.md`
+- If empty → report NEEDS_CONTEXT: "build_command not configured — set runtime.build_command in .claude/solo-dev.local.md"
+- Run the configured build command
 - If build fails → FAIL immediately, skip remaining steps
 
 ### Step 2: Environment Preparation
-- Detect required port from stack/config
+- Read `runtime.dev_port` from config (default: 3000)
 - If port busy:
   - Run `lsof -i :{PORT}` to identify process
   - If `kill_port: true` AND process is a known dev server (node, go, python, java, ruby) → log warning with process name → `kill -9 {PID}`
   - If process is unknown (postgres, redis, system service) → do NOT kill → report BLOCKED with port conflict details
   - If `kill_port: false` → report BLOCKED with port conflict details
-- Start dev server (npm run dev, go run ., python manage.py runserver, etc.)
-- Poll for readiness: try `curl -s http://localhost:{PORT}/health` or just `curl -s -o /dev/null -w "%{http_code}" http://localhost:{PORT}/` every 2s
+- Read `runtime.dev_command` from config
+- If empty → report NEEDS_CONTEXT: "dev_command not configured — set runtime.dev_command in .claude/solo-dev.local.md"
+- Start dev server using configured command
+- Read `runtime.health_endpoint` from config (default: "/")
+- Poll for readiness: `curl -s -o /dev/null -w "%{http_code}" http://localhost:{PORT}{health_endpoint}` every 2s
 - Timeout after `smoke_test.timeout` seconds
 - If server start fails → retry `retry_server` times → if still fails → FAIL with diagnostics
 
 ### Step 3: Happy Path Test
-**Requires:** `api_contracts.output.mode: "markdown"` and parseable contract file exists.
-If contract format is `custom` or contract file missing → skip Steps 3+4, report `SKIPPED: no parseable contract`.
+**Contract detection (fallback chain):**
+1. Read `api_contracts.output.mode` from config → if `"markdown"`, proceed
+2. If config not set → check if `docs/contracts/{feature-id}-api.md` exists → if yes, assume markdown format
+3. If no contract file exists → skip Steps 3+4, report `SKIPPED: no contract file`
+4. If `api_contracts.output.mode: "custom"` → skip Steps 3+4, report `SKIPPED: custom contract format`
 
 - Read contract from `docs/contracts/{feature-id}-api.md`
 - For every endpoint in contract:

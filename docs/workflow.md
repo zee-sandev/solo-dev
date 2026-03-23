@@ -748,7 +748,7 @@ Feature effort classification determines phase ordering:
 
 | Effort | Phases Run | Notes |
 |--------|-----------|-------|
-| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 2.6 → 2.7 → 3+5 → 8 | Skip design loop, skip QA loop |
+| **S** (Small) | Fast-track: 0 → 2 → 2.5 → 3+5 → 8 | Skip design loop, skip Phase 2.6 (Smoke Test), skip Phase 2.7 (Drift Check), skip QA loop |
 | **M** (Medium) | Standard: 0 → 1 → 2+6 → 2.5 → 2.6 → 2.7 → 3+5 → 4 → 7 → 8 | Full pipeline |
 | **L** (Large) | Standard + extended review | Extra CR round budget |
 | **XL** (Extra Large) | Decompose first | Orchestrator suggests decomposition before starting |

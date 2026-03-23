@@ -93,10 +93,11 @@ Read `qa_runtime.e2e` config from `.claude/solo-dev.local.md`. Skip if `enabled:
 **Prerequisite:** Check `npx playwright --version`. If not installed → skip E2E, run static + API only, warn user.
 **Note:** E2E tests always use Playwright/TypeScript regardless of project stack. Requires Node.js.
 
-**Test generation:**
+**Test generation and verification:**
 1. Read spec acceptance criteria + user flows from UX researcher
 2. Generate `tests/e2e/{feature-id}.spec.ts` using Write tool
 3. Run: `npx playwright test tests/e2e/{feature-id}.spec.ts --reporter=list`
+4. **Generation verification:** If first run fails with selector/locator errors (element not found, timeout on selector) → treat as test generation bug, NOT a real failure. Read actual page HTML via Playwright trace, fix selectors, re-run. Only report as real failure on second run.
 
 **Test categories:**
 

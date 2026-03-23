@@ -95,7 +95,10 @@ SPEC_CLARITY_REPORT:
    - Use: `sha256sum docs/contracts/*.md` via Bash
 3. Compare:
    - If all match → STABLE
-   - If any differ → identify which changed, when (git log), and which agents were affected
+   - If any differ:
+     - `git log --oneline docs/contracts/{file}` → identify who changed it and when
+     - Read `agent_file_ownership` from `solo-dev-state.json` → match changed contract to affected agents
+     - If no file ownership map exists → infer from file path convention (docs/contracts/{feature}-api.md → frontend-agent, test-agent are affected consumers)
 
 ### Output
 ```yaml
@@ -131,7 +134,10 @@ CONTRACT_DRIFT_REPORT:
 1. Read all files in `docs/agents/memory/`:
    - `patterns.md` — Check each pattern: does the referenced file/function still exist? (use Grep/Glob)
    - `decisions.md` — Any decisions still tagged `[INFERRED]` after 3+ features? Flag for user confirmation.
-   - `cr_learnings.md` + `bv_learnings.md` — Any contradicting learnings? (same topic, opposite advice)
+   - `cr_learnings.md` + `bv_learnings.md` — Check for contradictions using these rules:
+     - Contradiction = entries that match BOTH: (1) same subject — reference same function/file/pattern by exact string match, AND (2) opposite advice — contain opposing keywords ("always" vs "never", "use X" vs "avoid X", "server" vs "client" in rendering context)
+     - If not confident it's a real contradiction → tag `[POSSIBLE_CONTRADICTION]` for user review
+     - Different scopes are NOT contradictions (e.g., "server components for static" vs "client components for real-time" are complementary, not contradictory)
 2. Check YAML/Markdown sync:
    - Compute checksum of each `docs/yaml/*.yaml`
    - Compare with generated markdown (roadmap.md, CHANGELOG.md, etc.)

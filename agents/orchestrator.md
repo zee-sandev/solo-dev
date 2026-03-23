@@ -129,7 +129,7 @@ After gap-checker PASS, dispatch smoke-tester BEFORE code review.
 After smoke-tester PASS, dispatch drift-detector Mode 2 BEFORE code review.
 
 ### Contract Checksum Tracking
-At the START of Phase 2 (before dispatching impl agents):
+After backend-agent writes contracts (DONE status) and BEFORE dispatching other impl agents:
 - Compute `sha256sum` of all files in `docs/contracts/`
 - Store in `solo-dev-state.json` under `contract_checksums`:
   ```json
@@ -169,7 +169,7 @@ Adjust the workflow based on feature effort classification:
 
 | Effort | Adjustments |
 |--------|-------------|
-| **S** (Small) | **Fast track:** Skip market-validator (Phase 0). Use only 1 research agent (product-researcher). Skip strategy-evolver post-ship. |
+| **S** (Small) | **Fast track:** Skip market-validator (Phase 0). Use only 1 research agent (product-researcher). Skip Phase 2.6 (Smoke Test) and Phase 2.7 (Contract Drift Check). Skip strategy-evolver post-ship. |
 | **M** (Medium) | Standard flow — all phases as defined |
 | **L** (Large) | Standard flow + mid-implementation checkpoint after backend contracts are defined |
 | **XL** (Extra Large) | Standard flow + mid-implementation checkpoint + suggest `/solo-dev:decompose` at Phase 0 |

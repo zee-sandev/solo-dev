@@ -482,8 +482,34 @@ qa_runtime:
       screenshots: on_failure
       trace: on_failure
       video: optional
+
+# Auto-detected by init from stack, user can override for custom frameworks
+# Init resolves these from detected stack. If stack is custom/unknown, leave empty — smoke-tester will ask user.
+runtime:
+  build_command: ""              # resolved by init (see Runtime Resolution below)
+  dev_command: ""                # resolved by init (see Runtime Resolution below)
+  dev_port: 3000                 # resolved by init (see Runtime Resolution below)
+  health_endpoint: "/"           # endpoint to poll for server readiness
 ---
 ```
+
+### Runtime Resolution (during config creation)
+
+After detecting stack, auto-populate `runtime` fields in solo-dev.local.md:
+
+1. Read detected stack from state.json
+2. Check for project-level scripts:
+   - If `package.json` exists → read `scripts.build` and `scripts.dev`
+   - If `Makefile` exists → look for `build:` and `dev:` targets
+   - If `go.mod` exists → default `go build ./...` / `go run .`
+   - If `Cargo.toml` exists → default `cargo build` / `cargo run`
+   - If `requirements.txt` or `pyproject.toml` → default `python -m py_compile` / `python manage.py runserver`
+3. Detect port:
+   - Read `package.json` scripts for `--port` or `-p` flags
+   - Check common env files (.env, .env.local) for `PORT=`
+   - Default: 3000 (Node), 8080 (Go/Java), 8000 (Python), 5173 (Vite)
+4. Write resolved values to `runtime.*` in config
+5. If stack is unknown/custom and no scripts detected → leave empty with comment `# could not auto-detect, smoke-tester will prompt`
 
 ### Step 7 / Step 11: Repomix setup
 

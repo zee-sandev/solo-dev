@@ -244,6 +244,35 @@ qa_runtime:
 
 ---
 
+## Runtime
+
+Auto-detected by `init` from your project's stack. Override for custom frameworks.
+
+```yaml
+runtime:
+  build_command: "npm run build"
+  dev_command: "npm run dev"
+  dev_port: 3000
+  health_endpoint: "/"
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `runtime.build_command` | Auto-detected | Build command for smoke-tester. If empty, smoke-tester will prompt. |
+| `runtime.dev_command` | Auto-detected | Dev server start command. If empty, smoke-tester will prompt. |
+| `runtime.dev_port` | `3000` | Port the dev server listens on |
+| `runtime.health_endpoint` | `"/"` | Endpoint to poll for server readiness |
+
+**Auto-detection sources:**
+- `package.json` → reads `scripts.build` and `scripts.dev`
+- `Makefile` → looks for `build:` and `dev:` targets
+- `go.mod` → defaults to `go build ./...` / `go run .`
+- `Cargo.toml` → defaults to `cargo build` / `cargo run`
+- `requirements.txt` / `pyproject.toml` → defaults to Python commands
+- Port detected from scripts flags (`--port`, `-p`) or `.env` files
+
+---
+
 ## Foundation Settings
 
 For projects initialized from a template (Foundation Mode).
@@ -360,6 +389,12 @@ qa_runtime:
     timeout_per_test: 30
     max_total_timeout: 600
     retry_flaky: 1
+
+runtime:
+  build_command: ""
+  dev_command: ""
+  dev_port: 3000
+  health_endpoint: "/"
 
 foundation:
   delegate_agents: true

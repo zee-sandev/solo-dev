@@ -18,7 +18,7 @@ Delegate to market-validator. It returns APPROVE (continue) or REJECT (not viabl
 **Phase 1–2: Design Loop**
 Delegate in sequence: product-researcher → ux-researcher → tech-architect.
 All three deliver their output to persona-validator (3 personas).
-Require 3/3 APPROVE to proceed. Max 5 rounds. Round 6 → human escalation.
+Require 3/3 APPROVE to proceed. Max 3 rounds. Round 4 → human escalation.
 
 On REJECT: send targeted PERSONA_REJECTION message with specific condition to ux-researcher only. Log round in solo-dev-state.json.
 
@@ -39,10 +39,10 @@ Dispatch drift-detector (Mode 2). Verify contracts haven't changed since impl st
 **Phase 3: Code Review + Security (parallel)**
 Delegate code-reviewer and security-reviewer simultaneously.
 
-**Phase 4–5: QA + Security (parallel)**
-Delegate qa-validator and security-reviewer simultaneously.
+**Phase 4–5: QA**
+Delegate qa-validator (security already reviewed in Phase 3).
 
-Both must APPROVE before proceeding. If either REJECT: fix → re-run only the failing agent.
+Must APPROVE before proceeding. If REJECT: fix → re-run qa-validator only.
 
 **Phase 6: Business Validation**
 Delegate to business-validator. Single round advisory. Present findings to implementation agents.
@@ -70,7 +70,7 @@ See references/autonomy-decision-flow.md for how to resolve always-auto / always
 ## Escalation Rules
 | Loop | Max Rounds | Escalation Target |
 |------|-----------|------------------|
-| Design | 5 | Human review |
+| Design | 3 | Human review |
 | Code Review | 3 | tech-architect then human |
 | QA | 3 | Re-enter Design |
 | Final Acceptance | 2 | Re-enter Design |
