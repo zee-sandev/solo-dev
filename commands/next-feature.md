@@ -30,11 +30,24 @@ You are the orchestrator. Pick the next eligible feature, run all 8 phases in se
    - Read docs/agents/memory/foundation-manifest.md
    - Load example_code list and agent delegation map
 
+## Checkpoint 1: Pre-Flight Briefing (before Phase 0)
+
+Run the Pre-Flight Briefing protocol defined in orchestrator.md (Checkpoint 1).
+
+1. Silently gather: feature spec, effort classification, [INFERRED] decisions, memory contradictions, venture-strategist notes
+2. Present consolidated Pre-Flight Briefing
+3. Wait for user response: "go" | "adjust: ..." | "explore 10x" | "skip"
+4. Initialize `deferred_items: []` in state.json
+
+For effort=S features, use compact Pre-Flight format.
+
 ## Phase 0: Market Validation
 Spawn market-validator agent. Provide: feature spec from roadmap, decisions.md#market, bv_learnings.md.
 - VIABLE → continue to Phase 1
-- HIGH_RISK → present risk summary to user, require acknowledgment before proceeding
-- BLOCKER → report to user, require explicit override to proceed (or remove from queue / revise)
+- HIGH_RISK:
+  - effort=S → auto-acknowledge, add to deferred_items, continue
+  - effort=M/L/XL → **interrupt user** (this is a critical gate)
+- BLOCKER → **interrupt user** (always, regardless of effort)
 - Update state: phase → MARKET_VALIDATION
 
 ## Phase 1: Design Loop
@@ -48,6 +61,19 @@ Spawn persona-validator with the full spec.
 - Update state: phase → DESIGN_LOOP, round → N
 
 Before each round: memory-curator snapshots state + memory to docs/agents/memory/snapshots/pre-{feature-id}.json
+
+## Checkpoint 2: Mid-Flight Review (after Phase 1, before Phase 2)
+
+Run the Mid-Flight Review protocol defined in orchestrator.md (Checkpoint 2).
+
+1. Summarize approved design spec: key decisions, scope, acceptance criteria
+2. Show implementation plan: which agents, file ownership, parallelism
+3. Wait for user response: "build" | "change: ..." | "show full spec" | "pause"
+
+For effort=S features, SKIP this checkpoint (fast-track: spec is simple, design loop was skipped).
+For effort=M/L/XL, this checkpoint is MANDATORY — user must confirm design before build.
+
+**Why this exists:** The design spec is the most expensive artifact to get wrong. Confirming it before implementation prevents wasting all build/review/QA work on a wrong spec. This single checkpoint eliminates the #1 risk of the 2-checkpoint model.
 
 ## Phase 2: Parallel Implementation
 
@@ -151,7 +177,7 @@ Business-validator runs in parallel with implementation after design approval. U
 Results are collected and merged at the Phase 7 gate.
 - APPROVE → continue to Phase 7
 - CRITICAL issues → back to impl agents → full loop
-- NON-CRITICAL → ask user: "Add to sprint or backlog?"
+- NON-CRITICAL → **defer to Post-Flight debrief** (add to deferred_items, don't interrupt user)
 - business-validator writes to bv_learnings.md
 - Update state: phase → BUSINESS_VALIDATION
 
@@ -161,6 +187,15 @@ Spawn persona-validator to evaluate the working implementation.
 - Any REJECT → impl fix → CR → QA → Final Acceptance (max 2 rounds)
 - If 2 rounds fail → re-enter Design Loop entirely
 - Update state: phase → FINAL_ACCEPTANCE, round → N
+
+## Checkpoint 3: Post-Flight Debrief (after Phase 7, before Phase 8)
+
+Run the Post-Flight Debrief protocol defined in orchestrator.md (Checkpoint 3).
+
+1. Collect: execution summary, deferred_items, demo staleness, demo plan
+2. Present consolidated Post-Flight Debrief
+3. Wait for user response: "ship" | "fix: ..." | "demo: ..." | "ship no demo"
+4. For effort=S features, use compact Post-Flight format
 
 ## Phase 8: Demo Generation + Ship
 
@@ -239,6 +274,65 @@ Classify feature effort from the roadmap spec before starting:
 - **XL (Extra Large):** Suggest decomposition via `/solo-dev:decompose` before starting.
 
 Store effort classification in state: `feature_effort: S|M|L|XL`
+
+## Spike & Experiment Execution Paths
+
+Not every feature needs the full 8-phase lifecycle. Some ideas need lightweight validation first.
+
+### Spike Mode (`--spike` flag or user says "spike" at Pre-Flight)
+
+**Purpose:** Quick technical feasibility check — answer "can we build this?" before committing.
+
+**Phases:** Pre-Flight → Phase 2 (minimal implementation, proof-of-concept only) → report
+**Skips:** Market validation, design loop, code review, QA, business validation, demos
+**Time-box:** Max 30 minutes of agent work
+**Output:** `SPIKE_REPORT` with feasibility verdict, rough effort estimate, technical risks
+
+```
+SPIKE_REPORT:
+  feature: {feature-id}
+  feasibility: FEASIBLE | RISKY | INFEASIBLE
+  effort_estimate: {S|M|L|XL}
+  technical_risks:
+    - {risk 1}
+  prototype_files: {list of files created}
+  recommendation: "Proceed to full lifecycle" | "Needs redesign" | "Not feasible with current stack"
+```
+
+**After spike:** Prototype code is saved to `docs/spikes/{feature-id}/`. User decides:
+- "proceed" → start full lifecycle (Pre-Flight → Phase 0 → ...)
+- "defer" → move feature to backlog with spike findings attached
+- "kill" → mark feature as REJECTED with reason
+
+### Experiment Mode (`--experiment` flag or user says "experiment" at Pre-Flight)
+
+**Purpose:** Test a hypothesis with real users — build enough to learn, not to ship.
+
+**Phases:** Pre-Flight → Phase 1 (lightweight spec) → Phase 2 (MVP implementation) → Phase 3 (code review only) → deploy to staging
+**Skips:** Market validation, QA loop, business validation, demos
+**Time-box:** Max 60 minutes of agent work
+**Output:** Deployable experiment with success criteria
+
+**Key difference from spike:** Experiment produces shippable (to staging) code. Spike produces throwaway code.
+
+**After experiment:** User evaluates against success criteria:
+- "graduate" → convert to full feature, start from Phase 0 with experiment learnings
+- "iterate" → run another experiment round (max 2)
+- "kill" → archive experiment, mark feature as REJECTED
+
+**State tracking:** `execution_mode: standard | spike | experiment`
+
+## Backtrack Handling
+
+When orchestrator triggers a Design Loop Backtrack (SPEC_GAP detected during implementation):
+
+1. Save current implementation state: `backtrack_state: {phase, files_changed, agents_status}`
+2. Set state to `DESIGN_LOOP_BACKTRACK` (distinct from regular DESIGN_LOOP)
+3. Research agents update ONLY the affected spec section
+4. After spec update: restore `backtrack_state` and resume Implementation
+5. Re-dispatch ONLY the agent(s) affected by the spec gap
+6. Track: `backtracks: [{from_phase, reason, round}]` in state.json
+7. Max 2 backtracks per feature → escalate to user on 3rd
 
 ## Token Budget Enforcement
 

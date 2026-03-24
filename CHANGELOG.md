@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-24]
+
+### Added
+
+- Discovery-agent and venture-strategist — deep problem exploration (5-Whys, Jobs-to-be-Done, simulated interviews) and 10x opportunity scanning integrated into checkpoints
+- Innovation Path in market-validator — VIABLE_EXPERIMENTAL verdict for novel features with no competitor precedent
+- Persona Evolution Protocol — personas evolve every 5 features, on repeated rejections, or user corrections
+- Devil's Advocate round in self-refinement cross-agent critique to prevent groupthink
+- Decision Expiry System — auto-expiry defaults by decision type, renewal tracking, drift-detector checks at session start
+- Failure Learning Protocol with 2x weight — structured failure entries on rollback/near-failure, anti-pattern promotion
+- Feature Health Check every 5 features with consolidation mode to prevent feature factory syndrome
+- Spike and Experiment execution modes — lightweight validation before committing to full 8-phase lifecycle
+- Effort Calibration — historical tracking detects systematic effort underestimation with Pre-Flight warnings
+- Backtrack Path — controlled implementation-to-design-loop backtrack when spec gaps are found mid-build
+- Checkpoint Engagement Verification — varied formats and periodic depth questions prevent autopilot approval
+- Cross-Feature UX Coherence audit every 3 features — navigation, terminology, and component pattern consistency
+- Lazy dispatch rules and cost tier guidance for model overrides per agent role
+
+### Changed
+
+- Gap-checker enhanced with layer-based validation for all projects — checks cross-layer completeness (API↔frontend, routes↔navigation, auth↔guards)
+- 3-Checkpoint interaction model with Mid-Flight design spec review, change classification, and Post-Flight fix limits
+- Discovery integrated into checkpoints instead of standalone Phase -1 — reduces latency while preserving depth
+
 ## [2026-03-23]
 
 ### Added

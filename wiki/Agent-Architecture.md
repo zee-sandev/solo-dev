@@ -1,6 +1,6 @@
 # Agent Architecture
 
-solo-dev uses 20 agents organized into 4 layers. Each agent has a defined role, skill set, file ownership boundaries, and memory read/write rules.
+solo-dev uses 22 agents organized into 5 layers. Each agent has a defined role, skill set, file ownership boundaries, and memory read/write rules.
 
 ## Layer Overview
 
@@ -10,15 +10,19 @@ solo-dev uses 20 agents organized into 4 layers. Each agent has a defined role, 
 │  Coordinates all agents. Never writes code or designs.      │
 └────────────────────────┬────────────────────────────────────┘
                          │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-   RESEARCH LAYER   VALIDATION LAYER        LEARNING LAYER
-   R1, R2, R3       MV, PV, BV, SR, GC, ST, DD  MC, SE
-         │               │
-         └───────┬───────┘
-                 ▼
-       IMPLEMENTATION LAYER
-       I1, I2, I3, I4, I5 (parallel)
+    ┌────────────────────┼────────────────────┐
+    ▼                    ▼                    ▼
+ DISCOVERY LAYER   RESEARCH LAYER        LEARNING LAYER
+ D1, D2           R1, R2, R3             MC, SE
+    │                    │
+    └──────┬─────────────┘
+           ▼
+    VALIDATION LAYER
+    MV, PV, BV, SR, GC, ST, DD
+           │
+           ▼
+    IMPLEMENTATION LAYER
+    I1, I2, I3, I4, I5 (parallel)
 ```
 
 ---
@@ -42,6 +46,56 @@ solo-dev uses 20 agents organized into 4 layers. Each agent has a defined role, 
 - Enforce loop max-retries and escalate when exceeded
 - Commit to git after each completed feature
 - Update state after each phase transition
+
+---
+
+## Discovery Layer
+
+### D1 — Discovery Agent
+
+| | |
+|---|---|
+| **ID** | `discovery-agent` |
+| **Model** | inherit |
+| **Color** | magenta |
+| **Role** | Deep problem space exploration — challenges assumptions, uncovers hidden needs, simulates user interviews, reframes stuck problems |
+
+**4 Modes:**
+1. **Problem Deep-Dive** — 5-Whys root cause analysis, Jobs-to-be-Done framing, Problem Space Mapping with adjacent problems, upstream causes, downstream effects, hidden stakeholders
+2. **Assumption Audit** — Lists every assumption with criticality/evidence/risk ratings. HIGH-criticality + no evidence = BLOCKER
+3. **Simulated User Interviews** — Generates realistic interview dialogues per persona including hesitations, contradictions, and willingness-to-pay probing
+4. **Problem Reframing** — Inversion, analogy, constraint removal, user swap, time shift, scale shift techniques
+
+**Triggers:**
+- Vague idea (< 2 sentences, uncertain language)
+- Feature rejected 2+ times by persona-validator
+- User asks "Am I solving the right problem?"
+- Before Phase 0 for assumption audit
+
+---
+
+### D2 — Venture Strategist
+
+| | |
+|---|---|
+| **ID** | `venture-strategist` |
+| **Model** | inherit |
+| **Color** | gold |
+| **Role** | Blue-sky strategic thinking — pushes beyond "is this viable?" to "is this a category-defining opportunity?" |
+
+**5 Modes:**
+1. **10x Opportunity Scan** — Evaluates if a feature could be radically reimagined, not just incrementally improved. Identifies enabling technologies that make 10x possible NOW
+2. **Competitive Divergence** — Maps what NO competitor does (true white space), industry blind spots, contrarian opportunities, cross-industry inspiration
+3. **Combinatorial Analysis** — After 3+ features ship, finds emergent capabilities from feature combinations, platform plays, and data advantages
+4. **Future-Proofing** — Technology shifts, market shifts, regulatory shifts, AI integration opportunities with timelines
+5. **Category Creation** — Assesses if the product could define a new market category with defensibility analysis (network effects, data moat, switching costs, ecosystem)
+
+**Triggers:**
+- After start-from-idea Phase 4 (10x + Divergence)
+- After feature definition, pre-design-loop (10x)
+- After 3, 5, 8, 12 features shipped (Combinatorial)
+- Sprint planning (Future-proofing)
+- User asks about positioning/strategy (Category Creation)
 
 ---
 

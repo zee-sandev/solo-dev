@@ -49,6 +49,43 @@ Before each new feature starts, create a rollback snapshot:
 }
 ```
 
+## On Rollback or Near-Failure: Failure Learning
+
+When orchestrator triggers memory-curator after a rollback or after a feature takes > 5 total rounds:
+
+### Failure Entry Format
+Write to `docs/agents/memory/failure-learnings.md`:
+```markdown
+### {feature-id} — {date} [{ROLLBACK|NEAR_FAILURE}]
+- **Failure phase:** {where it failed or stalled}
+- **Failure reason:** {why — specific, not vague}
+- **Root cause:** {underlying issue, not symptom}
+- **What would have caught it:** {earlier phase/check that should have detected}
+- **Effort classification:** classified as {S|M|L|XL}, actual effort was {S|M|L|XL}
+- **Pattern:** {reusable lesson for strategy-evolver}
+```
+
+### Failure Learning Rules
+- Always write failure entry BEFORE archiving the feature
+- strategy-evolver reads failure-learnings.md with 2x weight
+- If same failure pattern appears 2+ times → promote to patterns.md as `[ANTI_PATTERN]`
+- Include effort mis-classification data for calibration tracking
+
+## Decision Expiry Metadata
+
+When writing new decisions to decisions.md, include expiry metadata:
+```markdown
+### {decision-id}: {title}
+- **Made at:** feature {id}, {date}
+- **Expires:** {auto-calculated based on decision type — see drift-detector}
+- **Context at time:** {why this was decided}
+- **Still valid if:** {conditions}
+- **Challenge trigger:** {what would invalidate}
+- **Renewal count:** 0
+```
+
+When compressing decisions.md, preserve expiry metadata. Do not remove `[EXPIRED]` tags — drift-detector manages those.
+
 ## Post-Feature: Memory Compression
 
 After a feature is shipped:

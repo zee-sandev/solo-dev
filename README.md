@@ -5,7 +5,7 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://zee-sandev.github.io/solo-dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**solo-dev** is a Claude Code plugin that orchestrates 20 specialized agents through a structured development lifecycle. You bring the idea; it handles market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
+**solo-dev** is a Claude Code plugin that orchestrates 22 specialized agents through a structured development lifecycle. You bring the idea; it handles deep problem discovery, strategic analysis, market validation, architecture design, parallel implementation, quality gates, and continuous learning — all within your terminal.
 
 **[Read the full documentation →](https://zee-sandev.github.io/solo-dev/)**
 
@@ -15,8 +15,8 @@
 
 Building a SaaS alone usually means wearing every hat: researcher, designer, architect, developer, QA, and product manager. solo-dev gives you a team of agents that handle each role, so you can focus on decisions that matter.
 
-- **From zero to roadmap** — Market research, competitor gap analysis, persona generation, and AI-enhanced feature suggestions before writing any code
-- **8-phase feature lifecycle** — Every feature goes through market validation, design, parallel implementation, code review, QA, security, business validation, and demo recording
+- **From zero to roadmap** — Deep problem discovery, market research, competitor gap analysis, 10x opportunity scanning, persona generation, and AI-enhanced feature suggestions before writing any code
+- **8-phase feature lifecycle** — Every feature goes through market validation, design, parallel implementation, code review, QA, security, business validation, and demo recording — with just 3 user checkpoints (Pre-Flight, Mid-Flight spec review, Post-Flight)
 - **Self-improving** — Agents learn from every cycle and refine their strategies across sessions and projects
 - **Token-efficient** — Index-first memory (~200 tokens at startup) and Repomix-powered code exploration keep costs low
 - **Works with your stack** — Adapts to Next.js, Django, Go, Spring Boot, Python, and more
@@ -65,8 +65,8 @@ git clone https://github.com/zee-sandev/solo-dev.git ~/.claude/plugins/solo-dev
 /solo-dev:start-from-idea
 ```
 
-Guides you through 6 phases of product discovery:
-idea exploration → market reality check → competitor gap analysis → persona generation → AI-enhanced features → prioritized roadmap.
+Guides you through 7 phases of product discovery:
+deep problem discovery → market reality check → competitor gap analysis → persona generation → AI-enhanced features → venture strategy analysis → prioritized roadmap.
 
 ### 2. Start from existing notes or a spec
 
@@ -176,11 +176,14 @@ Orchestrator: Tell me about your idea — even a rough description works.
 User: A tool that helps content teams track blog rankings
       and get AI suggestions for improvement.
 
-[... guided conversation, one question at a time ...]
+[... guided discovery, one question at a time ...]
 
-✓  4 competitors analyzed — 3 whitespace opportunities found
-✓  2 personas generated
+✓  Root problem identified — content teams can't connect effort to results
+✓  3 high-risk assumptions surfaced — 2 validated, 1 needs testing
+✓  4 competitors analyzed — 3 white-space opportunities found
+✓  2 personas generated + simulated interview insights
 ✓  6 MVP features + 2 competitive moat features defined
+✓  10x opportunity found — AI auto-optimization (no competitor does this)
 ✓  Roadmap generated with dependency graph
 
 Run /solo-dev:init to start building.
@@ -220,40 +223,42 @@ flowchart TD
     classDef quality fill:#f59e0b,color:#1a1a1a,stroke:#d97706
     classDef memory fill:#8b5cf6,color:#fff,stroke:#7c3aed
     classDef terminal fill:#f3f4f6,stroke:#6b7280,color:#374151
+    classDef checkpoint fill:#ec4899,color:#fff,stroke:#db2777
 
     U([You]):::terminal --> O[Orchestrator]:::orch
 
+    O --> PF["☑ Pre-Flight Checkpoint<br/>Confirm understanding · effort · assumptions<br/>Discovery + strategy integrated here"]:::checkpoint
+
     subgraph RESEARCH["  Research & Validation  "]
-        P0["Phase 0 · Market Validation<br/>Is this worth building?"]:::research
-        P12["Phase 1 · Design Loop<br/>product · ux · tech research<br/>Persona vote 3/3 · max 3 rounds"]:::research
+        P0["Phase 0 · Market Validation<br/>Is this worth building?<br/>Innovation Path for novel ideas"]:::research
+        P12["Phase 1 · Design Loop<br/>product · ux · tech research<br/>Devil's advocate · Persona vote 3/3"]:::research
     end
 
+    PF --> P0
+    P0 -->|VIABLE| P12
+    P0 -.->|NOT VIABLE| U
+
+    P12 --> MF["☑ Mid-Flight Checkpoint<br/>Confirm design spec before build<br/>Skip for S features"]:::checkpoint
+
     subgraph IMPL["  Implementation + Business Validation  "]
-        P2["Phase 2 · Parallel Build<br/>frontend · backend · ui · data · test<br/>Strict file ownership · contract validation"]:::impl
+        P2["Phase 2 · Parallel Build<br/>frontend · backend · ui · data · test<br/>Spike/experiment modes available"]:::impl
         BV["Business Validation (parallel)<br/>Business logic · Compliance · Competitive gaps"]:::quality
     end
 
+    MF -->|build| P2
+    MF -->|build| BV
+    P2 -.->|SPEC_GAP| P12
+
     subgraph QUALITY["  Quality Gate  "]
-        GC["Gap Check<br/>Cross-package completeness<br/>gap-checker agent"]:::quality
+        GC["Gap Check<br/>Cross-package + layer completeness"]:::quality
         ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
         DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
-        VQA["Visual QA<br/>Screenshot capture + design token check"]:::quality
-        P3["Phase 3 · Code Review + Security<br/>CR: 4 dimensions · SR: Threat modeling<br/>Parallel · max 3 rounds"]:::quality
+        VQA["Visual QA<br/>Screenshot + design token check"]:::quality
+        P3["Phase 3 · Code Review + Security<br/>Parallel · max 3 rounds"]:::quality
         P45["Phase 4+5 · QA<br/>Functional correctness"]:::quality
         P7["Phase 7 · Final Acceptance<br/>Persona vote 3/3"]:::quality
-        P8["Phase 8 · Demo + Ship<br/>Playwright video · docs"]:::quality
     end
 
-    subgraph LEARNING["  Learning  "]
-        MC[memory-curator]:::memory
-        SE[strategy-evolver]:::memory
-    end
-
-    O --> P0
-    P0 -->|VIABLE| P12
-    P0 -.->|NOT VIABLE| U
-    P12 -->|APPROVED| P2
-    P12 -->|APPROVED| BV
     P2 --> GC
     BV --> GC
     GC --> ST
@@ -262,22 +267,31 @@ flowchart TD
     VQA --> P3
     P3 --> P45
     P45 --> P7
-    P7 -->|APPROVED| P8
     P7 -.->|REJECTED| P12
-    P8 --> SHIP([Ship]):::terminal
-    SHIP --> MC
+
+    P7 --> POF["☑ Post-Flight Checkpoint<br/>Ship · fix deferred items · choose demo<br/>Effort calibration · diff summary"]:::checkpoint
+
+    subgraph SHIP_LEARN["  Ship & Learn  "]
+        P8["Phase 8 · Demo + Ship<br/>Playwright video · docs"]:::quality
+        MC[memory-curator<br/>Failure learnings · decision expiry]:::memory
+        SE[strategy-evolver<br/>2x weight on failures]:::memory
+    end
+
+    POF -->|ship| P8
+    P8 --> MC
     MC --> SE
     SE -.->|Improved strategies| O
 ```
 
-### Agent Roster (20 agents)
+### Agent Roster (22 agents)
 
 | Layer | Agents | What they do |
 |-------|--------|-------------|
-| **Research** | `orchestrator` · `product-researcher` · `ux-researcher` · `tech-architect` | Coordinate, research markets, design UX, plan architecture |
+| **Discovery** | `discovery-agent` · `venture-strategist` | Deep problem exploration (5-Whys, Jobs-to-be-Done, simulated interviews, assumption auditing), 10x opportunity scanning, competitive white-space mapping, combinatorial feature synergies, category creation assessment |
+| **Research** | `orchestrator` · `product-researcher` · `ux-researcher` · `tech-architect` | Coordinate, research markets with lateral thinking and white-space identification, design UX, plan architecture |
 | **Validation** | `market-validator` · `persona-validator` · `business-validator` · `security-reviewer` · `gap-checker` · `smoke-tester` · `drift-detector` | Gate quality — commercial viability with 3-tier verdicts, user fit, business logic/compliance/competitive gaps (parallel with implementation), sole owner of all security checks, cross-package implementation completeness in monorepo projects, runtime verification via build + server + endpoint testing, drift detection across 4 modes (vague specs, contract drift, stale memory, unverified patterns) |
 | **Implementation** | `frontend-agent` · `backend-agent` · `ui-agent` · `data-agent` · `test-agent` | Build in parallel with strict file ownership and contract validation |
-| **Learning** | `code-reviewer` · `qa-validator` · `memory-curator` · `strategy-evolver` | 4 dimensions: logic correctness, maintainability, scalability, tech debt. Compress memory, improve strategies over time |
+| **Learning** | `code-reviewer` · `qa-validator` · `memory-curator` · `strategy-evolver` | 4 dimensions: logic correctness, maintainability, scalability, tech debt. Compress memory, improve strategies over time, combinatorial opportunity analysis across features |
 
 > **Foundation projects:** If your template includes its own `.claude/agents/`, solo-dev delegates implementation to them and focuses on research, validation, and learning.
 
@@ -448,7 +462,7 @@ For deeper details, see the [`docs/`](./docs) directory or the [online documenta
 | Document | Covers |
 |----------|--------|
 | [Design](docs/design.md) | Full system design and principles |
-| [Agent Architecture](docs/agent-architecture.md) | All 20 agents — roles, ownership, skills |
+| [Agent Architecture](docs/agent-architecture.md) | All 22 agents — roles, ownership, skills |
 | [Memory Flow](docs/memory-flow.md) | Memory layers, token budgets, session flow |
 | [Agent Feedback](docs/agent-feedback-flow.md) | Inter-agent communication protocols |
 | [Workflow](docs/workflow.md) | Phase-by-phase lifecycle and loop rules |

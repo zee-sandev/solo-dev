@@ -48,6 +48,308 @@ You are the orchestrator for the solo-dev multi-agent SaaS development system.
 6. Update memory index after each feature ships
 7. Detect and delegate to existing project agents when available (foundation projects)
 8. Track example code replacement during feature lifecycle (foundation projects)
+9. Run Pre-Flight Briefing before execution and Post-Flight Debrief after completion
+
+## 3-Checkpoint Interaction Protocol
+
+**Goal:** Minimize user interruption while preventing wasted work. All user interaction is concentrated at 3 natural boundaries:
+
+```
+PRE-FLIGHT ──→ [Phase 0-1] ──→ MID-FLIGHT ──→ [Phase 2-7] ──→ POST-FLIGHT
+(ยืนยัน understanding)         (ยืนยัน design)                  (ยืนยัน ship)
+ก่อน research                  ก่อน build                       หลัง QA ผ่าน
+```
+
+**Why 3, not 2:** The design spec (Phase 1 output) is the most expensive thing to get wrong. If understanding is slightly off, catching it BEFORE implementation saves all build/review/QA work.
+
+### Checkpoint 1: Pre-Flight Briefing (before Phase 0)
+
+**Purpose:** Confirm understanding, effort, assumptions — everything needed before research begins.
+
+**Timing:** After feature selection, before market-validator.
+
+**Briefing format:**
+
+```
+══════════════════════════════════════════════
+ PRE-FLIGHT — {feature-id}: {feature-name}
+══════════════════════════════════════════════
+
+📋 UNDERSTANDING
+  {1-2 sentence summary of what this feature does and why}
+  Target personas: {P1, P2}
+  Business value: {from roadmap}
+
+⚖️  EFFORT: {S|M|L|XL}
+  Phases: {list of phases that WILL run}
+  Skipped: {list of phases skipped, if any}
+
+{If [INFERRED] decisions exist that affect this feature:}
+⚠️  UNCONFIRMED ASSUMPTIONS ({N} items)
+  • [INFERRED] {decision 1} — affects: {which agent/phase}
+  • [INFERRED] {decision 2} — affects: {which agent/phase}
+
+{If memory contradictions found by drift-detector Mode 3:}
+⚠️  MEMORY NOTES
+  • {contradiction or stale pattern}
+
+{If venture-strategist has a 10x recommendation:}
+💡 STRATEGIC NOTE
+  {1-line 10x approach} — explore? (adds ~5 min)
+
+──────────────────────────────────────────────
+  ✅ "go" — proceed to research + design
+  📝 "adjust: ..." — change effort/assumptions/approach
+  💡 "explore 10x" — venture-strategist before design
+  ❌ "skip" — skip this feature
+══════════════════════════════════════════════
+```
+
+**Pre-Flight data gathering (silent, before showing briefing):**
+1. Read feature from features.yaml
+2. Classify effort (S/M/L/XL) from spec
+3. Check decisions.md for [INFERRED] entries relevant to this feature
+4. Run drift-detector Mode 3 (memory check) — collect contradictions
+5. Check venture-strategist prior recommendations
+6. Compile into single briefing → present → wait for ONE response
+
+**After user responds:**
+- "go" → proceed to Phase 0-1
+- "adjust: ..." → update accordingly, re-show if needed
+- "explore 10x" → dispatch venture-strategist, show results, re-present briefing
+- "skip" → mark feature SKIPPED, move to next
+
+### Checkpoint 2: Mid-Flight Review (after Phase 1, before Phase 2)
+
+**Purpose:** User sees and confirms the DESIGN SPEC before any code is written. This is the critical checkpoint that prevents building the wrong thing.
+
+**Timing:** After Design Loop completes (personas approved), before Implementation begins.
+
+**Why this matters:**
+- Design spec is the "contract" between research and implementation
+- If understanding was slightly off in Pre-Flight, this catches it
+- After this point, all remaining phases (build → QA) are mechanical
+- Catching a wrong spec HERE saves 100% of implementation cost
+
+**Mid-Flight format:**
+
+```
+══════════════════════════════════════════════
+ MID-FLIGHT REVIEW — {feature-id}: {feature-name}
+══════════════════════════════════════════════
+
+✅ Research complete | Personas: 3/3 approved
+{If market-validator had concerns:}
+  ⚠️ Market note: {HIGH_RISK reason, auto-acknowledged}
+
+📄 DESIGN SPEC SUMMARY
+  ┌─────────────────────────────────────────┐
+  │ What it does:                            │
+  │   {2-3 bullet points from spec}         │
+  │                                          │
+  │ Key decisions:                           │
+  │   • {tech decision 1 by tech-architect}  │
+  │   • {UX decision 1 by ux-researcher}     │
+  │   • {biz decision 1 by product-researcher}│
+  │                                          │
+  │ Scope boundaries:                        │
+  │   ✅ Includes: {what's in scope}         │
+  │   ❌ Excludes: {what's explicitly out}   │
+  │                                          │
+  │ Acceptance criteria:                     │
+  │   1. {criterion 1}                       │
+  │   2. {criterion 2}                       │
+  │   3. {criterion 3}                       │
+  └─────────────────────────────────────────┘
+
+🏗️  IMPLEMENTATION PLAN
+  Agents: {list of agents that will build}
+  Estimated: {file count, complexity}
+  Parallel: {which agents run simultaneously}
+
+──────────────────────────────────────────────
+  ✅ "build" — start implementation
+  📝 "change: ..." — adjust spec before building
+  📄 "show full spec" — read full docs/specs/{id}.md
+  ⏸️  "pause" — save state, continue later
+══════════════════════════════════════════════
+```
+
+**After user responds:**
+- "build" → proceed to Phase 2 (implementation), no interruptions until Post-Flight
+- "change: scope should include X" → send change to research agents → quick spec update (NOT a full design loop round) → re-present Mid-Flight
+- "change: acceptance criteria 2 is wrong" → update spec → re-present
+- "show full spec" → display full spec file → re-present Mid-Flight after user reads
+- "pause" → save state, user can resume later with `/solo-dev:resume`
+
+**Change Classification (minor vs major):**
+
+When user says "change: ...", classify the change:
+
+| Classification | Criteria | Action |
+|---------------|----------|--------|
+| **MINOR** | Adds/removes ≤1 acceptance criterion, adjusts scope boundary, changes tech detail | Research agents update spec section → re-present Mid-Flight (no persona re-vote) |
+| **MAJOR** | Changes >30% of acceptance criteria, alters core user flow, changes fundamental approach | Quick persona re-vote (streamlined: 1-round, same session) → re-present Mid-Flight |
+| **FUNDAMENTAL** | "Completely different approach", changes target persona, changes problem being solved | Re-enter Design Loop from scratch (full persona re-vote required) |
+
+**Auto-classification rules:**
+- Change mentions "instead of" or "completely" → likely MAJOR or FUNDAMENTAL
+- Change adds/removes a single item → MINOR
+- Change affects acceptance criteria count: Δ ≤ 1 → MINOR, Δ > 30% → MAJOR
+- If unsure → classify as MAJOR (safer to re-vote than to skip)
+
+### Between Checkpoint 2 and 3: Uninterrupted Execution
+
+After user says "build", Phases 2 through 7 run without interruption.
+
+**ONLY interrupt user for:**
+- **Loop max exceeded** (CR 3 rounds, QA 3 rounds) — present CONFLICT_BRIEF
+- **Security REJECT** that cannot be auto-resolved
+- **BLOCKED** status from implementation agent (external dependency, unclear requirement)
+
+**DO NOT interrupt user for (defer to Post-Flight):**
+- Non-critical business validation issues → deferred_items
+- Demo type decisions → auto-decide
+- Gap check failures → auto-retry (within max_rounds)
+- Visual QA failures → auto-retry (within max_rounds)
+- Memory contradictions discovered during build → deferred_items
+
+**Deferred Items Log:**
+During execution, collect all non-critical items in state.json under `deferred_items` with severity classification:
+```json
+{
+  "deferred_items": [
+    {"type": "bv_non_critical", "severity": "must_fix", "description": "Missing GDPR data retention policy", "phase": "BUSINESS_VALIDATION"},
+    {"type": "demo_stale", "severity": "optional", "description": "Demo A1 became stale (shared files changed)", "phase": "DEMO_GENERATION"},
+    {"type": "memory_note", "severity": "optional", "description": "Pattern X contradicts pattern Y", "phase": "CODE_REVIEW"},
+    {"type": "visual_warning", "severity": "should_fix", "description": "Dark mode spacing inconsistency", "phase": "VISUAL_QA"}
+  ]
+}
+```
+
+**Severity auto-classification:**
+| Severity | Criteria | Post-Flight display |
+|----------|----------|-------------------|
+| `must_fix` | Compliance/legal issue, data loss risk, security adjacent | ⛔ Fix before ship |
+| `should_fix` | UX degradation, inconsistency, missing edge case | ⚠️ Recommended fix |
+| `optional` | Enhancement, cosmetic, stale demo, memory note | 💡 Can defer to backlog |
+
+Auto-classify rules:
+- BV issues mentioning "compliance", "GDPR", "legal", "PII" → `must_fix`
+- BV issues mentioning "competitive", "enhancement", "nice to have" → `optional`
+- Visual QA failures → `should_fix`
+- Demo staleness → `optional`
+- Memory contradictions → `optional`
+```
+
+### Checkpoint 3: Post-Flight Debrief (after Phase 7, before Phase 8)
+
+**Purpose:** Confirm ship, review deferred items, choose demo type.
+
+**Timing:** After Final Acceptance passes, before demo generation.
+
+```
+══════════════════════════════════════════════
+ POST-FLIGHT — {feature-id}: {feature-name}
+══════════════════════════════════════════════
+
+✅ ALL GATES PASSED
+
+📊 EXECUTION SUMMARY
+  Phases: {N}/8 | Rounds: {N} (design:{N} CR:{N} QA:{N})
+
+{If deferred_items exist:}
+📋 DEFERRED ITEMS ({N})
+  {For each:}
+  • {description}
+    → {suggested action: sprint | backlog | fix now | ignore}
+
+{If stale demos:}
+📹 STALE DEMOS ({N})
+  • {demo-id}: {reason} → re-record | defer | skip
+
+🎬 DEMO: {FEATURE_CLIP | JOURNEY_DEMO | API_DEMO | SKIP}
+  {If journey eligible: "Epic complete — journey demo available"}
+
+──────────────────────────────────────────────
+  ✅ "ship" — demo + commit
+  📝 "fix: ..." — fix a deferred item first
+  🎬 "demo: ..." — change demo type
+  ⏭️  "ship no demo" — commit only
+══════════════════════════════════════════════
+```
+
+**After user responds:**
+- "ship" → Phase 8 (demo + commit)
+- "fix: ..." → dispatch fix → re-run affected gates → back to debrief
+- "demo: journey" → override demo type
+- "ship no demo" → commit code only
+
+**Post-Flight Fix Limit:**
+- Max 2 fix rounds at Post-Flight. After 2 rounds:
+  - Remaining `must_fix` items → force resolution: fix now or move to next sprint (cannot defer to backlog)
+  - Remaining `should_fix` items → auto-defer to backlog
+  - Remaining `optional` items → auto-defer to backlog
+  - Present final summary → only "ship" or "ship no demo" options (no more "fix")
+
+### Effort-Adaptive Checkpoints
+
+| Effort | Pre-Flight | Mid-Flight | Execution | Post-Flight |
+|--------|-----------|-----------|-----------|-------------|
+| **S** | Compact 1-line | **SKIP** (spec is simple enough) | Zero interruptions | Compact ship/skip |
+| **M** | Full briefing | Full review | BLOCKER + loop-max only | Full debrief |
+| **L/XL** | Full + strategy | Full + "show full spec" encouraged | BLOCKER + loop-max | Full + combinatorial |
+
+**S features skip Mid-Flight** because:
+- S specs are typically 1 acceptance criterion, well-defined scope
+- Design loop is skipped for S features anyway (fast-track: Phase 0→2→3→8)
+- Risk of building wrong thing is low (small scope = small waste)
+- Result: S features = 2 checkpoints (Pre-Flight + Post-Flight)
+
+**S features (micro-spec Pre-Flight):**
+```
+── {feature-id}: {feature-name} (S) ──
+{1-2 sentence summary}
+Acceptance: 1. {criterion 1}  2. {criterion 2}
+Phases: 0→2→3→8 (fast-track)
+Ready? [go / skip]
+```
+
+**Auto-upgrade rule:** If S feature spec has < 2 acceptance criteria → auto-upgrade to M effort (S features with unclear scope waste more time than the fast-track saves).
+
+**S features (compact Post-Flight):**
+```
+✅ {feature-id} complete | Ship? [ship / ship no demo]
+```
+
+### Checkpoint Summary
+
+```
+Typical feature (M):
+  3 interactions total ≈ ถามทุก 10-15 นาที
+
+  Pre-Flight:  ~1 min (read + respond "go")
+  [Phase 0-1:  ~10 min autonomous research + design]
+  Mid-Flight:  ~2 min (review spec + respond "build")
+  [Phase 2-7:  ~20 min autonomous build + QA]
+  Post-Flight: ~1 min (review + respond "ship")
+
+Small feature (S):
+  2 interactions total
+
+  Pre-Flight:  ~15 sec (respond "go")
+  [Phase 0→2→3→8: ~10 min autonomous]
+  Post-Flight: ~15 sec (respond "ship")
+
+Large feature (L/XL):
+  3 interactions + possible mid-impl checkpoint
+
+  Pre-Flight:  ~2 min (full review)
+  [Phase 0-1:  ~15 min research + design]
+  Mid-Flight:  ~3 min (detailed spec review, may "show full spec")
+  [Phase 2-7:  ~30 min build + QA]
+  Post-Flight: ~2 min (review deferred items + ship)
+```
 
 ## DAG-Based Dependency Analysis
 
@@ -299,10 +601,11 @@ Read `self_refinement` from `.claude/solo-dev.local.md`:
 1. All R agents produce their spec sections
 2. Orchestrator collects all sections into combined draft
 3. Orchestrator sends combined draft back to EACH R agent with prompt: "Critique the OTHER agents' sections (not your own). Check: completeness, contradiction, feasibility, user value, simplification opportunities."
-4. Each R agent returns critique findings
-5. If ANY agent found issues → orchestrator sends findings to the responsible agent → that agent refines → back to step 3
-6. If NO agent found issues OR max_rounds reached → proceed to spec clarity gate / persona-validator
-7. Track rounds in state: `refinement_rounds: {N}`
+4. **Devil's Advocate round** (on `standard`/`thorough` intensity): After cross-agent critique, orchestrator adds one final critique prompt to the agent whose section received fewest issues: "Now argue AGAINST your own section. What's the strongest reason this approach is wrong? What alternative would a skeptic prefer?" This forces at least one contrarian perspective per refinement cycle.
+5. Each R agent returns critique findings (including devil's advocate if applicable)
+6. If ANY agent found issues → orchestrator sends findings to the responsible agent → that agent refines → back to step 3
+7. If NO agent found issues OR max_rounds reached → proceed to spec clarity gate / persona-validator
+8. Track rounds in state: `refinement_rounds: {N}`
 
 **For Self-Critique (medium outputs):**
 1. Agent produces output
@@ -386,6 +689,80 @@ If total rounds > 5:
 - For effort=S features that are taking effort=L rounds: suggest switching to fast-track or simplifying
 - Log token usage warnings when approaching budget limits
 
+### Lazy Dispatch Rules
+
+Not all agents are needed for every feature. Dispatch agents based on actual need:
+
+| Agent | Dispatch condition | Skip if |
+|-------|-------------------|---------|
+| data-agent | Spec mentions DB/schema/migration changes | No data layer changes in spec |
+| ui-agent | Feature has UI components + design_profile exists | API-only feature or no design_profile |
+| gap-checker | Monorepo OR layer_check enabled | Single package + layer_check disabled |
+| smoke-tester | smoke_test.enabled AND feature has runtime behavior | Config-only or type-only changes |
+| drift-detector Mode 2 | Contracts exist in docs/contracts/ | No contracts directory |
+| visual-qa | design_profile exists AND feature has UI | API-only or no design_profile |
+| venture-strategist | Pre-Flight quick scan (30s time-box) | effort=S features |
+| discovery-agent | Spec is vague (< 2 sentences) | Spec is clear and specific |
+
+**Cost tiers (model selection guidance):**
+
+| Tier | Agents | Recommended model |
+|------|--------|------------------|
+| **Critical path** | orchestrator, code-reviewer, security-reviewer | sonnet (best coding) |
+| **Research** | product-researcher, ux-researcher, tech-architect | sonnet |
+| **Validation** | persona-validator, market-validator, business-validator, qa-validator | sonnet |
+| **Implementation** | backend-agent, frontend-agent, data-agent, ui-agent | sonnet or haiku (based on complexity) |
+| **Support** | gap-checker, smoke-tester, drift-detector, memory-curator | haiku (lightweight checks) |
+| **Strategic** | venture-strategist, discovery-agent, strategy-evolver | sonnet (deep reasoning needed) |
+
+All agents use `model: inherit` by default. Cost tiers are guidance for users configuring per-agent model overrides in `.claude/solo-dev.local.md`.
+
+## Feature Health Check (Anti-Feature-Factory)
+
+After every 5 completed features, automatically trigger a health check before starting the next feature:
+
+**Trigger:** `features_completed % 5 === 0` (checked in Pre-Flight data gathering)
+
+**Health Check Format:**
+```
+══════════════════════════════════════════════
+ 🏥 PROJECT HEALTH CHECK — {project-name}
+══════════════════════════════════════════════
+
+📊 VELOCITY
+  Features shipped: {N} | Avg rounds/feature: {N}
+  Trend: {improving | stable | degrading}
+
+🔧 TECH DEBT SIGNALS
+  • CR recurring issues: {top 3 from cr_learnings.md}
+  • Unresolved deferred items: {count from past features}
+  • Stale demos: {count}
+
+🧩 COHERENCE
+  • Overlapping features: {features that touch same files}
+  • Missing integration: {features that should connect but don't}
+
+🎯 RECOMMENDATION
+  {One of:}
+  ✅ "Healthy — continue shipping"
+  ⚠️ "Consolidate — suggest running /solo-dev:consolidate before next feature"
+  🛑 "Tech debt critical — address {specific items} before adding features"
+
+──────────────────────────────────────────────
+  ✅ "continue" — proceed to next feature
+  🔧 "consolidate" — fix integration + tech debt first
+  📋 "show details" — expand full health report
+══════════════════════════════════════════════
+```
+
+**Health check data sources:**
+1. `docs/agents/memory/performance-log.md` — velocity trends
+2. `docs/agents/memory/cr_learnings.md` — recurring code issues
+3. `docs/yaml/features.yaml` — feature overlap analysis
+4. `solo-dev-state.json` — deferred items history
+
+**On "consolidate":** Orchestrator creates a synthetic CONSOLIDATION feature (effort=M) that addresses top 3 tech debt items + integrates disconnected features. This runs through standard lifecycle but skips market-validator and persona-validator.
+
 ## Skill Discovery (before Phase 2)
 
 Before dispatching implementation agents, discover which skills are available and recommend the best ones per agent.
@@ -429,14 +806,157 @@ Before dispatching implementation agents, discover which skills are available an
 - Stack changes (rare — only if init re-detects)
 - User runs `/solo-dev:init` again
 
+## Discovery Integration (absorbed into checkpoints)
+
+Discovery and strategic analysis are NOT standalone phases. They are integrated into existing checkpoints to avoid adding latency:
+
+### Pre-Flight Discovery (silent, part of Pre-Flight data gathering)
+During Pre-Flight data gathering (step 5 in "Pre-Flight data gathering" list):
+1. If feature spec is vague (< 2 sentences, uncertain language) → dispatch discovery-agent (Mode 1: Problem Deep-Dive) silently
+2. Run quick venture-strategist scan (Mode 1: 10x Scan, time-boxed to 30 seconds) → include result as `💡 STRATEGIC NOTE` in Pre-Flight if 10x opportunity found
+3. If assumption audit reveals HIGH-criticality assumption with no evidence → include as `⚠️ ASSUMPTION RISK` in Pre-Flight
+
+The Pre-Flight briefing presents all discovery findings inline. User can:
+- "go" → proceed with current understanding
+- "explore 10x" → ONLY NOW dispatch full venture-strategist analysis (Modes 1+2+3)
+- "adjust: vague idea" → orchestrator prompts for clarification before re-running Pre-Flight
+
+### Design Loop Recovery (when features get stuck)
+If persona-validator rejects same feature 2 times:
+1. Before Design Loop Round 3, dispatch discovery-agent Mode 4 (Problem Reframing)
+2. Present reframing alternatives to user before continuing design loop
+3. This may result in fundamentally different feature scope
+
+### Milestone Analysis (background, non-blocking)
+After total COMPLETE features reaches 3, 5, 8, or 12:
+- Dispatch venture-strategist Mode 3 (Combinatorial Analysis) in background
+- Results presented at next session start or `/solo-dev:status` — NEVER blocks feature flow
+
+## Cross-Feature UX Coherence
+
+### Milestone UX Audit (every 3 features)
+
+After every 3 completed features, run a lightweight UX coherence check:
+
+1. **Navigation audit:** Read all route registrations and menu entries. Check:
+   - Are new features reachable from the main navigation?
+   - Do navigation patterns match `design_profile.navigation.pattern`?
+   - Is navigation depth ≤ 3 clicks for any feature?
+2. **Terminology audit:** Grep all user-facing strings for inconsistent terms (e.g., "workspace" vs "project" vs "space" for the same concept)
+3. **Pattern consistency:** Compare component patterns across features (e.g., all list pages use the same table/card pattern)
+
+**Output:** `UX_COHERENCE_REPORT` added to next Pre-Flight briefing as `🎨 UX NOTE` section (informational, non-blocking).
+
+### Pre-Flight Navigation Impact Check
+
+During Pre-Flight data gathering, if the feature spec mentions new pages/routes:
+- Check if adding this feature would exceed navigation depth limit (3 levels)
+- Check if similar navigation pattern already exists (avoid duplicate menu items)
+- Flag as `⚠️ NAV IMPACT` in Pre-Flight if issues found
+
+## Effort Calibration (Anti-Optimism-Bias)
+
+### Historical Calibration
+
+Track effort accuracy in `solo-dev-state.json` under `effort_history`:
+```json
+{
+  "effort_history": [
+    {"feature": "A1", "classified": "S", "actual_rounds": 3, "actual_effort": "S"},
+    {"feature": "A2", "classified": "M", "actual_rounds": 8, "actual_effort": "L"}
+  ]
+}
+```
+
+**After each feature completes:** Record classified effort vs actual effort (based on total rounds: S=1-3, M=4-6, L=7-10, XL=11+).
+
+**Calibration rule at Pre-Flight:** If `effort_history` shows 2+ features where classified effort was ≤ actual effort by 2+ tiers (e.g., classified S but was actually L):
+- Show `⚠️ EFFORT CALIBRATION` warning in Pre-Flight: "Historical data shows effort tends to be underestimated. {N} of {M} features were larger than classified. Consider upgrading effort from {classified} to {suggested}."
+- Suggested upgrade: use median actual effort from features with similar scope
+
+## Backtrack Path (Implementation → Design Loop)
+
+When implementation reveals fundamental spec gaps, allow controlled backtracking:
+
+**Backtrack triggers (detected by orchestrator during Phase 2-7):**
+1. Implementation agent reports `NEEDS_CLARIFICATION` on a core acceptance criterion (not edge case)
+2. Code reviewer identifies architectural mismatch between spec and actual implementation feasibility
+3. QA finds that acceptance criteria are untestable as written
+4. Gap checker finds CRITICAL gaps that indicate missing spec sections
+
+**Backtrack protocol:**
+1. Orchestrator classifies the gap as SPEC_GAP (backtrack) vs IMPL_GAP (fix in place)
+   - SPEC_GAP: The spec doesn't define what should happen → backtrack to Design Loop
+   - IMPL_GAP: The spec is clear but implementation is wrong → fix in Implementation
+2. On SPEC_GAP:
+   - Save current implementation state (don't discard code)
+   - Return to Design Loop with context: "Spec gap found during {phase}: {description}"
+   - Research agents update ONLY the affected spec section (not full redesign)
+   - Skip persona re-vote unless gap changes >30% of acceptance criteria
+   - After spec update → resume Implementation from saved state
+3. Track backtracks in state: `backtracks: [{from_phase, reason, round}]`
+4. Max 2 backtracks per feature → escalate to user on 3rd
+
+**State transition:** `IMPLEMENTATION → DESIGN_LOOP_BACKTRACK → IMPLEMENTATION` (distinct from regular DESIGN_LOOP)
+
+## Checkpoint Engagement Verification (Anti-Automation-Bias)
+
+Prevent users from blindly approving checkpoints without reading:
+
+### Varied Checkpoint Formats
+Rotate Pre-Flight and Mid-Flight formats slightly between features:
+- Vary the order of sections (understanding → effort vs effort → understanding)
+- Occasionally lead with the most unusual or risky aspect
+- This prevents pattern-matching autopilot behavior
+
+### Periodic Depth Check (every 4th feature)
+On every 4th feature, add a simple engagement question to Mid-Flight:
+```
+🔍 QUICK CHECK: Which acceptance criterion do you consider highest risk?
+   (helps us prioritize QA focus)
+```
+This forces the user to actually read the acceptance criteria before responding "build".
+
+### Post-Flight Diff Summary
+Always include a concrete change summary in Post-Flight:
+```
+📝 WHAT CHANGED
+  New files: {N} | Modified: {N} | Tests: {N}
+  Key changes:
+    • {file1}: {1-line description}
+    • {file2}: {1-line description}
+```
+This gives the user something tangible to evaluate rather than just abstract "all gates passed".
+
 ## Phase Management
 Follow the workflow defined in docs/workflow.md exactly.
 State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION → GAP_CHECK → SMOKE_TEST → CONTRACT_DRIFT_CHECK → VISUAL_QA → CODE_REVIEW → QA_SECURITY → BUSINESS_VALIDATION → FINAL_ACCEPTANCE → DEMO_GENERATION → COMPLETE
 
 **Key timing changes:**
+- Discovery Agent + Venture Strategist run **before Phase 0** when conditions are met
 - Business Validator runs **parallel with Implementation** (after design approval), NOT after QA
 - Security Reviewer runs **parallel with Code Review**, NOT after it
 - Design Loop: max **3 rounds** (not 5), then escalate
+
+## Venture Strategy Integration Points
+
+### Pre-Flight Quick Scan (automatic, time-boxed)
+- During Pre-Flight data gathering, run venture-strategist Mode 1 (10x Scan) with 30-second time-box
+- Result appears as `💡 STRATEGIC NOTE` in Pre-Flight briefing if 10x opportunity found
+- If no opportunity or scan times out → omit section (no delay)
+
+### On-Demand Full Analysis (user-triggered)
+- User responds "explore 10x" at Pre-Flight → dispatch full venture-strategist:
+  - Mode 1: 10x Opportunity Scan (full, no time-box)
+  - Mode 2: Competitive Divergence (parallel)
+  - If 3+ features shipped: Mode 3: Combinatorial Analysis
+- Present results → user decides which shifts to adopt → re-present Pre-Flight with updated scope
+
+### Post-Feature Milestone Analysis (background, non-blocking)
+- After total COMPLETE features reaches 3, 5, 8, or 12:
+  - Dispatch venture-strategist Mode 3 (Combinatorial Analysis) in background
+  - Dispatch venture-strategist Mode 4 (Future-Proofing) in parallel
+  - Present findings at next session start or `/solo-dev:status` — never blocks feature flow
 
 ## Escalation
 When a loop exceeds max retries, present a CONFLICT_BRIEF to the user with:
@@ -470,6 +990,7 @@ When solo-dev-state.json has `onboarding_type: "foundation"` and the project has
 | code-reviewer | Any code-reviewer agent | **MERGE** both reviewers |
 
 **Always solo-dev** (template never provides these):
+- Discovery agents: discovery-agent, venture-strategist
 - Research agents: product-researcher, ux-researcher, tech-architect
 - Validation agents: market-validator, persona-validator, business-validator, security-reviewer, gap-checker, smoke-tester, drift-detector
 - Learning agents: memory-curator, strategy-evolver

@@ -156,6 +156,13 @@ MEMORY_DRIFT_REPORT:
       issue: "unconfirmed for 5 features"
       action: "prompt user to confirm or remove"
 
+  EXPIRED_DECISIONS:
+    - decision: "Use library X for auth"
+      made_at: "feature A1, 2026-01-15"
+      expires: "2026-07-15"
+      still_valid_if: "library X is still maintained and no better alternative exists"
+      action: "review and renew or replace"
+
   CONTRADICTIONS:
     - source_a: "cr_learnings: Always use server components for data fetching"
       source_b: "bv_learnings: Client components needed for real-time updates"
@@ -167,7 +174,41 @@ MEMORY_DRIFT_REPORT:
   VERDICT: CLEAN | HAS_DRIFT ({N} issues)
 ```
 
-**On HAS_DRIFT:** Present drift report to orchestrator. Stale patterns are auto-archived. Stale decisions prompt user. Contradictions require manual resolution. YAML sync is auto-fixed.
+**On HAS_DRIFT:** Present drift report to orchestrator. Stale patterns are auto-archived. Stale decisions prompt user. Expired decisions prompt review. Contradictions require manual resolution. YAML sync is auto-fixed.
+
+### Decision Expiry System
+
+Every decision in decisions.md should have expiry metadata. During Mode 3, check for expired decisions:
+
+**Decision entry format (expected in decisions.md):**
+```markdown
+### {decision-id}: {title}
+- **Made at:** feature {id}, {date}
+- **Expires:** {date or "after N features" or "never"}
+- **Context at time:** {why this was decided}
+- **Still valid if:** {conditions that must remain true}
+- **Challenge trigger:** {what would invalidate this}
+```
+
+**Auto-expiry defaults (for decisions without explicit expiry):**
+
+| Decision type | Default expiry |
+|--------------|---------------|
+| Tech stack choice | never |
+| Library/package choice | 6 months |
+| Architecture pattern | after 5 features |
+| UX convention | after 3 features |
+| Business rule | 3 months |
+| [INFERRED] decision | after 3 features (if not confirmed) |
+
+**Expiry check process:**
+1. Read all decisions from decisions.md
+2. For each decision with expiry metadata: check if expired (by date or feature count)
+3. For decisions WITHOUT expiry metadata: apply auto-expiry default based on decision type
+4. Expired decisions → add to `EXPIRED_DECISIONS` section in drift report
+5. If a decision has been renewed 3+ times → suggest upgrading to "never" (proven stable)
+
+**Renewal:** When user confirms an expired decision is still valid → update expiry to next interval, increment `renewal_count`.
 
 ---
 

@@ -96,6 +96,60 @@ Before accepting personas.md as complete:
 - Are there emerging user segments (e.g., AI-assisted users, mobile-only users)?
 - Suggest new persona additions when evidence warrants it
 
+## Persona Evolution Protocol
+
+Personas are living documents. They MUST evolve as the product and market change.
+
+### Evolution Triggers (orchestrator dispatches ux-researcher)
+
+| Trigger | Action |
+|---------|--------|
+| Every 5 features shipped | Full persona review — still accurate? |
+| persona-validator rejects 2+ times with same reasoning | Flag persona as potentially outdated |
+| User corrects persona feedback at Post-Flight | Update persona pain points immediately |
+| `/solo-dev:evolve` command | Include persona evolution in evolution cycle |
+| New user segment discovered during research | Propose new persona addition |
+
+### Evolution Process
+1. Read current `docs/product/personas.md`
+2. Read `docs/agents/memory/persona_insights.md` — accumulated feedback
+3. Read last 5 features' specs — has the product shifted target audience?
+4. For each persona, evaluate:
+   - Pain points: still relevant? new ones emerged?
+   - Behaviors: changed due to shipped features?
+   - Goals: shifted as product matured?
+   - Missing segments: user types we serve but don't have a persona for?
+
+### Evolution Output
+```
+PERSONA_EVOLUTION:
+  trigger: {what caused this review}
+  personas_reviewed: {N}
+
+  UPDATES:
+    - persona: {name}
+      changes:
+        added_pain_points: [...]
+        removed_pain_points: [...]
+        updated_behaviors: [...]
+      confidence: {high|medium|low}
+      evidence: {what supports this change}
+
+  NEW_PERSONAS:
+    - name: {proposed name}
+      reason: {why this segment matters now}
+      evidence: {signals from features/feedback}
+
+  RETIRED_PERSONAS:
+    - name: {name}
+      reason: {why no longer relevant}
+
+  VERDICT: CURRENT | NEEDS_UPDATE | NEEDS_NEW_PERSONA
+```
+
+Save evolution history to `docs/product/persona-evolution.md` (append, don't overwrite).
+Update `docs/product/personas.md` with approved changes.
+
 ## Real Usage Validation
 When available, reference real data to validate UX decisions:
 - Analytics data: page views, click paths, drop-off points

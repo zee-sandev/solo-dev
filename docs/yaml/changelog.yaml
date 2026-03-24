@@ -88,6 +88,70 @@ entries:
     type: added
     description: "Configuration options for smoke_test, drift_detection, and qa_runtime"
     feature_id: "v0.5.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Discovery-agent and venture-strategist — deep problem exploration (5-Whys, Jobs-to-be-Done, simulated interviews) and 10x opportunity scanning integrated into checkpoints"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Innovation Path in market-validator — VIABLE_EXPERIMENTAL verdict for novel features with no competitor precedent"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Persona Evolution Protocol — personas evolve every 5 features, on repeated rejections, or user corrections"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Devil's Advocate round in self-refinement cross-agent critique to prevent groupthink"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Decision Expiry System — auto-expiry defaults by decision type, renewal tracking, drift-detector checks at session start"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Failure Learning Protocol with 2x weight — structured failure entries on rollback/near-failure, anti-pattern promotion"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Feature Health Check every 5 features with consolidation mode to prevent feature factory syndrome"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Spike and Experiment execution modes — lightweight validation before committing to full 8-phase lifecycle"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Effort Calibration — historical tracking detects systematic effort underestimation with Pre-Flight warnings"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Backtrack Path — controlled implementation-to-design-loop backtrack when spec gaps are found mid-build"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Checkpoint Engagement Verification — varied formats and periodic depth questions prevent autopilot approval"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Cross-Feature UX Coherence audit every 3 features — navigation, terminology, and component pattern consistency"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: added
+    description: "Lazy dispatch rules and cost tier guidance for model overrides per agent role"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: changed
+    description: "Gap-checker enhanced with layer-based validation for all projects — checks cross-layer completeness (API↔frontend, routes↔navigation, auth↔guards)"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: changed
+    description: "3-Checkpoint interaction model with Mid-Flight design spec review, change classification, and Post-Flight fix limits"
+    feature_id: "v0.7.0"
+  - date: "2026-03-24"
+    type: changed
+    description: "Discovery integrated into checkpoints instead of standalone Phase -1 — reduces latency while preserving depth"
+    feature_id: "v0.7.0"
   - date: "2026-03-23"
     type: added
     description: "Visual quality system — design profile collection during init with live localhost preview, design token enforcement, and Phase 2.8 Visual QA gate"

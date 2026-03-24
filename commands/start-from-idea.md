@@ -12,8 +12,9 @@ You are the orchestrator for the idea development process. Spawn and coordinate 
 
 ## Process
 
-### Phase 1: Idea Exploration
-Ask clarifying questions ONE AT A TIME (not all at once):
+### Phase 1: Idea Exploration & Discovery
+
+**If the idea is clear and specific** — ask clarifying questions ONE AT A TIME (not all at once):
 1. "Tell me about your idea — even a rough description works"
 2. "Who has this problem? Describe your ideal first customer"
 3. "Have you seen similar products? What's missing or frustrating about them?"
@@ -21,6 +22,17 @@ Ask clarifying questions ONE AT A TIME (not all at once):
 5. "Any constraints I should know about? (timeline, budget, going solo vs. team)"
 
 Continue until you have a clear picture of: problem, audience, differentiation angle, budget/willingness-to-pay, constraints.
+
+**If the idea is vague or the user seems uncertain** — use discovery-agent FIRST:
+1. Dispatch discovery-agent (Mode 1: Problem Deep-Dive) to explore the problem space
+2. Discovery-agent conducts 5-Whys analysis and Jobs-to-be-Done framing
+3. Discovery-agent produces Problem Space Map with root problem, adjacent problems, hidden stakeholders
+4. Present discovery findings to user: "Here's what I found about the problem space. Does this change how you see the idea?"
+5. If user wants simulated user interviews → dispatch discovery-agent (Mode 3) with initial personas
+6. Once root problem is clear → proceed with clarifying questions above
+
+**Assumption Audit** — regardless of idea clarity:
+After collecting user's answers, dispatch discovery-agent (Mode 2: Assumption Audit) to surface high-risk assumptions. Present the assumption matrix to user before moving to Phase 2.
 
 ### Phase 2: Market Reality Check
 Use product-researcher agent + web search to find:
@@ -62,12 +74,29 @@ For each defined feature, suggest improvements across 4 dimensions:
 
 Present per-feature suggestions. User selects what to include. Unselected → backlog.md.
 
-### Phase 4c: Idea Enhancement Suggestions
-Big-picture suggestions for the overall product:
+### Phase 4c: Venture Strategy Analysis (NEW)
+Dispatch venture-strategist agent for strategic elevation:
+
+1. **10x Opportunity Scan (Mode 1):** For the top 3 features, evaluate if there's a radical 10x approach
+2. **Competitive Divergence (Mode 2):** Map white space — what does NO competitor do?
+3. **Category Creation Assessment (Mode 5):** Could this product define a new category?
+
+Present venture-strategist findings:
+- "Here are opportunities to be 10x better, not just incrementally better"
+- "Here's white space where no competitor plays"
+- "Here's how this could become a category-defining product"
+
+User selects which strategic shifts to adopt. Unselected → backlog.md with strategic rationale.
+
+### Phase 4d: Idea Enhancement Suggestions
+Big-picture suggestions for the overall product (combining product-researcher + venture-strategist insights):
 - Monetization improvements (pricing model, upsell paths)
 - Distribution ideas (viral loops, integrations, channels)
 - Product moat (lock-in mechanisms, network effects, data advantages)
 - Emerging 2025-2026 opportunities competitors haven't captured
+- **10x opportunities identified by venture-strategist**
+- **White-space plays from competitive divergence analysis**
+- **AI integration opportunities for current tech landscape**
 
 User selects → roadmap. Unselected → backlog.md.
 

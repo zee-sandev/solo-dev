@@ -1,6 +1,6 @@
 # solo-dev — Agent Architecture
 
-> 20 agents organized in 4 layers. Each agent has a defined role, skills, file ownership, and communication protocol.
+> 22 agents organized in 5 layers. Each agent has a defined role, skills, file ownership, and communication protocol.
 
 ---
 
@@ -12,16 +12,19 @@
 │  Coordinates all agents. Never writes code or designs.      │
 └────────────────────────┬────────────────────────────────────┘
                          │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-   RESEARCH LAYER   VALIDATION LAYER      LEARNING LAYER
-   R1, R2, R3       MV, PV, BV, SR, GC,   MC, SE
-                    ST, DD
-         │               │
-         └───────┬───────┘
-                 ▼
-       IMPLEMENTATION LAYER
-       I1, I2, I3, I4, I5 (parallel)
+    ┌────────────────────┼────────────────────┐
+    ▼                    ▼                    ▼
+ DISCOVERY LAYER   RESEARCH LAYER        LEARNING LAYER
+ D1, D2           R1, R2, R3             MC, SE
+    │                    │
+    └──────┬─────────────┘
+           ▼
+    VALIDATION LAYER
+    MV, PV, BV, SR, GC, ST, DD
+           │
+           ▼
+    IMPLEMENTATION LAYER
+    I1, I2, I3, I4, I5 (parallel)
 ```
 
 ---
@@ -56,6 +59,55 @@
 - State recovery: resume from last successful phase after crash/interruption
 - Commit to git after each completed feature
 - Update `solo-dev-state.json` after each phase transition
+
+---
+
+## Discovery Layer
+
+### D1 — Discovery Agent
+**ID:** `discovery-agent`
+**Color:** magenta
+
+**Role:** Deep problem space exploration for vague ideas, assumption auditing, simulated user interviews, and problem reframing when features get stuck. Ensures the team builds the RIGHT thing before building it well.
+
+**4 Modes:**
+1. **Problem Deep-Dive** — 5-Whys, Jobs-to-be-Done, Problem Space Mapping
+2. **Assumption Audit** — Surface and risk-rate every product assumption
+3. **Simulated User Interviews** — Generate realistic persona interview dialogues
+4. **Problem Reframing** — Inversion, analogy, constraint removal, perspective shifts
+
+**Reads before starting:**
+- `docs/product/personas.md`
+- `docs/agents/memory/decisions.md` (section: discovery)
+- `docs/product/idea-brief.md`
+
+**Writes after completing:**
+- `docs/agents/memory/decisions.md` (section: discovery)
+
+---
+
+### D2 — Venture Strategist
+**ID:** `venture-strategist`
+**Color:** gold
+
+**Role:** Blue-sky strategic thinking — 10x opportunity analysis, competitive white-space mapping, combinatorial feature synergies, future-proofing, and category creation assessment. Pushes beyond "is this viable?" to "is this a category-defining opportunity?"
+
+**5 Modes:**
+1. **10x Opportunity Scan** — Evaluate if features could be radically better
+2. **Competitive Divergence** — Map what NO competitor does (true white space)
+3. **Combinatorial Analysis** — Find emergent value from feature combinations
+4. **Future-Proofing** — Technology shift, market shift, AI integration opportunities
+5. **Category Creation** — Assess if the product could define a new category
+
+**Reads before starting:**
+- `docs/yaml/features.yaml`
+- `docs/product/competitive-analysis.md`
+- `docs/product/roadmap.md`
+- `docs/agents/memory/decisions.md`
+
+**Writes after completing:**
+- `docs/agents/memory/decisions.md` (section: strategy)
+- `docs/yaml/backlog.yaml` (strategic opportunities)
 
 ---
 

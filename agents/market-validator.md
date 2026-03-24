@@ -101,8 +101,54 @@ MARKET_VALIDATION:
 ## Verdict Definitions
 
 - **VIABLE** — Evidence supports building this. Proceed to Design Loop.
+- **VIABLE_EXPERIMENTAL** — No competitor evidence, but pain evidence or strategic value exists. Proceed with mandatory success metric + 2-week review checkpoint. (See Innovation Path below.)
 - **HIGH_RISK** — Concerns exist but feature may still be worth building. User must **acknowledge the risk** before proceeding. Log acknowledgment to `docs/agents/memory/decisions.md`.
 - **BLOCKER** — Serious viability concerns. Feature should NOT proceed unless user explicitly **overrides with reasoning**. Log override to `decisions.md` with `[USER_OVERRIDE]` tag.
+
+## Innovation Path (for features with no competitor precedent)
+
+When evidence check finds 0 competitors offering the feature, do NOT auto-assign HIGH_RISK. Instead, evaluate via Innovation Path:
+
+### Innovation Path Criteria
+```
+INNOVATION_VALIDATION:
+  1. User pain evidence (at least 1):
+     □ Forum/Reddit posts requesting this capability (cite URLs)
+     □ Support tickets mentioning this problem
+     □ Simulated interview insights from discovery-agent
+     □ User explicitly requested this feature
+
+  2. Adjacent market validation:
+     □ Different industry solved similar problem (cite example)
+     □ Open-source tool exists for this (indicates demand)
+     □ Academic research supports this approach
+
+  3. Cost-to-test assessment:
+     □ Can build MVP in ≤ 1 week → low risk to validate
+     □ Requires 1-2 weeks → medium risk
+     □ Requires > 2 weeks → high risk (consider spike first)
+
+  4. Strategic moat potential:
+     □ Creates switching cost
+     □ Generates unique data advantage
+     □ First-mover opportunity in growing segment
+```
+
+### Innovation Path Verdict
+- Pain evidence (≥1) + cost-to-test ≤ 1 week → `VIABLE_EXPERIMENTAL`
+- Pain evidence (≥1) + strategic moat + cost-to-test ≤ 2 weeks → `VIABLE_EXPERIMENTAL`
+- No pain evidence but strong strategic moat → `HIGH_RISK` (not BLOCKER)
+- No pain evidence AND no strategic moat → `HIGH_RISK`
+
+### VIABLE_EXPERIMENTAL Requirements
+When issuing `VIABLE_EXPERIMENTAL`:
+```
+EXPERIMENTAL_CONDITIONS:
+  success_metric: "{specific measurable metric}"
+  review_date: "{2 weeks from ship date}"
+  fallback_plan: "remove | simplify | pivot"
+```
+Log to decisions.md: `[EXPERIMENTAL] Feature {id}: {success_metric}, review by {date}`
 
 ## Business Pressure Awareness
 If user overrides a BLOCKER verdict:

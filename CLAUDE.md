@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 20 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
+This is a Claude Code plugin (`solo-dev`) — a multi-agent SaaS development system with 22 agents, 13 commands, 6 bundled skills, hooks, and a self-learning memory system.
 
 ## Documentation Sync Rules
 
@@ -151,6 +151,21 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Drift detection via drift-detector:** 4-mode detection for vague specs, contract drift, stale memory, and unverified patterns.
 - **QA enhanced with runtime + E2E:** Static → API runtime → Playwright E2E. Three-layer testing pipeline.
 - **Visual Quality System via design_profile:** Interactive visual preview during init collects user's style/color/navigation/component preferences. ux-researcher translates into Visual Direction per feature. ui-agent enforces design tokens. Visual QA (Phase 2.8) verifies screenshots against profile before code review.
+- **3-Checkpoint interaction model:** User confirmations concentrated at 3 natural boundaries: Pre-Flight (confirm understanding before research), Mid-Flight (confirm design spec before build — the critical checkpoint that prevents wasted work), Post-Flight (confirm ship + review deferred items). Between checkpoints, only critical blockers interrupt. S features skip Mid-Flight (2 checkpoints). M/L/XL use all 3.
+- **Discovery integrated into checkpoints, not standalone phase:** Discovery-agent and venture-strategist run silently during Pre-Flight data gathering. Results appear inline. Full analysis only on user request ("explore 10x").
+- **Innovation Path for novel features:** market-validator has VIABLE_EXPERIMENTAL verdict for features with no competitor precedent. Validates via pain evidence + adjacent market instead of auto-rejecting.
+- **Persona Evolution Protocol:** Personas evolve every 5 features, on repeated rejections, or user corrections. Prevents frozen personas from blocking valid features.
+- **Devil's Advocate in self-refinement:** Cross-agent critique includes a contrarian round to prevent groupthink.
+- **Decision Expiry System:** All decisions have expiry metadata. Drift-detector checks at session start. Auto-expiry defaults by type.
+- **Failure Learning Protocol (2x weight):** Strategy-evolver weights failure data 2x over success. Same failure 2+ times → anti-pattern.
+- **Feature Health Check every 5 features:** Auto health check prevents feature factory syndrome. Offers consolidation mode.
+- **Spike & Experiment execution paths:** Spike (30min feasibility) and Experiment (60min MVP) modes for lightweight validation before committing to full lifecycle.
+- **Effort Calibration (anti-optimism-bias):** Historical tracking detects systematic underestimation. Pre-Flight shows calibration warning.
+- **Backtrack Path (impl → design):** Controlled backtrack when implementation reveals spec gaps. Updates only affected section, resumes from saved state.
+- **Checkpoint Engagement Verification:** Varied formats, periodic depth questions, and diff summaries prevent autopilot approval.
+- **Cross-Feature UX Coherence:** Every 3 features, audit navigation, terminology, and component patterns.
+- **Lazy dispatch & cost tiers:** Skip irrelevant agents. Cost tier guidance for model overrides.
+- **Layer-based gap checking for all projects:** Gap-checker validates cross-layer completeness (not just cross-package). API endpoint needs frontend page, new page needs route registration, etc.
 
 ## Changelog Rules
 

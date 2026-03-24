@@ -728,37 +728,55 @@ Create empty strategy files if not exist: research.md, implementation.md, qa.md
 ### Final: Confirm setup
 
 ```
-=== solo-dev: Project Initialized ===
+══════════════════════════════════════════════
+ INIT COMPLETE — {name}
+══════════════════════════════════════════════
 
-Project:        {name}
-Onboarding:     New concept | Existing codebase
-Stack:          {stack}
-Repomix:        enabled (pack: {id}) | disabled
-Token budget:   {mode}
-Workspace:      {type} monorepo ({N} packages) | single-package
+📋 PROJECT SUMMARY
+  Onboarding:  {New concept | Existing codebase | Foundation}
+  Stack:       {stack}
+  Workspace:   {type} monorepo ({N} packages) | single-package
+  Repomix:     enabled (pack: {id}) | disabled
 
-Memory system:  ✅
-State file:     ✅
-Autonomy config:✅
-Product docs:   ✅
+  ✅ Memory system
+  ✅ State file
+  ✅ Autonomy config
+  ✅ Product docs
 
 {If existing project:}
-Features mapped:
+📊 FEATURE MAP
   SHIPPED  → {N} features
   WIP      → {N} features
   PLANNED  → {N} features
 
 {If decisions.md has [INFERRED] entries:}
-⚠  {N} architecture decisions are marked [INFERRED].
-   Review docs/agents/memory/decisions.md before next-feature
-   to ensure agents work from correct assumptions.
+⚠️  UNCONFIRMED ASSUMPTIONS ({N} items)
+  Agents detected these patterns but don't know if they're intentional:
 
-Next steps:
-  1. Review .claude/solo-dev.local.md to adjust autonomy
-  2. Check docs/product/roadmap.md for feature queue
-  3. Run /solo-dev:next-feature to start building
+  1. [INFERRED] {decision 1}
+  2. [INFERRED] {decision 2}
+  3. [INFERRED] {decision 3}
 
-Ready to build! 🚀
+  Confirm each: ✅ correct | ❌ wrong (explain) | 🤷 don't know
+
+{If roadmap has features:}
+🗺️  NEXT UP
+  First feature: {feature-id} — {feature-name} ({effort estimate})
+
+──────────────────────────────────────────────
+  ✅ "ready" — all looks good, I'll confirm details per-feature in Pre-Flight
+  📝 "fix: ..." — correct an assumption or setting
+  🗺️  "show roadmap" — review full feature queue first
+══════════════════════════════════════════════
 ```
+
+This is the ONLY confirmation needed after init. Once user says "ready", all subsequent confirmation happens via Pre-Flight Briefing in next-feature.
+
+**Key change from previous approach:** [INFERRED] decisions are confirmed HERE at init (batch), not scattered across individual feature Pre-Flights. This means Pre-Flight Briefing only includes [INFERRED] items added AFTER init (rare).
+
+After user responds:
+- "ready" → update state: `phase → READY`
+- "fix: [INFERRED] X is wrong" → update decisions.md, re-show summary
+- "show roadmap" → display full roadmap, then re-show summary
 
 Update state: `phase → READY`

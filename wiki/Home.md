@@ -15,7 +15,7 @@ You describe an idea. solo-dev handles the rest:
 
 | | |
 |---|---|
-| **Agents** | 20 across 4 layers (Research, Validation, Implementation, Quality+Learning) |
+| **Agents** | 22 across 5 layers (Discovery, Research, Validation, Implementation, Quality+Learning) |
 | **Commands** | 8 (`start-from-idea`, `init`, `next-feature`, `status`, `set-autonomy`, `evolve`, `rollback`, `resume`) |
 | **Skills** | 6 bundled fallbacks + dynamic stack-specific loading |
 | **Memory** | Index-first (~200 tokens), on-demand pulls, cross-project learning |
@@ -25,7 +25,7 @@ You describe an idea. solo-dev handles the rest:
 
 - [Getting Started](Getting-Started.md) — Installation and first run
 - [Commands](Commands.md) — All 8 commands with usage
-- [Agent Architecture](Agent-Architecture.md) — 20 agents, roles, and ownership
+- [Agent Architecture](Agent-Architecture.md) — 22 agents, roles, and ownership
 - [Feature Lifecycle](Feature-Lifecycle.md) — 8-phase development process
 - [Configuration](Configuration.md) — Autonomy, token budget, API contracts
 - [Existing Project Onboarding](Existing-Project-Onboarding.md) — Use solo-dev with an existing codebase

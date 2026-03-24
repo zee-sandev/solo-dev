@@ -130,11 +130,59 @@ After verifying the impact map packages, check for implicit dependencies:
 3. If a service/worker was added, check if trigger endpoints exist in the API package
 4. Report cascade gaps as MINOR severity with `cascade: true` flag
 
+## Layer Gap Check (all projects, not just monorepo)
+
+Read `gap_check.layer_check` from `.claude/solo-dev.local.md` (default: true). When enabled, verify cross-layer completeness for ALL projects (single-package and monorepo alike).
+
+### Layer Validation Rules
+
+For each implemented artifact, check that corresponding layers exist:
+
+| If this exists | Then check for | Severity if missing |
+|---------------|---------------|-------------------|
+| API endpoint | Frontend page/component that calls it | CRITICAL |
+| API endpoint | Test file for the endpoint | MINOR |
+| DB migration | Seed data (if migration adds required data) | MINOR |
+| DB migration | Rollback migration | MINOR |
+| Frontend page | Route registration / navigation entry | CRITICAL |
+| Frontend page | Loading, empty, and error states | MINOR |
+| New component | Export from component index (if pattern exists) | MINOR |
+| New feature module | Navigation menu entry | CRITICAL |
+| Auth-protected route | Auth middleware/guard | CRITICAL |
+
+### Layer Gap Detection Process
+1. Read implementation agent reports — collect all new files
+2. Classify each file by layer: `api | frontend | db | test | config | component`
+3. For each file, apply the validation rules above
+4. Use Grep/Glob to verify the corresponding artifact exists
+5. Report as `LAYER_GAPS` in the gap check report
+
+### Layer Gap Output
+```
+LAYER_GAPS:
+  - source: "src/api/routes/profile.ts" (api endpoint)
+    missing: "No frontend page calls GET /api/profile"
+    severity: CRITICAL
+    target_agent: frontend-agent
+
+  - source: "src/db/migrations/003_add_avatar.sql"
+    missing: "No rollback migration found"
+    severity: MINOR
+    target_agent: data-agent
+```
+
+### Interaction with Package Gap Check
+- **Monorepo projects:** Both layer check AND package check run
+- **Single-package projects:** Only layer check runs (package check auto-skipped)
+- Layer gaps are added to the same `GAP_CHECK_REPORT` under `LAYER_GAPS` section
+- VERDICT is FAIL if ANY CRITICAL gap exists (layer or package)
+
 ## Edge Cases
-- **Single-package feature**: If impact map lists only 1 package → auto-PASS (no cross-package gap possible)
+- **Single-package feature**: Package gap check skipped, but layer gap check still runs
 - **No impact map in spec**: Report SPEC_GAP to orchestrator — tech-architect must add impact map before gap check can run
 - **New package not in workspace.packages**: Flag as WARNING — may need `solo-dev-state.json` update
 - **Non-app packages** (worker, cli, script, cron): Verify these have proper entry points and are wired to the triggering system (API endpoint, cron config, CLI registration)
+- **API-only feature**: Skip frontend layer checks (no UI expected)
 
 ## Self-Verification
 - [ ] Every package in impact map has been checked

@@ -1,6 +1,6 @@
 # Feature Lifecycle
 
-Every feature goes through 9 phases (0-8) before shipping. State is persisted in `.claude/solo-dev-state.json` so sessions can resume from any phase.
+Every feature goes through up to 8 phases (0 through 8) before shipping. Discovery and strategy are integrated into checkpoints rather than running as standalone phases. State is persisted in `.claude/solo-dev-state.json` so sessions can resume from any phase.
 
 ## Overview
 
@@ -12,51 +12,144 @@ flowchart TD
     classDef quality fill:#f59e0b,color:#1a1a1a,stroke:#d97706
     classDef memory fill:#8b5cf6,color:#fff,stroke:#7c3aed
     classDef terminal fill:#f3f4f6,stroke:#6b7280,color:#374151
+    classDef checkpoint fill:#ec4899,color:#fff,stroke:#db2777
 
     U([User]):::terminal --> O[Orchestrator]:::orch
 
+    O --> PF["☑ Pre-Flight Checkpoint<br/>Confirm understanding · effort · assumptions<br/>Discovery + strategy integrated here"]:::checkpoint
+
     subgraph RESEARCH["  Research & Validation  "]
-        P0["Market Validation<br/>Is this idea worth building?"]:::research
-        P12["Design Loop<br/>product-researcher · ux-researcher · tech-architect<br/>Persona vote 3/3 · L3 feedback · max 3 rounds"]:::research
+        P0["Market Validation<br/>Is this idea worth building?<br/>Innovation Path for novel ideas"]:::research
+        P12["Design Loop<br/>product-researcher · ux-researcher · tech-architect<br/>Devil's advocate · Persona vote 3/3 · max 3 rounds"]:::research
     end
 
+    PF --> P0
+    P0 -->|VIABLE| P12
+    P0 -.->|NOT VIABLE| U
+
+    P12 --> MF["☑ Mid-Flight Checkpoint<br/>Confirm design spec before build<br/>Skip for S features"]:::checkpoint
+
     subgraph IMPL["  Implementation + Business Validation  "]
-        P2["Implementation Swarm<br/>frontend · backend · ui · data · test — all parallel<br/>Strict file ownership · L1 contract feedback"]:::impl
+        P2["Implementation Swarm<br/>frontend · backend · ui · data · test — all parallel<br/>Spike/experiment modes available"]:::impl
         BV["Business Validation (parallel)<br/>Business logic · Compliance · Competitive gaps<br/>3-hat evaluation"]:::quality
     end
 
+    MF -->|build| P2
+    MF -->|build| BV
+    P2 -.->|SPEC_GAP| P12
+
     subgraph QUALITY["  Quality Gate  "]
-        P3["Code Review + Security (parallel)<br/>CR: Logic · Maintainability · Scalability · Tech Debt<br/>SR: Threat modeling · Supply chain · Operational security<br/>L2 feedback · max 3 rounds"]:::quality
+        GC["Gap Check<br/>Cross-package + layer completeness"]:::quality
+        ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
+        DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
+        VQA["Visual QA<br/>Screenshot + design token check"]:::quality
+        P3["Code Review + Security (parallel)<br/>CR: 4 dimensions · SR: Threat modeling<br/>max 3 rounds"]:::quality
         P45["QA<br/>Functional correctness · Business logic verification"]:::quality
         P7["Final Acceptance<br/>Persona vote 3/3 · max 2 rounds"]:::quality
-        P8["Demo Generation<br/>Playwright video + demo.md"]:::quality
     end
 
-    subgraph LEARNING["  Learning  "]
-        MC[memory-curator]:::memory
-        SE[strategy-evolver]:::memory
-    end
-
-    O --> P0
-    P0 -->|APPROVE| P12
-    P0 -.->|REJECT| U
-    P12 -->|3/3 APPROVE| P2
-    P12 -->|3/3 APPROVE| BV
-    P2 --> GC["Gap Check<br/>Cross-package completeness"]:::quality
+    P2 --> GC
     BV --> GC
-    GC --> ST["Smoke Test<br/>Build + server + endpoint verification"]:::quality
-    ST --> DCH["Contract Drift Check<br/>Verify contracts unchanged"]:::quality
-    DCH --> VQA["Visual QA<br/>Screenshot capture + design token check<br/>Navigation verification"]:::quality
+    GC --> ST
+    ST --> DCH
+    DCH --> VQA
     VQA --> P3
     P3 --> P45
     P45 --> P7
-    P7 -->|3/3 APPROVE| P8
     P7 -.->|REJECT| P12
-    P8 --> SHIP([Ship]):::terminal
-    SHIP --> MC
+
+    P7 --> POF["☑ Post-Flight Checkpoint<br/>Ship · fix deferred items · choose demo<br/>Effort calibration · diff summary"]:::checkpoint
+
+    subgraph SHIP_LEARN["  Ship & Learn  "]
+        P8["Demo Generation<br/>Playwright video + demo.md"]:::quality
+        MC[memory-curator<br/>Failure learnings · decision expiry]:::memory
+        SE[strategy-evolver<br/>2x weight on failures]:::memory
+    end
+
+    POF -->|ship| P8
+    P8 --> MC
     MC --> SE
     SE -.->|Learning Loop| O
 ```
+
+---
+
+## Discovery & Strategy (integrated into checkpoints)
+
+**Agents:** `discovery-agent`, `venture-strategist`
+
+Discovery and strategy are NOT standalone phases. They are integrated into existing checkpoints to avoid adding latency:
+
+### Pre-Flight Discovery (silent)
+During Pre-Flight data gathering:
+1. If feature spec is vague (< 2 sentences) → dispatch discovery-agent silently
+2. Run quick venture-strategist 10x Scan (30-second time-box)
+3. Results appear inline in Pre-Flight briefing as `💡 STRATEGIC NOTE` or `⚠️ ASSUMPTION RISK`
+
+### Design Loop Recovery
+If persona-validator rejects same feature 2 times:
+1. Before round 3, dispatch discovery-agent Mode 4 (Problem Reframing)
+2. Present reframing alternatives to user before continuing
+
+### On-Demand Full Analysis
+User responds "explore 10x" at Pre-Flight → full venture-strategist analysis (all modes)
+
+### Milestone Analysis (background)
+After 3, 5, 8, or 12 completed features → venture-strategist Combinatorial Analysis runs in background. Never blocks feature flow.
+
+### Spike & Experiment Modes
+Not every idea needs full lifecycle:
+- **Spike** (`--spike`): 30min feasibility check, throwaway code → `SPIKE_REPORT`
+- **Experiment** (`--experiment`): 60min MVP, deployable to staging → success criteria evaluation
+
+---
+
+## 3-Checkpoint Interaction Protocol
+
+solo-dev uses a **3-checkpoint** interaction model to minimize user interruption while preventing wasted work. All user interaction is concentrated at 3 natural boundaries:
+
+```
+PRE-FLIGHT ──→ [Phase 0-1] ──→ MID-FLIGHT ──→ [Phase 2-7] ──→ POST-FLIGHT
+(ยืนยัน idea)                   (ยืนยัน design)                  (ยืนยัน ship)
+```
+
+### Checkpoint 1: Pre-Flight (before Phase 0)
+
+Confirms understanding, effort, assumptions before research begins.
+- Understanding summary + effort classification + [INFERRED] decisions + strategy note
+- User responds: `go` | `adjust` | `explore 10x` | `skip`
+
+### Checkpoint 2: Mid-Flight (after Phase 1, before Phase 2)
+
+**The critical checkpoint.** User sees and confirms the design spec before any code is written.
+- Spec summary: key decisions, scope boundaries, acceptance criteria
+- Implementation plan: agents, file ownership, parallelism
+- User responds: `build` | `change: ...` | `show full spec` | `pause`
+
+**Why this exists:** The design spec is the most expensive artifact to get wrong. Confirming it before implementation prevents building the wrong thing entirely.
+
+### Between Checkpoints 2 and 3: Uninterrupted Execution
+
+Phases 2-7 run without user interruption. Only critical blockers interrupt:
+- Loop max exceeded (CR 3 rounds, QA 3 rounds)
+- Security REJECT that can't auto-resolve
+- Implementation BLOCKED on external dependency
+
+Everything else is deferred to Post-Flight (non-critical BV issues, demo decisions, visual warnings).
+
+### Checkpoint 3: Post-Flight (after Phase 7, before Phase 8)
+
+Confirms ship, reviews deferred items, chooses demo type.
+- Execution summary + deferred items + demo staleness + demo plan
+- User responds: `ship` | `fix: ...` | `demo: ...` | `ship no demo`
+
+### Effort-Adaptive Checkpoints
+
+| Effort | Pre-Flight | Mid-Flight | Post-Flight | Total |
+|--------|-----------|-----------|-------------|:-----:|
+| **S** | Compact 1-line | **SKIP** | Compact | **2** |
+| **M** | Full | Full | Full | **3** |
+| **L/XL** | Full + strategy | Full + "show full spec" | Full + combinatorial | **3** |
 
 ---
 
@@ -73,7 +166,7 @@ Validates the feature is worth building before any design work begins.
 - Can ship in ≤2 weeks
 - No external dependency with >2-week integration risk
 
-**Output:** `VIABLE` → Phase 1 | `HIGH_RISK` → requires user acknowledgment | `BLOCKER` → requires user override or removal from queue
+**Output:** `VIABLE` → Phase 1 | `HIGH_RISK` → S: auto-ack, M+: user acknowledgment | `BLOCKER` → always requires user override
 
 ---
 
@@ -115,12 +208,14 @@ Each agent:
 
 ---
 
-### Phase 2.5: Cross-Package Gap Check (monorepo only)
+### Phase 2.5: Gap Check (cross-package + cross-layer)
 
 **Agent:** gap-checker
 **Config:** `gap_check.min_rounds` (default: 1), `gap_check.max_rounds` (default: 3) in `.claude/solo-dev.local.md`
 
-Validates that every package listed in the Impact Map has corresponding implementation changes. Skipped for single-package projects.
+Validates implementation completeness at two levels:
+- **Cross-package** (monorepo only): Every package in Impact Map has changes
+- **Cross-layer** (all projects): API endpoints have frontend pages, new pages have route registrations, auth-protected routes have guards, etc.
 
 **Trigger points** (round counter is cumulative across all triggers):
 
@@ -310,7 +405,10 @@ QUEUED
   → COMPLETE
 
 Special states:
-  ESCALATED       ← awaiting human decision
-  ROLLED_BACK     ← feature reverted
-  BLOCKED         ← dependency not complete
+  ESCALATED               ← awaiting human decision
+  ROLLED_BACK             ← feature reverted
+  BLOCKED                 ← dependency not complete
+  DESIGN_LOOP_BACKTRACK   ← spec gap found during impl, returning to design
+  SPIKE                   ← running spike feasibility check
+  EXPERIMENT              ← running experiment MVP
 ```

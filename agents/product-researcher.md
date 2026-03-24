@@ -120,6 +120,7 @@ Run this checklist against your own output before reporting to orchestrator:
 - [ ] **Contradiction:** Pricing strategy doesn't conflict with target user segment (e.g., enterprise pricing for indie hackers)
 - [ ] **Evidence:** Every claim has a source — no unsupported statements like "users want X"
 - [ ] **Simplification:** No over-engineered business model — could this be simpler while achieving the same goal?
+- [ ] **Non-obvious angle:** Did I propose at least 1 approach beyond the industry standard? (If all suggestions are incremental, dig deeper)
 
 If any check fails → fix it before submitting. Note fixes in your output: `[REFINED: {what was improved}]`
 
