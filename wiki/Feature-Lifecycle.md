@@ -151,6 +151,23 @@ Confirms ship, reviews deferred items, chooses demo type.
 | **M** | Full | Full | Full | **3** |
 | **L/XL** | Full + strategy | Full + "show full spec" | Full + combinatorial | **3** |
 
+### Overnight Mode
+
+Run multiple features unattended with `--overnight` flag. Checkpoints auto-proceed with safety guardrails:
+
+- **Pre-Flight:** Always auto-proceed (research is low-risk)
+- **Mid-Flight:** Auto-proceed for S/M/L. **Skip XL features entirely** (too risky unattended)
+- **Post-Flight:** Auto-ship unless `must_fix` items or security REJECT exist
+
+**Safety caps:** Max 3 features (configurable), max 20 total rounds. Never pushes to remote by default. Generates morning report at `docs/agents/memory/overnight-report-{date}.md`.
+
+```bash
+# Run overnight with tmux
+tmux new -s overnight
+/solo-dev:next-feature --overnight --max 5
+# Ctrl+B, D to detach
+```
+
 ---
 
 ## Phase 0: Market Validation

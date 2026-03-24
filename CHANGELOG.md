@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Overnight Mode — run multiple features unattended with --overnight flag, auto-proceed checkpoints with safety guardrails, morning report generation
 - Discovery-agent and venture-strategist — deep problem exploration (5-Whys, Jobs-to-be-Done, simulated interviews) and 10x opportunity scanning integrated into checkpoints
 - Innovation Path in market-validator — VIABLE_EXPERIMENTAL verdict for novel features with no competitor precedent
 - Persona Evolution Protocol — personas evolve every 5 features, on repeated rejections, or user corrections

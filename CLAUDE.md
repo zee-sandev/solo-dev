@@ -166,6 +166,7 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **Cross-Feature UX Coherence:** Every 3 features, audit navigation, terminology, and component patterns.
 - **Lazy dispatch & cost tiers:** Skip irrelevant agents. Cost tier guidance for model overrides.
 - **Layer-based gap checking for all projects:** Gap-checker validates cross-layer completeness (not just cross-package). API endpoint needs frontend page, new page needs route registration, etc.
+- **Overnight Mode for unattended runs:** `--overnight` flag auto-proceeds checkpoints with safety guardrails. Never ships security issues or must_fix items. Skips XL features. Feature cap + round cap prevent cost spiral. Commits locally (no push by default). Generates morning report.
 
 ## Changelog Rules
 

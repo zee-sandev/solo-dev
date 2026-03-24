@@ -7,6 +7,12 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 
 Run the full feature development lifecycle for the next queued feature. Follow the workflow in docs/workflow.md (Feature Development Lifecycle, Phases 0-8).
 
+**Flags:**
+- `--overnight` — Enable Overnight Mode (auto-proceed checkpoints, multi-feature, safety-gated)
+- `--overnight --max N` — Overnight Mode with custom feature cap (default: 3)
+- `--spike` — Run in Spike Mode (30min feasibility check only)
+- `--experiment` — Run in Experiment Mode (60min MVP only)
+
 ## Your Role
 You are the orchestrator. Pick the next eligible feature, run all 8 phases in sequence, spawn agents at the right time, enforce quality gates, and handle escalations.
 
@@ -351,9 +357,51 @@ subscription mode:
 
 disabled: no intervention.
 
+## Overnight Mode
+
+If `--overnight` flag is present OR `overnight.enabled: true` in config:
+
+### Initialization
+1. Read `overnight` config from `.claude/solo-dev.local.md` (merge with flag overrides)
+2. Parse `--max N` if provided → override `max_features`
+3. Set `overnight_mode: true` in state.json
+4. Initialize tracking: `overnight_features_shipped: 0`, `overnight_total_rounds: 0`, `overnight_report: []`
+
+### Multi-Feature Loop
+```
+WHILE overnight_features_shipped < max_features
+  AND overnight_total_rounds < max_total_rounds
+  AND eligible features exist:
+
+    1. Pick next eligible feature (same logic as normal)
+    2. If effort = XL AND skip_xl = true → log SKIPPED, continue
+    3. Run feature lifecycle with auto-proceed at checkpoints (see orchestrator.md Overnight Mode)
+    4. On SHIPPED → increment counters, log to report, pick next
+    5. On PAUSED (escalation/loop-max/must_fix/security) → log, pick next
+    6. On STOP condition → break loop
+```
+
+### After Loop Ends
+1. Write overnight report to `docs/agents/memory/overnight-report-{date}.md`
+2. If `auto_push: false` → report lists unpushed commits
+3. If `auto_push: true` → `git push`
+4. Print summary to terminal:
+
+```
+🌙 Overnight Complete
+   Shipped: {N} features | Paused: {N} | Skipped: {N}
+   Total rounds: {N} | Stop reason: {reason}
+   Report: docs/agents/memory/overnight-report-{date}.md
+   {If auto_push false: "Commits ready — run `git push` to publish"}
+```
+
+### Overnight + Spike/Experiment
+- `--overnight --spike` → invalid combination (spike is single-feature, overnight is multi-feature)
+- `--overnight` skips features that would need `--spike` or `--experiment` (they need user judgment)
+
 ## Autonomy Config
 
 Before each decision point, check .claude/solo-dev.local.md autonomy settings:
 - always-auto: proceed without asking
-- always-ask: prompt user
+- always-ask: prompt user (overridden to auto in overnight mode)
 - threshold:N: check confidence — if ≥ N proceed, else ask

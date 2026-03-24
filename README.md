@@ -98,7 +98,7 @@ If your project already has `CLAUDE.md`, `docs/`, or `.claude/agents/`, solo-dev
 /solo-dev:next-feature
 ```
 
-Picks the next eligible feature from your roadmap and runs the full 8-phase lifecycle automatically.
+Picks the next eligible feature from your roadmap and runs the full 8-phase lifecycle automatically. Add `--overnight` to run multiple features unattended — auto-proceeds at checkpoints with safety guardrails.
 
 ---
 
@@ -108,7 +108,7 @@ Picks the next eligible feature from your roadmap and runs the full 8-phase life
 |---------|-------------|
 | `/solo-dev:start-from-idea` | Turn a rough idea into a validated, prioritized roadmap |
 | `/solo-dev:init` | Initialize a project — works for new concepts, existing codebases, and templates |
-| `/solo-dev:next-feature` | Build and ship the next feature through all 8 phases |
+| `/solo-dev:next-feature` | Build and ship the next feature through all 8 phases. `--overnight` for unattended multi-feature runs, `--spike` for quick feasibility checks |
 | `/solo-dev:consult <agent>` | Quick expert consultation with any agent — no init required |
 | `/solo-dev:handoff` | Transition your current discussion into a structured build |
 | `/solo-dev:status` | See where you are — roadmap progress, current phase, token usage |
@@ -382,6 +382,14 @@ qa_runtime:
   static: true              # Phase 1: static analysis
   api_runtime: true         # Phase 2: API runtime checks via smoke-tester
   e2e: true                 # Phase 3: Playwright E2E for critical flows
+
+# Overnight mode — run multiple features unattended
+overnight:
+  enabled: false            # true to enable by default (or use --overnight flag)
+  max_features: 3           # stop after shipping this many features
+  max_total_rounds: 20      # stop if total rounds exceed this
+  skip_xl: true             # skip XL features (too risky unattended)
+  auto_push: false          # false = commit only, true = commit + push
 ```
 
 ---

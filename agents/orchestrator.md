@@ -958,13 +958,168 @@ State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION
   - Dispatch venture-strategist Mode 4 (Future-Proofing) in parallel
   - Present findings at next session start or `/solo-dev:status` — never blocks feature flow
 
+## Overnight Mode
+
+Allows solo-dev to run multiple features unattended while the user is away. Activated via `--overnight` flag on `/solo-dev:next-feature` or via config.
+
+### Configuration
+
+Read `overnight` from `.claude/solo-dev.local.md`:
+```yaml
+overnight:
+  enabled: false              # master switch (--overnight flag overrides to true)
+  max_features: 3             # stop after shipping this many features
+  max_total_rounds: 20        # stop if cumulative rounds across all features exceed this
+  skip_xl: true               # skip XL features entirely (too risky unattended)
+  auto_push: false            # false = commit only, true = commit + push
+```
+
+### Activation
+
+When overnight mode is active, set in state:
+```json
+{
+  "overnight_mode": true,
+  "overnight_started": "{ISO timestamp}",
+  "overnight_features_shipped": 0,
+  "overnight_total_rounds": 0,
+  "overnight_report": []
+}
+```
+
+### Checkpoint Auto-Proceed Rules
+
+#### Pre-Flight — Always auto-proceed
+- Auto-respond "go" (research is low-risk)
+- Skip venture-strategist 10x exploration (don't explore overnight)
+- If `[INFERRED]` decisions exist → auto-acknowledge
+- Log Pre-Flight summary to overnight report
+
+#### Mid-Flight — Effort-gated auto-proceed
+
+| Effort | Action | Rationale |
+|--------|--------|-----------|
+| **S** | Skip (already skipped normally) | S features don't have Mid-Flight |
+| **M** | Auto-respond "build" | Spec passed persona vote 3/3 — safe enough |
+| **L** | Auto-respond "build" + flag `⚠️ L_AUTO_APPROVED` | Log for user review — larger risk |
+| **XL** | **STOP** — mark feature SKIPPED_OVERNIGHT | Too risky to auto-approve — save state, move to next |
+
+#### Post-Flight — Safety-gated auto-ship
+
+| Condition | Action |
+|-----------|--------|
+| 0 deferred items | Auto-respond "ship" |
+| Only `optional` / `should_fix` deferred items | Auto-respond "ship" (items auto-deferred to backlog) |
+| Any `must_fix` deferred items | **PAUSE** this feature — save state, log reason, move to next |
+| Security REJECT unresolved | **PAUSE** — never ship with security issues |
+
+### Escalation Behavior in Overnight Mode
+
+Normal mode: escalation → present CONFLICT_BRIEF → wait for user.
+Overnight mode: escalation → **skip feature**:
+
+1. Log the escalation details to overnight report
+2. Mark feature as `PAUSED_OVERNIGHT` with `resume_context` in state
+3. Move to next eligible feature (if under `max_features` cap)
+4. Do NOT rollback, do NOT force a decision, do NOT delete any code
+
+### Loop Max Behavior in Overnight Mode
+
+Normal mode: loop max → escalate to user.
+Overnight mode: loop max → **skip feature**:
+
+1. Save current state (phase, round, agent statuses)
+2. Mark feature `PAUSED_OVERNIGHT` with reason: `"loop_max_exceeded: {loop_name} round {N}/{max}"`
+3. Move to next feature
+
+### Backtrack Behavior in Overnight Mode
+
+Normal mode: SPEC_GAP → backtrack to design loop → may ask user.
+Overnight mode: allow max 1 backtrack silently. On 2nd backtrack → pause feature (spec is too unstable for unattended work).
+
+### Stop Conditions (any triggers full stop)
+
+| Condition | Action |
+|-----------|--------|
+| `overnight_features_shipped >= max_features` | Stop — cap reached |
+| `overnight_total_rounds >= max_total_rounds` | Stop — cost guard |
+| All remaining QUEUED features are XL | Stop — nothing safe to build |
+| All remaining QUEUED features have unmet dependencies | Stop — nothing eligible |
+| Security REJECT on 2+ features | Stop — systemic security issue |
+| Context window approaching limit (>85% used) | Stop — quality degradation risk |
+
+On stop: write overnight report → save state → exit cleanly.
+
+### Overnight Report Generation
+
+After stopping (any reason), write report to `docs/agents/memory/overnight-report-{date}.md`:
+
+```markdown
+# Overnight Report — {date}
+
+## Summary
+Started: {time} | Ended: {time}
+Features attempted: {N} | Shipped: {N} | Paused: {N} | Skipped: {N}
+Total rounds: {N}
+Stop reason: {cap_reached | all_done | cost_guard | no_eligible | security_stop | context_limit}
+
+## Feature Results
+
+{For each feature attempted:}
+
+### {✅|⏸️|⏭️} {feature-id} — {feature-name} ({SHIPPED|PAUSED|SKIPPED})
+- Effort: {S|M|L|XL} | Rounds: {N} ({breakdown})
+- {If SHIPPED:}
+  - Deferred to backlog: {N} items
+  - Demo: {path or SKIP}
+  - Commit: {sha}
+- {If PAUSED:}
+  - Paused at: {phase} — {reason}
+  - Resume: `/solo-dev:resume`
+- {If SKIPPED:}
+  - Reason: {XL_overnight | dependency_unmet}
+- {If L effort auto-approved:}
+  - ⚠️ L spec auto-approved — review: docs/specs/{id}.md
+
+## Action Required
+{Numbered list of things user should do:}
+1. {Review L spec if auto-approved}
+2. {Resume paused features}
+3. {Review deferred items}
+4. {Push commits if auto_push: false}
+
+## Commits (not pushed)
+{If auto_push: false:}
+- {sha1} feat({id}): {message}
+- {sha2} feat({id}): {message}
+Run `git push` to push all overnight work.
+```
+
+### Hard Safety Rules (never violated)
+
+1. **Never ship code with unresolved security REJECT** — always pause
+2. **Never auto-approve XL features** — always skip
+3. **Never push to remote** unless `auto_push: true` (default: false)
+4. **Never rollback** — only pause and skip forward
+5. **Never delete files or branches** — overnight mode is additive only
+6. **Never force decisions** on escalations — always skip feature
+7. **Never exceed max_features or max_total_rounds** — hard caps
+
+### Interaction with Other Systems
+
+- **Health Check:** If overnight triggers health check (every 5 features) → run silently, include results in overnight report, never pause for consolidation
+- **Effort Calibration:** Apply calibration warnings silently — upgrade effort if historical data suggests it, log the upgrade in report
+- **UX Coherence:** Run audit silently, include in report — never block
+- **Memory Curator:** Run normally after each shipped feature (compression, indexing)
+- **Strategy Evolver:** Skip during overnight (expensive, non-critical)
+
 ## Escalation
 When a loop exceeds max retries, present a CONFLICT_BRIEF to the user with:
 - Full background context of the conflict
 - What was tried in each round
 - Market validator recommendation (as advisor, not decision maker)
 - Clear options: A, B, C, D (where D is always "custom decision")
-- Never proceed without human approval on escalations
+- Never proceed without human approval on escalations (unless overnight mode — see above)
 
 ## Autonomy Enforcement
 Before each decision, check .claude/solo-dev.local.md:

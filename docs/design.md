@@ -44,6 +44,7 @@
 | **Checkpoint Engagement Verification** | Varied checkpoint formats, periodic depth questions, and concrete diff summaries prevent users from blindly approving checkpoints. |
 | **Cross-Feature UX Coherence** | Every 3 features, audit navigation consistency, terminology, and component patterns. Pre-Flight flags navigation impact for new pages. |
 | **Lazy dispatch & cost tiers** | Not all agents needed for every feature. Dispatch rules skip irrelevant agents. Cost tier guidance helps users configure model overrides per agent role. |
+| **Overnight Mode for unattended multi-feature runs** | Auto-proceeds at checkpoints with safety guardrails. Effort-gated Mid-Flight (XL skipped, L flagged), safety-gated Post-Flight (never ships must_fix/security issues). Feature cap + round cap prevent cost spiral. Generates morning report with action items. |
 
 ---
 
@@ -110,7 +111,7 @@ solo-dev/
 |---------|---------|----------|
 | `/solo-dev:start-from-idea` | Idea → validated concept + roadmap | Guided |
 | `/solo-dev:init` | Setup project from concept/docs/template | Semi-guided |
-| `/solo-dev:next-feature` | Implement next feature from roadmap | Per config |
+| `/solo-dev:next-feature` | Implement next feature from roadmap. `--overnight` for unattended runs, `--spike` / `--experiment` for lightweight validation | Per config |
 | `/solo-dev:consult` | Quick expert consultation with any agent — no init required | Read-only |
 | `/solo-dev:handoff` | Transition conversation discussion into structured workflow | Semi-guided |
 | `/solo-dev:evolve` | Run strategy-evolver to improve agents | Semi-auto |
@@ -192,6 +193,29 @@ SessionStart detects stack from project files → loads relevant skills:
 | Go (go.mod) | ecc:golang-patterns, ecc:golang-testing |
 | Python (requirements.txt) | ecc:python-patterns, ecc:python-testing |
 | Better Auth (config) | claude.ai Better Auth MCP |
+
+---
+
+## Overnight Mode Configuration
+
+```yaml
+# .claude/solo-dev.local.md
+overnight:
+  enabled: false              # master switch (--overnight flag overrides)
+  max_features: 3             # stop after this many shipped features
+  max_total_rounds: 20        # hard cap on cumulative rounds
+  skip_xl: true               # XL features are too risky unattended
+  auto_push: false            # false = commit only (user pushes after review)
+```
+
+**Auto-proceed rules:**
+- Pre-Flight: always auto ("go")
+- Mid-Flight: auto for S/M/L, skip XL
+- Post-Flight: auto-ship if no `must_fix` or security issues
+
+**Hard safety rules:** Never ship security REJECT. Never auto-approve XL. Never push by default. Never rollback or delete. Never force escalation decisions.
+
+**Output:** Morning report at `docs/agents/memory/overnight-report-{date}.md` with feature results, action items, and unpushed commits.
 
 ---
 
