@@ -13,10 +13,10 @@ Execute the rollback safely. Always confirm with user before taking destructive 
 ## Process
 
 ### Step 1: Validate
-Read .claude/solo-dev-state.json and docs/yaml/features.yaml (fallback: docs/product/roadmap.md).
+Read .solo-dev/state.json and .solo-dev/yaml/features.yaml (fallback: .solo-dev/product/roadmap.md).
 Check that the specified feature-id exists.
 
-Check for snapshot: docs/agents/memory/snapshots/pre-{feature-id}.json
+Check for snapshot: .solo-dev/memory/snapshots/pre-{feature-id}.json
 If no snapshot: "Cannot rollback — no snapshot found for {feature-id}. Snapshot is created automatically before implementation begins."
 
 Show the user what will be rolled back:
@@ -35,7 +35,7 @@ This CANNOT be undone automatically. Proceed? (yes/no)
 
 ```bash
 # Get commit hash from snapshot
-COMMIT=$(python3 -c "import json; d=json.load(open('docs/agents/memory/snapshots/pre-{feature-id}.json')); print(d['git_commit'])")
+COMMIT=$(python3 -c "import json; d=json.load(open('.solo-dev/memory/snapshots/pre-{feature-id}.json')); print(d['git_commit'])")
 
 # Revert git
 git revert $COMMIT..HEAD --no-commit
@@ -43,12 +43,12 @@ git commit -m "rollback({feature-id}): revert {feature-name}"
 ```
 
 Restore state from snapshot:
-- .claude/solo-dev-state.json ← from snapshot.state
-- docs/agents/memory/index.md ← from snapshot.memory_index
-- docs/agents/memory/decisions.md ← restore entries after snapshot date
-- docs/agents/memory/patterns.md ← restore entries after snapshot date
+- .solo-dev/state.json ← from snapshot.state
+- .solo-dev/memory/index.md ← from snapshot.memory_index
+- .solo-dev/memory/decisions.md ← restore entries after snapshot date
+- .solo-dev/memory/patterns.md ← restore entries after snapshot date
 
-Update status to ROLLED_BACK in docs/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
+Update status to ROLLED_BACK in .solo-dev/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
 
 ### Step 3: Post-Rollback Options
 
@@ -60,7 +60,7 @@ Update status to ROLLED_BACK in docs/yaml/features.yaml, then regenerate roadmap
 What would you like to do next?
   A) Re-attempt with a different approach
      → Feature re-enters Design Loop with "ROLLBACK CONTEXT" note
-     → Previous spec saved as docs/specs/{feature-id}-rejected.md
+     → Previous spec saved as .solo-dev/specs/{feature-id}-rejected.md
   B) Remove feature from roadmap
      → Feature marked REMOVED, removed from dependency chains
   C) Decompose — run /solo-dev:decompose {feature-id} to break into smaller sub-features

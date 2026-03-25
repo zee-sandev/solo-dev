@@ -13,16 +13,16 @@ Read the current state, understand what decision is needed, present context to u
 ## Process
 
 ### Step 1: Check current state
-Read .claude/solo-dev-state.json.
+Read .solo-dev/state.json.
 
 Look for:
 - blocked_since → indicates a blocked state
 - phase containing ESCALATED → waiting for human decision
 - agents_status with BLOCKED or NEEDS_CLARIFICATION
 
-Also check: docs/agents/memory/escalations.md (last entry)
+Also check: .solo-dev/memory/escalations.md (last entry)
 
-Also read docs/yaml/features.yaml (if exists) for current feature status and dependency state.
+Also read .solo-dev/yaml/features.yaml (if exists) for current feature status and dependency state.
 
 ### Step 2: Present pending decision (if no argument provided)
 

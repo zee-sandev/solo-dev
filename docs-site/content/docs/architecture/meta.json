@@ -1,0 +1,9 @@
+{
+  "title": "Architecture",
+  "pages": [
+    "agent-architecture",
+    "feature-lifecycle",
+    "agent-feedback-protocol",
+    "memory-system"
+  ]
+}

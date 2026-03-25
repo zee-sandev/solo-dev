@@ -26,7 +26,7 @@ And now wants to move from "talking" to "building" with solo-dev's agent system.
 
 Check if solo-dev is already initialized:
 
-1. **`.claude/solo-dev-state.json` exists** → Project is initialized → go to **Feature Handoff**
+1. **`.solo-dev/state.json` exists** → Project is initialized → go to **Feature Handoff**
 2. **No state file** → Project not initialized → go to **Quick Init + Handoff**
 
 ---
@@ -75,7 +75,7 @@ If user provided `design-only` argument: auto-select B.
 
 #### C. Create Feature Entry
 
-Add feature entry to docs/yaml/features.yaml with status QUEUED, source 'handoff', then regenerate roadmap.md via yaml-to-markdown.sh:
+Add feature entry to .solo-dev/yaml/features.yaml with status QUEUED, source 'handoff', then regenerate roadmap.md via yaml-to-markdown.sh:
 ```yaml
 - id: H1
   name: "{feature name}"
@@ -84,7 +84,7 @@ Add feature entry to docs/yaml/features.yaml with status QUEUED, source 'handoff
   source: handoff
 ```
 
-Write `docs/specs/{feature-id}-draft.md`:
+Write `.solo-dev/specs/{feature-id}-draft.md`:
 ```markdown
 # {Feature Name} — Draft from Conversation
 
@@ -104,7 +104,7 @@ Write `docs/specs/{feature-id}-draft.md`:
 {Timeline, compatibility, tech constraints mentioned}
 ```
 
-Also add entry to docs/yaml/specs.yaml with feature_id, path, status 'draft'.
+Also add entry to .solo-dev/yaml/specs.yaml with feature_id, path, status 'draft'.
 
 #### D. Execute
 
@@ -113,7 +113,7 @@ Based on user's choice:
 - **B) Design only** → Run Phase 1 Design Loop only → output final spec → stop
 - **C) Implement now** → Skip to Phase 2 (Parallel Implementation) using the draft spec as approved spec
 
-Update `.claude/solo-dev-state.json` accordingly.
+Update `.solo-dev/state.json` accordingly.
 
 ---
 
@@ -128,7 +128,7 @@ This is NOT the full `/solo-dev:init` — it's a lightweight setup:
 1. Detect stack from project files (package.json, go.mod, etc.) or CLAUDE.md
 2. Create minimal directory structure:
    ```bash
-   mkdir -p docs/agents/memory/snapshots
+   mkdir -p .solo-dev/memory/snapshots
    mkdir -p docs/product
    mkdir -p docs/specs
    mkdir -p .claude
@@ -157,14 +157,14 @@ Go to Feature Handoff → Step A above.
 Handoff complete.
 
   Feature: {name}
-  Spec: docs/specs/{id}-draft.md
+  Spec: .solo-dev/specs/{id}-draft.md
   Mode: {Full lifecycle | Design only | Implement now}
 
   {If full lifecycle:}
   Starting Phase {0|1}... Run /solo-dev:status to track progress.
 
   {If design only:}
-  Design loop starting. Spec will be at docs/specs/{id}.md when complete.
+  Design loop starting. Spec will be at .solo-dev/specs/{id}.md when complete.
 
   {If implement now:}
   Spawning implementation agents...

@@ -21,8 +21,8 @@ You are the Business Validator in the solo-dev system. You ensure features are n
 **Timing:** You run **parallel with implementation** (after design approval). This gives early feedback before code is finalized, avoiding expensive re-implementation.
 
 ## Before Starting
-1. Read docs/agents/memory/bv_learnings.md — apply domain checklists from past features
-2. Read docs/product/competitive-analysis.md — know what competitors do
+1. Read .solo-dev/memory/bv_learnings.md — apply domain checklists from past features
+2. Read .solo-dev/product/competitive-analysis.md — know what competitors do
 3. Read the approved feature spec
 4. Use repomix MCP to understand what was actually implemented (if available)
 
@@ -151,10 +151,10 @@ BV_REPORT:
 ```
 
 ## After Completing
-1. Write any domain checklists discovered to docs/agents/memory/bv_learnings.md.
+1. Write any domain checklists discovered to .solo-dev/memory/bv_learnings.md.
    Format as reusable checklists (e.g., "Billing domain checklist: dunning, proration, grace period, tax").
 
-2. When NON-CRITICAL enhancements are identified and user chooses "backlog", add them to docs/yaml/backlog.yaml with:
+2. When NON-CRITICAL enhancements are identified and user chooses "backlog", add them to .solo-dev/yaml/backlog.yaml with:
    - id: next sequential BL{N} ID
    - name: enhancement name
    - source: "bv-suggestion"

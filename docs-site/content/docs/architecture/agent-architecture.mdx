@@ -1,0 +1,312 @@
+---
+title: Agent Architecture
+description: 22 agents organized into 5 layers with defined roles, file ownership, and memory rules.
+---
+
+solo-dev uses 22 agents organized into 5 layers. Each agent has a defined role, skill set, file ownership boundaries, and memory read/write rules.
+
+## Layer Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      ORCHESTRATOR                           │
+│  Coordinates all agents. Never writes code or designs.      │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+    ┌────────────────────┼────────────────────┐
+    ▼                    ▼                    ▼
+ DISCOVERY LAYER   RESEARCH LAYER        LEARNING LAYER
+ D1, D2           R1, R2, R3             MC, SE
+    │                    │
+    └──────┬─────────────┘
+           ▼
+    VALIDATION LAYER
+    MV, PV, BV, SR, GC, ST, DD
+           │
+           ▼
+    IMPLEMENTATION LAYER
+    I1, I2, I3, I4, I5 (parallel)
+```
+
+---
+
+## Orchestrator
+
+| | |
+|---|---|
+| **ID** | `orchestrator` |
+| **Model** | Sonnet |
+| **Role** | Central coordinator — DAG dispatching, adaptive phases, spawns agents, enforces loop termination, conflict precedence, state recovery |
+
+**Never does:** write code, make design decisions unilaterally, skip quality gates.
+
+**Skills:** `superpowers:dispatching-parallel-agents`, `ecc:enterprise-agent-ops`, `ecc:autonomous-loops`
+
+**Responsibilities:**
+- Read `solo-dev-state.json` to determine current phase
+- Spawn correct agents per phase
+- Collect outputs and detect conflicts
+- Enforce loop max-retries and escalate when exceeded
+- Commit to git after each completed feature
+- Update state after each phase transition
+
+---
+
+## Discovery Layer
+
+### D1 — Discovery Agent
+
+| | |
+|---|---|
+| **ID** | `discovery-agent` |
+| **Model** | inherit |
+| **Color** | magenta |
+| **Role** | Deep problem space exploration — challenges assumptions, uncovers hidden needs, simulates user interviews, reframes stuck problems |
+
+**4 Modes:**
+1. **Problem Deep-Dive** — 5-Whys root cause analysis, Jobs-to-be-Done framing, Problem Space Mapping with adjacent problems, upstream causes, downstream effects, hidden stakeholders
+2. **Assumption Audit** — Lists every assumption with criticality/evidence/risk ratings. HIGH-criticality + no evidence = BLOCKER
+3. **Simulated User Interviews** — Generates realistic interview dialogues per persona including hesitations, contradictions, and willingness-to-pay probing
+4. **Problem Reframing** — Inversion, analogy, constraint removal, user swap, time shift, scale shift techniques
+
+**Triggers:**
+- Vague idea (< 2 sentences, uncertain language)
+- Feature rejected 2+ times by persona-validator
+- User asks "Am I solving the right problem?"
+- Before Phase 0 for assumption audit
+
+---
+
+### D2 — Venture Strategist
+
+| | |
+|---|---|
+| **ID** | `venture-strategist` |
+| **Model** | inherit |
+| **Color** | gold |
+| **Role** | Blue-sky strategic thinking — pushes beyond "is this viable?" to "is this a category-defining opportunity?" |
+
+**5 Modes:**
+1. **10x Opportunity Scan** — Evaluates if a feature could be radically reimagined, not just incrementally improved. Identifies enabling technologies that make 10x possible NOW
+2. **Competitive Divergence** — Maps what NO competitor does (true white space), industry blind spots, contrarian opportunities, cross-industry inspiration
+3. **Combinatorial Analysis** — After 3+ features ship, finds emergent capabilities from feature combinations, platform plays, and data advantages
+4. **Future-Proofing** — Technology shifts, market shifts, regulatory shifts, AI integration opportunities with timelines
+5. **Category Creation** — Assesses if the product could define a new market category with defensibility analysis (network effects, data moat, switching costs, ecosystem)
+
+**Triggers:**
+- After start-from-idea Phase 4 (10x + Divergence)
+- After feature definition, pre-design-loop (10x)
+- After 3, 5, 8, 12 features shipped (Combinatorial)
+- Sprint planning (Future-proofing)
+- User asks about positioning/strategy (Category Creation)
+
+---
+
+## Research Layer
+
+### R1 — Product Researcher
+
+| | |
+|---|---|
+| **ID** | `product-researcher` |
+| **Role** | Market fit, monetization, competitor analysis, feature positioning, trend prediction, disruption risk |
+| **Skills** | `ecc:market-research`, `ecc:search-first` |
+| **Reads** | `decisions.md#market`, `bv_learnings.md`, global index |
+| **Writes** | `decisions.md#market`, global learnings |
+
+### R2 — UX Researcher
+
+| | |
+|---|---|
+| **ID** | `ux-researcher` |
+| **Role** | User behavior, information architecture, journey mapping, friction analysis |
+| **Skills** | `ui-ux-pro-max` (or `solo-dev:ux-design` fallback), `impeccable:critique`, `impeccable:onboard` |
+| **Reads** | `persona_insights.md`, `personas.md` |
+| **Writes** | `persona_insights.md` |
+
+### R3 — Tech Architect
+
+| | |
+|---|---|
+| **ID** | `tech-architect` |
+| **Role** | Technical feasibility, API design, performance targets, scalability, build-vs-buy analysis |
+| **Skills** | `ecc:backend-patterns` (or fallback), `ecc:api-design`, `ecc:deployment-patterns`, `ecc:docker-patterns`, stack-specific skills |
+| **Reads** | `patterns.md`, `rejected.md`, Repomix pack |
+| **Writes** | `patterns.md`, `rejected.md` |
+
+---
+
+## Validation Layer
+
+### Market Validator
+
+| | |
+|---|---|
+| **ID** | `market-validator` |
+| **Role** | Commercial viability gatekeeper with 3-tier verdicts (VIABLE/HIGH_RISK/BLOCKER). Evidence-based — HIGH_RISK requires user acknowledgment, BLOCKER requires user override |
+| **Validates** | 2/3 competitors have this OR users requested it; ties to acquisition/activation/retention/revenue; ships in ≤2 weeks |
+| **Output** | `VIABLE`, `HIGH_RISK` (with risks + mitigation), or `BLOCKER` (with evidence) |
+
+### Persona Validator
+
+| | |
+|---|---|
+| **ID** | `persona-validator` |
+| **Role** | Simulates difficult, demanding users who actively find flaws, edge cases, and UX friction. Never approves easily. |
+| **Voting** | `APPROVE` / `CONDITIONAL` / `REJECT` per persona. 3/3 APPROVE required. CONDITIONAL = REJECT until resolved. REJECT severity: `REJECT_BLOCKING` (stops pipeline) or `REJECT_DEGRADED` (can ship with known limitation) |
+| **Reads** | `personas.md`, current spec |
+| **Writes** | `persona_insights.md` |
+
+### Business Validator
+
+| | |
+|---|---|
+| **ID** | `business-validator` |
+| **Role** | Business completeness, compliance, and competitive gaps — runs parallel with implementation (3-hat evaluation) |
+| **Reviews** | Business logic completeness, real-world correctness, competitive gaps, enhancement opportunities |
+| **Writes** | `bv_learnings.md` |
+
+### Security Reviewer
+
+| | |
+|---|---|
+| **ID** | `security-reviewer` |
+| **Role** | Sole owner of all security checks — threat modeling, supply chain, operational security (runs parallel with code review) |
+| **Checklist** | Auth & identity, multi-tenancy isolation, payment security, API security, PII protection, threat modeling, supply chain analysis |
+| **Output** | `SECURITY_REPORT` with severity levels + `APPROVE` / `REJECT` |
+
+### Gap Checker
+
+| | |
+|---|---|
+| **ID** | `gap-checker` |
+| **Model** | inherit (Sonnet) |
+| **When** | After Phase 2 (Implementation), before Phase 3 (Code Review). Monorepo projects only. |
+| **Role** | Validates that features spanning multiple monorepo packages have been implemented completely across all affected packages. |
+| **Output** | `GAP_CHECK_REPORT` with PASS/FAIL verdict and targeted fix instructions for specific agents |
+
+### Smoke Tester
+
+| | |
+|---|---|
+| **ID** | `smoke-tester` |
+| **When** | Phase 2.6 — after Gap Check, before Code Review |
+| **Role** | Runtime verification agent. Builds the project, starts the dev server, and tests critical endpoints. |
+| **Output** | `SMOKE_TEST_REPORT` with PASS/FAIL verdict and targeted fix instructions |
+
+### Drift Detector
+
+| | |
+|---|---|
+| **ID** | `drift-detector` |
+| **When** | Multiple phases — spec clarity (Phase 1), contract drift (Phase 2.7), memory drift (session start), pattern validation (Phase 3) |
+| **Role** | Detects drift across 4 dimensions: Spec Clarity, Contract Drift, Memory Drift, Pattern Validation |
+| **Output** | `DRIFT_REPORT` with dimension-specific findings and PASS/FAIL per dimension |
+
+---
+
+## Implementation Layer
+
+All 5 agents run **in parallel** with **strict file ownership** — no agent touches files owned by another.
+
+### I1 — Frontend Agent
+
+| | |
+|---|---|
+| **ID** | `frontend-agent` |
+| **Owns** | `pages/`, `app/`, `routes/`, `components/` (non-design-system) |
+| **Skills** | `impeccable:*` (or `solo-dev:ui-quality` fallback), `ui-ux-pro-max` (or fallback), `ecc:frontend-patterns` |
+
+### I2 — Backend Agent
+
+| | |
+|---|---|
+| **ID** | `backend-agent` |
+| **Owns** | `src/api/`, `src/services/`, `src/repositories/`, `src/middleware/` |
+| **Skills** | `ecc:backend-patterns` (or fallback), `ecc:api-design`, `ecc:coding-standards`, stack-specific, Better Auth MCP |
+| **Also** | Defines API contracts → `docs/contracts/{feature}-api.md` |
+
+### I3 — UI Agent
+
+| | |
+|---|---|
+| **ID** | `ui-agent` |
+| **Owns** | `src/components/ui/`, `src/design-system/`, `src/styles/` |
+| **Skills** | `impeccable:*` (primary), `ui-ux-pro-max` (or fallback) |
+| **Must invoke** | `impeccable:polish` + `impeccable:critique` before reporting DONE |
+
+### I4 — Data Agent
+
+| | |
+|---|---|
+| **ID** | `data-agent` |
+| **Owns** | `prisma/`, `migrations/`, `src/db/`, `schemas/` |
+| **Skills** | `ecc:database-migrations`, `ecc:postgres-patterns` |
+
+### I5 — Test Agent
+
+| | |
+|---|---|
+| **ID** | `test-agent` |
+| **Owns** | `tests/`, `__tests__/`, `spec/`, `e2e/` |
+| **Skills** | `ecc:tdd` (or fallback), `ecc:tdd-workflow`, `ecc:e2e-testing` |
+| **Also** | Phase 8 demo generation (Playwright recording + demo.md) |
+
+---
+
+## Quality + Learning Layer
+
+### Code Reviewer
+
+| | |
+|---|---|
+| **ID** | `code-reviewer` |
+| **Role** | Technical gatekeeper (runs after all I agents complete) |
+| **Dimensions** | Logic Correctness, Maintainability, Scalability, Tech Debt (no security — deferred to security-reviewer). Stack-aware limits |
+| **Output** | `CR_REPORT` with `APPROVE` / `REJECT` |
+| **If REJECT** | Targeted `CR_FEEDBACK` to specific agents → fix → re-review changed files only (max 3 rounds) |
+| **Writes** | `cr_learnings.md` |
+
+### QA Validator
+
+| | |
+|---|---|
+| **ID** | `qa-validator` |
+| **Role** | Functional correctness and business logic verification |
+| **Checklist** | Functional (acceptance criteria, edge cases), Business Logic (multi-tenant, plan gates), Integration (regression, API contracts), Performance (load times, API response) |
+| **If FAIL** | `QA_FAILURE` → agents fix → CR re-checks → QA re-runs (max 3 rounds) |
+
+### Memory Curator
+
+| | |
+|---|---|
+| **ID** | `memory-curator` |
+| **Role** | Memory compression, indexing, snapshots, cross-project learning |
+| **Runs** | Before each feature (snapshot), after each feature (compress + reindex), after feedback cycles |
+| **Manages** | All memory files, snapshots, global memory sync |
+
+### Strategy Evolver
+
+| | |
+|---|---|
+| **ID** | `strategy-evolver` |
+| **Role** | Analyzes performance data → updates strategy files for future sessions |
+| **Triggered by** | `/solo-dev:evolve` command (not automatic) |
+| **Requires** | At least 2 completed features |
+| **Updates** | `~/.claude/solo-dev/strategies/` (research, implementation, qa) |
+
+---
+
+## Memory Read/Write Summary
+
+| Agent | Reads Before Starting | Writes After Completing |
+|-------|----------------------|------------------------|
+| `orchestrator` | state.json, index.md | state.json |
+| `product-researcher` | decisions.md#market, bv_learnings.md, global index | decisions.md#market, global learnings |
+| `ux-researcher` | persona_insights.md, personas.md | persona_insights.md |
+| `tech-architect` | patterns.md, rejected.md, Repomix pack | patterns.md, rejected.md |
+| `persona-validator` | personas.md, current spec | persona_insights.md |
+| `business-validator` | bv_learnings.md, competitive-analysis.md | bv_learnings.md |
+| `code-reviewer` | cr_learnings.md | cr_learnings.md |
+| `memory-curator` | all memory files | index.md, snapshots/ |
+| `strategy-evolver` | performance-log.md, strategy files | strategies/*.md |

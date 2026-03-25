@@ -1,6 +1,6 @@
 ---
 name: set-autonomy
-description: Interactively configure which decisions are autonomous vs. require user approval. Edits .claude/solo-dev.local.md.
+description: Interactively configure which decisions are autonomous vs. require user approval. Edits .solo-dev/config.local.md.
 argument-hint: "[optional: 'show' to display current settings]"
 allowed-tools: Read, Write, Edit
 ---
@@ -8,12 +8,12 @@ allowed-tools: Read, Write, Edit
 Configure the autonomy levels for each decision type in the development workflow.
 
 ## Your Role
-Present current settings clearly, ask what user wants to change, apply changes to .claude/solo-dev.local.md.
+Present current settings clearly, ask what user wants to change, apply changes to .solo-dev/config.local.md.
 
 ## Process
 
 ### If argument is "show" or no argument:
-Read .claude/solo-dev.local.md and display current settings:
+Read .solo-dev/config.local.md and display current settings:
 
 ```
 === solo-dev: Autonomy Settings ===
@@ -53,4 +53,4 @@ Also configure:
 - Token budget mode (fixed / subscription / disabled)
 - API contract documentation (enabled/disabled, markdown/custom)
 
-Apply changes to .claude/solo-dev.local.md and confirm.
+Apply changes to .solo-dev/config.local.md and confirm.

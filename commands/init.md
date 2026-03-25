@@ -16,8 +16,8 @@ You are the orchestrator. Detect the project's starting point and run the approp
 
 Check in this order:
 
-1. **docs/product/roadmap.md exists** → came from `/solo-dev:start-from-idea` → go to **Path A**
-2. **Foundation detected** (CLAUDE.md exists AND (docs/ or .claude/agents/ exists), but no docs/product/) → go to **Path C**
+1. **.solo-dev/product/roadmap.md exists** → came from `/solo-dev:start-from-idea` → go to **Path A**
+2. **Foundation detected** (CLAUDE.md exists AND (docs/ or .claude/agents/ exists), but no .solo-dev/product/) → go to **Path C**
 3. **Existing codebase** (source files present, no solo-dev docs, no CLAUDE.md) → go to **Path B**
 4. **Neither** (blank project) → ask user for concept → go to **Path A**
 
@@ -28,7 +28,7 @@ Check in this order:
 ### Step 1: Load or collect concept
 
 If roadmap.md exists:
-- Read docs/product/roadmap.md and docs/product/personas.md
+- Read .solo-dev/product/roadmap.md and .solo-dev/product/personas.md
 - Confirm with user: "Found your product concept from start-from-idea. Ready to set up for development?"
 - Skip concept questions
 
@@ -42,7 +42,7 @@ If no roadmap exists, ask ONE AT A TIME:
 ### Step 2: Create directory structure → Step 3 → Step 4 → Step 5 → Step 6 → Step 7 → Step 8
 *(follow shared steps below)*
 
-After writing roadmap.md (from concept or start-from-idea output): also write docs/yaml/features.yaml with feature entries from the roadmap (with status, priority, depends_on, blocks), and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
+After writing roadmap.md (from concept or start-from-idea output): also write .solo-dev/yaml/features.yaml with feature entries from the roadmap (with status, priority, depends_on, blocks), and .solo-dev/yaml/backlog.yaml for backlog items. Also create .solo-dev/yaml/specs.yaml entry for any specs generated.
 
 ---
 
@@ -111,7 +111,7 @@ Detection signals for EXAMPLE:
 
 ### Step 4: Generate Foundation Manifest
 
-Write `docs/agents/memory/foundation-manifest.md`:
+Write `.solo-dev/memory/foundation-manifest.md`:
 
 ```markdown
 # Foundation Manifest
@@ -160,8 +160,8 @@ Describe in 2-3 sentences: what it does, who it's for, and how it makes money.
 ```
 
 Wait for user response. Use their answer to:
-- Write initial docs/product/idea-brief.md
-- When roadmap.md is generated: also write docs/yaml/features.yaml with feature entries from the roadmap, and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
+- Write initial .solo-dev/product/idea-brief.md
+- When roadmap.md is generated: also write .solo-dev/yaml/features.yaml with feature entries from the roadmap, and .solo-dev/yaml/backlog.yaml for backlog items. Also create .solo-dev/yaml/specs.yaml entry for any specs generated.
 - Continue to Shared Steps (skip Step 1/concept questions — already answered)
 
 ---
@@ -274,17 +274,17 @@ For each decision user confirms:
 
 Write all product docs based on confirmed understanding:
 
-- **docs/product/idea-brief.md** — product summary from analysis + user corrections
-- **docs/product/personas.md** — inferred from user types found in code + user input
-- **docs/product/roadmap.md** — existing features mapped to status:
+- **.solo-dev/product/idea-brief.md** — product summary from analysis + user corrections
+- **.solo-dev/product/personas.md** — inferred from user types found in code + user input
+- **.solo-dev/product/roadmap.md** — existing features mapped to status:
   - `SHIPPED` → Complete features
   - `WIP` → Partial features
   - `PLANNED` → Stubs + user-mentioned planned features
   - `IGNORED` → Placeholders user said to skip
-- **docs/agents/memory/patterns.md** — coding patterns observed in codebase
-- **docs/agents/memory/decisions.md** — confirmed decisions with reasons; unconfirmed tagged `[INFERRED]`
+- **.solo-dev/memory/patterns.md** — coding patterns observed in codebase
+- **.solo-dev/memory/decisions.md** — confirmed decisions with reasons; unconfirmed tagged `[INFERRED]`
 
-Also write docs/yaml/features.yaml with feature entries from the roadmap, and docs/yaml/backlog.yaml for backlog items. Also create docs/yaml/specs.yaml entry for any specs generated.
+Also write .solo-dev/yaml/features.yaml with feature entries from the roadmap, and .solo-dev/yaml/backlog.yaml for backlog items. Also create .solo-dev/yaml/specs.yaml entry for any specs generated.
 
 Then continue to shared Steps 3–8 below (skip Step 1 — already done).
 
@@ -294,7 +294,7 @@ Then continue to shared Steps 3–8 below (skip Step 1 — already done).
 
 ### Step 3 (Path A) / Step 7 (Path B): Create directory structure
 ```bash
-mkdir -p docs/agents/memory/snapshots
+mkdir -p .solo-dev/memory/snapshots
 mkdir -p docs/contracts
 mkdir -p docs/specs
 mkdir -p docs/demos
@@ -358,7 +358,7 @@ Detect monorepo workspace structure:
 
 ### Step 4 / Step 8: Create memory index
 
-Create docs/agents/memory/index.md:
+Create .solo-dev/memory/index.md:
 ```markdown
 # Memory Index — {project-name}
 Last updated: {date} | Features completed: {0 or N for existing}
@@ -378,11 +378,11 @@ Last updated: {date} | Features completed: {0 or N for existing}
 
 Create any missing memory files: decisions.md, patterns.md, rejected.md, persona_insights.md, cr_learnings.md, bv_learnings.md, performance-log.md
 
-Also create docs/yaml/memory-index.yaml with the same project name and initial empty summaries.
+Also create .solo-dev/yaml/memory-index.yaml with the same project name and initial empty summaries.
 
 ### Step 5 / Step 9: Create state file
 
-Create .claude/solo-dev-state.json:
+Create .solo-dev/state.json:
 ```json
 {
   "project": "{project-name}",
@@ -397,7 +397,7 @@ Create .claude/solo-dev-state.json:
   "workspace": null,
   "last_updated": "{current-datetime}",
   "foundation": {
-    "manifest": "docs/agents/memory/foundation-manifest.md",
+    "manifest": ".solo-dev/memory/foundation-manifest.md",
     "delegate_agents": true,
     "example_code": [
       {"path": "...", "type": "page|module|translation", "replace_when": "..."}
@@ -408,7 +408,7 @@ Create .claude/solo-dev-state.json:
 
 ### Step 6 / Step 10: Create autonomy config
 
-Create .claude/solo-dev.local.md:
+Create .solo-dev/config.local.md:
 ```yaml
 ---
 # solo-dev Configuration
@@ -704,7 +704,7 @@ If user says "ปรับ" → update and re-show until confirmed.
 
 #### Save Design Profile
 
-After user confirms, save `design_profile` to `.claude/solo-dev.local.md` config (see config template below).
+After user confirms, save `design_profile` to `.solo-dev/config.local.md` config (see config template below).
 
 Cleanup: kill preview server, delete `.claude/solo-dev-preview/`.
 

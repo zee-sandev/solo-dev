@@ -11,7 +11,7 @@ description: |
   </commentary>
   </example>
 
-model: inherit
+model: claude-haiku-4-5-20251001
 color: blue
 tools: ["Read", "Write", "Edit", "Glob", "Grep"]
 ---
@@ -29,8 +29,8 @@ Before each new feature starts, create a rollback snapshot:
 
 1. Run `git rev-parse HEAD` to capture current commit SHA
 2. Read solo-dev-state.json
-3. Read all files in docs/agents/memory/ (excluding snapshots/)
-4. Write snapshot to docs/agents/memory/snapshots/pre-{feature-id}.json:
+3. Read all files in .solo-dev/memory/ (excluding snapshots/)
+4. Write snapshot to .solo-dev/memory/snapshots/pre-{feature-id}.json:
 ```json
 {
   "feature_id": "{feature-id}",
@@ -54,7 +54,7 @@ Before each new feature starts, create a rollback snapshot:
 When orchestrator triggers memory-curator after a rollback or after a feature takes > 5 total rounds:
 
 ### Failure Entry Format
-Write to `docs/agents/memory/failure-learnings.md`:
+Write to `.solo-dev/memory/failure-learnings.md`:
 ```markdown
 ### {feature-id} — {date} [{ROLLBACK|NEAR_FAILURE}]
 - **Failure phase:** {where it failed or stalled}
@@ -91,7 +91,7 @@ When compressing decisions.md, preserve expiry metadata. Do not remove `[EXPIRED
 After a feature is shipped:
 
 ### 1. Update Memory Index (YAML-first)
-Update docs/yaml/memory-index.yaml:
+Update .solo-dev/yaml/memory-index.yaml:
   - Increment features_completed
   - Update summary for each memory file (decisions, patterns, etc.)
   - Update entry_count for each file (count actual entries)
@@ -99,9 +99,9 @@ Update docs/yaml/memory-index.yaml:
   - Set project name if empty
 
 Then regenerate the markdown view:
-  bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh docs/yaml/memory-index.yaml
+  bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh .solo-dev/yaml/memory-index.yaml
 
-This generates docs/agents/memory/index.md (~200 tokens) from the YAML source.
+This generates .solo-dev/memory/index.md (~200 tokens) from the YAML source.
 
 ### 2. Compress decisions.md
 - Remove duplicate decisions (keep most recent)
@@ -182,7 +182,7 @@ Before promoting a learning from cr_learnings.md or bv_learnings.md to patterns.
 5. **Drift-detector integration:** If drift-detector agent is enabled, wait for its Pattern Validation Report (Mode 4) before promoting. Only promote patterns marked VERIFIED by drift-detector.
 
 ## Snapshot Integrity Check
-After writing any snapshot to docs/agents/memory/snapshots/:
+After writing any snapshot to .solo-dev/memory/snapshots/:
 1. Read it back immediately
 2. Validate JSON parses correctly
 3. Verify file count matches expected number of memory files
@@ -196,7 +196,7 @@ Before archiving or compressing learnings:
 
 ## Post-Ship Feedback Template
 After each feature ships, create a feedback template:
-`docs/agents/memory/feedback/{feature-id}.md`:
+`.solo-dev/memory/feedback/{feature-id}.md`:
 ```markdown
 # {Feature Name} — Post-Ship Feedback
 Expected usage: [from spec]

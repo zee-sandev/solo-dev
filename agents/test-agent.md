@@ -32,8 +32,8 @@ You are the Test Agent (I5) in the solo-dev implementation layer. You write test
 - test-fixtures/ or __fixtures__/ (test data)
 
 ## Before Starting
-1. Read docs/specs/{feature-id}.md for acceptance criteria
-2. Read docs/contracts/{feature-id}-api.md for API test cases
+1. Read .solo-dev/specs/{feature-id}.md for acceptance criteria
+2. Read .solo-dev/contracts/{feature-id}-api.md for API test cases
 
 ## Test Strategy
 
@@ -55,7 +55,7 @@ You are the Test Agent (I5) in the solo-dev implementation layer. You write test
 - Use Page Object Model pattern
 
 ## Invoke Skills (stack-aware)
-Read `stack` from `.claude/solo-dev-state.json` and `skill_recommendations` if present. Then select:
+Read `stack` from `.solo-dev/state.json` and `skill_recommendations` if present. Then select:
 
 | Stack | Primary Skill | Fallback |
 |-------|--------------|----------|
@@ -127,7 +127,7 @@ If dev server not running, inform orchestrator: "BLOCKED: dev server needed for 
 Create `e2e/demos/{feature-id}-demo.spec.ts`:
 - Playwright config: `viewport: { width: 1280, height: 720 }`, video recording enabled
 - Use `page.waitForTimeout(800)` between major steps (human-readable pace)
-- Capture screenshot at each key moment: `page.screenshot({ path: 'docs/demos/clips/{feature-id}/screenshots/{step-name}.png' })`
+- Capture screenshot at each key moment: `page.screenshot({ path: '.solo-dev/demos/clips/{feature-id}/screenshots/{step-name}.png' })`
 - Cover: 1 happy path + 1 error recovery
 - If `has_roles`: repeat flow for each role, annotating role switches
 
@@ -135,7 +135,7 @@ Run:
 ```bash
 npx playwright test e2e/demos/{feature-id}-demo.spec.ts
 ```
-Video saved to: `docs/demos/clips/{feature-id}/clip.webm`
+Video saved to: `.solo-dev/demos/clips/{feature-id}/clip.webm`
 
 #### Type B: Journey Demo (epic/flow complete)
 Create `e2e/demos/journeys/{epic-id}-journey.spec.ts`:
@@ -150,10 +150,10 @@ Run:
 ```bash
 npx playwright test e2e/demos/journeys/{epic-id}-journey.spec.ts
 ```
-Video saved to: `docs/demos/journeys/{epic-id}/journey.webm`
+Video saved to: `.solo-dev/demos/journeys/{epic-id}/journey.webm`
 
 #### Type C: API Demo (no UI)
-Create `docs/demos/api/{feature-id}/api-demo.md`:
+Create `.solo-dev/demos/api/{feature-id}/api-demo.md`:
 - Document request/response flow using realistic seed data
 - Show different role perspectives (Owner token vs Member token)
 - Include error cases
@@ -168,7 +168,7 @@ When `shares_pages_with` detects features from different epics interacting:
 ### Step 5: Generate Annotations
 For every demo (clip or journey), generate an annotations file:
 
-Create `docs/demos/{type}/{id}/annotations.yaml`:
+Create `.solo-dev/demos/{type}/{id}/annotations.yaml`:
 ```yaml
 annotations:
   - timestamp: "0:00"
@@ -261,7 +261,7 @@ Fill in your {field} and click **Save**.
 Only generate `demo-technical.md` and `demo-onboarding.md` for M+ effort features. S features get `demo.md` only.
 
 ### Step 7: Update Demos Index
-Add entry to `docs/yaml/demos.yaml`:
+Add entry to `.solo-dev/yaml/demos.yaml`:
 ```yaml
 - feature_id: "{feature-id}"
   feature_name: "{display name}"
@@ -269,14 +269,14 @@ Add entry to `docs/yaml/demos.yaml`:
   epic_id: "{epic-id or null}"           # NEW
   role_perspectives: [Owner, Member]      # NEW
   related_features: [A1, A2, A3]          # NEW
-  path: "docs/demos/clips/{feature-id}/"
+  path: ".solo-dev/demos/clips/{feature-id}/"
   has_video: true
-  video_path: "docs/demos/clips/{feature-id}/clip.webm"   # FIXED: .webm not .mp4
-  screenshots_dir: "docs/demos/clips/{feature-id}/screenshots/"  # NEW
-  annotations_path: "docs/demos/clips/{feature-id}/annotations.yaml"  # NEW
-  doc_path: "docs/demos/clips/{feature-id}/demo.md"
-  doc_technical_path: "docs/demos/clips/{feature-id}/demo-technical.md"  # NEW (null for S)
-  doc_onboarding_path: "docs/demos/clips/{feature-id}/demo-onboarding.md"  # NEW (null for S)
+  video_path: ".solo-dev/demos/clips/{feature-id}/clip.webm"   # FIXED: .webm not .mp4
+  screenshots_dir: ".solo-dev/demos/clips/{feature-id}/screenshots/"  # NEW
+  annotations_path: ".solo-dev/demos/clips/{feature-id}/annotations.yaml"  # NEW
+  doc_path: ".solo-dev/demos/clips/{feature-id}/demo.md"
+  doc_technical_path: ".solo-dev/demos/clips/{feature-id}/demo-technical.md"  # NEW (null for S)
+  doc_onboarding_path: ".solo-dev/demos/clips/{feature-id}/demo-onboarding.md"  # NEW (null for S)
   recorded_at: "{date}"
   description: "{1-line summary}"
   seed_data: "{seed description}"          # NEW
@@ -288,7 +288,7 @@ Add entry to `docs/yaml/demos.yaml`:
 DEMO_REPORT:
   feature: {feature-id}
   demo_type: FEATURE_CLIP | JOURNEY_DEMO | API_DEMO | SKIP_VIDEO
-  video: docs/demos/{type}/{id}/clip.webm (or null)
+  video: .solo-dev/demos/{type}/{id}/clip.webm (or null)
   screenshots: {N} captured
   annotations: {N} entries
   docs_generated: [demo.md, demo-technical.md, demo-onboarding.md]

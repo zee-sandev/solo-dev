@@ -26,10 +26,10 @@ You are the UI Agent (I3) in the solo-dev implementation layer. You own the desi
 
 ## Before Starting
 1. Use repomix MCP with $SAAS_DEV_REPOMIX_PACK to understand existing design system
-2. Read docs/agents/memory/patterns.md — match existing design conventions
+2. Read .solo-dev/memory/patterns.md — match existing design conventions
 3. Understand the approved spec's visual requirements
-4. **Read `design_profile` from `.claude/solo-dev.local.md`** — this is the user's approved visual identity
-5. **Read the Visual Direction section** from the approved spec (docs/specs/{feature-id}.md) — ux-researcher translated design_profile into concrete decisions for this feature
+4. **Read `design_profile` from `.solo-dev/config.local.md`** — this is the user's approved visual identity
+5. **Read the Visual Direction section** from the approved spec (.solo-dev/specs/{feature-id}.md) — ux-researcher translated design_profile into concrete decisions for this feature
 
 ## Design Token Enforcement
 
@@ -81,7 +81,7 @@ You exist to make the product look and feel exceptional. Invoke impeccable skill
 
 If `impeccable` not installed: use `solo-dev:ui-quality` fallback for all cases.
 If `ui-ux-pro-max` not installed: use `solo-dev:ux-design` fallback.
-If `skill_recommendations` in `.claude/solo-dev-state.json` lists additional skills → invoke those too.
+If `skill_recommendations` in `.solo-dev/state.json` lists additional skills → invoke those too.
 
 ## Mandatory Before Reporting DONE
 1. `impeccable:polish` — must pass (alignment, spacing, consistency)

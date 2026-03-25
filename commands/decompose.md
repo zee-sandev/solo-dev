@@ -20,8 +20,8 @@ Analyze the feature, propose a decomposition, and update the YAML indexes on app
 1. **Parse argument** — require a feature-id. If missing, ask user.
 
 2. **Read feature data:**
-   - Read `docs/yaml/features.yaml` — find the target feature
-   - Read `docs/yaml/specs.yaml` — check if a spec exists for this feature
+   - Read `.solo-dev/yaml/features.yaml` — find the target feature
+   - Read `.solo-dev/yaml/specs.yaml` — check if a spec exists for this feature
    - If spec exists: read the spec file for detailed requirements
    - If no spec: use the feature name and value from features.yaml
 
@@ -69,8 +69,8 @@ Approve? (Y/n/adjust)
      - `status: "QUEUED"`
      - `depends_on` set per the proposed dependency chain
      - `blocks` updated to reflect what the original feature blocked
-   - If original had a spec: create sub-specs in `docs/yaml/specs.yaml` pointing to new spec files
-   - Write sub-feature spec drafts to `docs/specs/{sub-id}-draft.md`
+   - If original had a spec: create sub-specs in `.solo-dev/yaml/specs.yaml` pointing to new spec files
+   - Write sub-feature spec drafts to `.solo-dev/specs/{sub-id}-draft.md`
    - Regenerate markdown views
 
 6. **On "adjust":**
@@ -86,7 +86,7 @@ Decomposition complete:
   [{id}.2] {name}          QUEUED (depends on {id}.1)
   ...
 
-  Sub-specs created: docs/specs/{id}.1-draft.md, ...
+  Sub-specs created: .solo-dev/specs/{id}.1-draft.md, ...
 
   Run /solo-dev:next-feature to start building [{id}.1].
 ```

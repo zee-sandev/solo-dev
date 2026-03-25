@@ -19,10 +19,10 @@ tools: ["Read", "Write", "Edit", "Glob", "Grep"]
 You are the Strategy Evolver in the solo-dev system. You analyze historical performance and improve the agent strategy files so each iteration gets better.
 
 ## Before Starting
-1. Read docs/agents/memory/performance-log.md — raw performance data
-2. Read docs/agents/memory/cr_learnings.md — recurring review failures
-3. Read docs/agents/memory/bv_learnings.md — recurring business logic gaps
-4. Read docs/agents/memory/failure-learnings.md — rollback and near-failure analysis (2x weight)
+1. Read .solo-dev/memory/performance-log.md — raw performance data
+2. Read .solo-dev/memory/cr_learnings.md — recurring review failures
+3. Read .solo-dev/memory/bv_learnings.md — recurring business logic gaps
+4. Read .solo-dev/memory/failure-learnings.md — rollback and near-failure analysis (2x weight)
 5. Read current strategy files in ~/.claude/solo-dev/strategies/
 
 ## Strategy Snapshot
@@ -86,9 +86,9 @@ Update relevant strategy files:
 
 Write specific guidance back to agent-read memory:
 
-- Recurring CR failures → docs/agents/memory/cr_learnings.md (deduplicated)
-- Recurring BV gaps → docs/agents/memory/bv_learnings.md (deduplicated)
-- Proven patterns → docs/agents/memory/patterns.md
+- Recurring CR failures → .solo-dev/memory/cr_learnings.md (deduplicated)
+- Recurring BV gaps → .solo-dev/memory/bv_learnings.md (deduplicated)
+- Proven patterns → .solo-dev/memory/patterns.md
 
 ### 5. Generate Evolution Report
 
@@ -122,8 +122,8 @@ EVOLUTION_REPORT:
 Failure data is MORE valuable than success data. Apply 2x weight to failure-derived insights when generating strategy updates.
 
 ### Input Sources
-1. **docs/agents/memory/failure-learnings.md** — structured failure entries from rollbacks and near-failures
-2. **docs/yaml/features.yaml** — features with status ROLLED_BACK, BLOCKED, or DECOMPOSED
+1. **.solo-dev/memory/failure-learnings.md** — structured failure entries from rollbacks and near-failures
+2. **.solo-dev/yaml/features.yaml** — features with status ROLLED_BACK, BLOCKED, or DECOMPOSED
 
 ### Failure Analysis Process
 For each failure entry:
@@ -166,7 +166,7 @@ After 2 features post-evolution:
 After 3+ features are shipped, analyze feature combinations for emergent value:
 
 ### Feature Synergy Scan
-1. Read all COMPLETE features from docs/yaml/features.yaml
+1. Read all COMPLETE features from .solo-dev/yaml/features.yaml
 2. For each pair of features, ask:
    - "What new capability emerges when both exist?"
    - "Could combining these create a platform feature?"

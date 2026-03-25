@@ -10,24 +10,25 @@ This project maintains 3 documentation surfaces that MUST stay in sync:
 
 1. **`README.md`** — GitHub landing page (overview, quick start, examples, diagrams)
 2. **`docs/`** — Detailed architecture reference (design, agents, memory, feedback, workflow)
-3. **`wiki/`** — GitHub wiki pages (user-facing docs, guides, configuration)
+3. **`docs-site/content/docs/`** — Fumadocs site (GitHub Pages at https://zee-sandev.github.io/solo-dev/)
+4. **`wiki/`** — GitHub wiki pages (secondary, kept for wiki tab compatibility)
 
 ### When to Update Each
 
 | Change Type | Update |
 |-------------|--------|
-| New/modified agent | `README.md` (agent roster table), `docs/agent-architecture.md` (full details), `wiki/Agent-Architecture.md` |
-| New/modified command | `README.md` (commands table + examples if applicable), `wiki/Commands.md`, `docs/design.md` (commands table) |
-| Workflow/phase change | `README.md` (Mermaid diagrams), `docs/workflow.md`, `wiki/Feature-Lifecycle.md` |
-| Feedback protocol change | `docs/agent-feedback-flow.md`, `wiki/Agent-Feedback-Protocol.md` |
-| Memory system change | `docs/memory-flow.md`, `wiki/Memory-System.md` |
-| Configuration change | `README.md` (config section), `wiki/Configuration.md` |
-| New bundled skill | `README.md` (bundled skills table), `wiki/Bundled-Skills.md` |
-| New supported stack | `README.md` (supported stacks table), `wiki/Supported-Stacks.md` |
-| Onboarding flow change | `README.md` (onboarding example), `commands/init.md`, `wiki/Existing-Project-Onboarding.md`, `docs/workflow.md` |
-| Rollback change | `wiki/Rollback.md`, `docs/workflow.md` |
-| New/modified YAML index | N/A | `docs/memory-flow.md` (YAML sync section) | `wiki/Memory-System.md` |
-| Mermaid diagram needs update | `README.md`, `wiki/Feature-Lifecycle.md` (both have same diagrams) |
+| New/modified agent | `README.md` (agent roster table), `docs/agent-architecture.md` (full details), `docs-site/content/docs/architecture/agent-architecture.mdx`, `wiki/Agent-Architecture.md` |
+| New/modified command | `README.md` (commands table), `docs-site/content/docs/commands.mdx`, `wiki/Commands.md`, `docs/design.md` |
+| Workflow/phase change | `README.md` (Mermaid diagrams), `docs/workflow.md`, `docs-site/content/docs/architecture/feature-lifecycle.mdx`, `wiki/Feature-Lifecycle.md` |
+| Feedback protocol change | `docs/agent-feedback-flow.md`, `docs-site/content/docs/architecture/agent-feedback-protocol.mdx`, `wiki/Agent-Feedback-Protocol.md` |
+| Memory system change | `docs/memory-flow.md`, `docs-site/content/docs/architecture/memory-system.mdx`, `wiki/Memory-System.md` |
+| Configuration change | `README.md` (config section), `docs-site/content/docs/guides/configuration.mdx`, `wiki/Configuration.md` |
+| New bundled skill | `README.md` (bundled skills table), `docs-site/content/docs/guides/bundled-skills.mdx`, `wiki/Bundled-Skills.md` |
+| New supported stack | `README.md` (supported stacks table), `docs-site/content/docs/guides/supported-stacks.mdx`, `wiki/Supported-Stacks.md` |
+| Onboarding flow change | `README.md`, `commands/init.md`, `docs-site/content/docs/guides/existing-project-onboarding.mdx`, `wiki/Existing-Project-Onboarding.md`, `docs/workflow.md` |
+| Rollback change | `docs-site/content/docs/guides/rollback.mdx`, `wiki/Rollback.md`, `docs/workflow.md` |
+| New docs page | Add MDX file to `docs-site/content/docs/`, update relevant `meta.json` |
+| Mermaid diagram needs update | `README.md`, `docs-site/content/docs/architecture/feature-lifecycle.mdx`, `wiki/Feature-Lifecycle.md` |
 
 ### Sync Checklist
 
@@ -35,43 +36,125 @@ After ANY plugin component change, verify:
 
 - [ ] README.md reflects the change (tables, diagrams, examples)
 - [ ] Relevant docs/ file is updated
-- [ ] Relevant wiki/ page is updated
-- [ ] wiki/_Sidebar.md is updated if new pages were added
+- [ ] Relevant `docs-site/content/docs/` MDX file is updated
+- [ ] Relevant wiki/ page is updated (secondary)
+- [ ] If new docs page: `meta.json` in its directory is updated
 - [ ] Mermaid diagrams still accurately represent the flow
 
+### Fumadocs Site
+
+The Fumadocs site (`docs-site/`) is a Next.js static export deployed to GitHub Pages.
+
+- **Source content:** `docs-site/content/docs/` (MDX files)
+- **Navigation:** `meta.json` in each content directory
+- **Mermaid:** Rendered client-side via `docs-site/components/mermaid.tsx`
+- **Deploy:** Auto on push to `main` when `docs-site/**` changes (`.github/workflows/deploy-docs.yml`)
+- **Local preview:** `cd docs-site && npm run dev`
+- **Build:** `cd docs-site && npm run build` → outputs to `docs-site/out/`
+
+When adding a new docs page:
+1. Create `docs-site/content/docs/{section}/{page-name}.mdx`
+2. Add frontmatter: `title` and `description`
+3. Add page name to the relevant `meta.json` `pages` array
+4. Mirror content to `wiki/{Page-Name}.md` (for GitHub wiki tab)
+
 ## File Structure
+
+### Plugin files (this repo)
 
 ```
 solo-dev/
 ├── .claude-plugin/plugin.json   # Plugin manifest
 ├── README.md                     # GitHub landing page
 ├── CLAUDE.md                     # This file
-├── agents/                       # 20 agent definitions
-├── commands/                     # 8 command definitions
+├── agents/                       # Agent definitions
+├── commands/                     # Command definitions
 ├── hooks/                        # hooks.json + scripts/
-├── skills/                       # 6 bundled fallback skills
-├── docs/                         # Architecture reference docs
-│   ├── yaml/                     # YAML indexes (source of truth)
+├── skills/                       # Bundled fallback skills
+├── docs/                         # Plugin architecture docs
+│   ├── migrations/               # Migration entries (one per version bump)
 │   ├── design.md
 │   ├── agent-architecture.md
 │   ├── memory-flow.md
 │   ├── agent-feedback-flow.md
 │   └── workflow.md
-└── wiki/                         # GitHub wiki pages
-    ├── _Sidebar.md
-    ├── Home.md
-    ├── Getting-Started.md
-    ├── Commands.md
-    ├── Agent-Architecture.md
-    ├── Feature-Lifecycle.md
-    ├── Agent-Feedback-Protocol.md
-    ├── Memory-System.md
-    ├── Existing-Project-Onboarding.md
-    ├── Configuration.md
-    ├── Supported-Stacks.md
-    ├── Bundled-Skills.md
-    └── Rollback.md
+├── wiki/                         # GitHub wiki pages (secondary)
+│   ├── _Sidebar.md
+│   ├── Home.md
+│   ├── Getting-Started.md
+│   ├── Commands.md
+│   ├── Agent-Architecture.md
+│   ├── Feature-Lifecycle.md
+│   ├── Agent-Feedback-Protocol.md
+│   ├── Memory-System.md
+│   ├── Existing-Project-Onboarding.md
+│   ├── Configuration.md
+│   ├── Supported-Stacks.md
+│   ├── Bundled-Skills.md
+│   └── Rollback.md
+└── docs-site/                    # Fumadocs site (GitHub Pages)
+    ├── package.json
+    ├── next.config.mjs
+    ├── source.config.ts
+    ├── app/                      # Next.js App Router
+    ├── components/               # Mermaid client component
+    ├── content/docs/             # MDX content (source of truth for web docs)
+    │   ├── index.mdx
+    │   ├── getting-started.mdx
+    │   ├── commands.mdx
+    │   ├── architecture/
+    │   └── guides/
+    └── mdx-components.tsx
 ```
+
+### Files created in user's project (all under `.solo-dev/`)
+
+When solo-dev is used in a project, ALL files it creates live under `.solo-dev/` at the project root:
+
+```
+{user-project}/
+└── .solo-dev/
+    ├── state.json          # Central state (phase, feature, stack, agent status)
+    ├── config.local.md     # Per-project config (autonomy, model overrides, smoke test, etc.)
+    ├── yaml/               # YAML indexes — source of truth
+    │   ├── features.yaml
+    │   ├── specs.yaml
+    │   ├── contracts.yaml
+    │   ├── demos.yaml
+    │   ├── backlog.yaml
+    │   ├── sprints.yaml
+    │   ├── changelog.yaml
+    │   └── memory-index.yaml
+    ├── memory/             # Project memory and learnings
+    │   ├── index.md        # Lightweight index (~200 tokens)
+    │   ├── decisions.md
+    │   ├── patterns.md
+    │   ├── cr_learnings.md
+    │   ├── bv_learnings.md
+    │   ├── persona_insights.md
+    │   ├── failure-learnings.md
+    │   ├── performance-log.md
+    │   ├── foundation-manifest.md
+    │   ├── feedback/       # Post-ship feedback per feature
+    │   └── snapshots/      # Pre-feature rollback snapshots
+    ├── product/            # Product docs (generated by solo-dev)
+    │   ├── idea-brief.md
+    │   ├── personas.md
+    │   ├── roadmap.md
+    │   ├── competitive-analysis.md
+    │   └── backlog.md
+    ├── specs/              # Feature specs (approved at Mid-Flight)
+    ├── contracts/          # API contracts (written before implementation)
+    ├── demos/              # Demo recordings and descriptions
+    │   ├── clips/
+    │   ├── journeys/
+    │   └── api/
+    ├── qa/                 # QA artifacts (screenshots, traces)
+    ├── spikes/             # Spike experiment results
+    └── showcase/           # Sprint-end showcase
+```
+
+**Rule:** No solo-dev file may be created outside `.solo-dev/` in a user's project. If you add a new file path, it must live under `.solo-dev/` and a migration entry must document it.
 
 ## Conventions
 
@@ -127,6 +210,47 @@ When adding a new wiki page:
 3. Add to `wiki/_Sidebar.md` (for GitHub Wiki compatibility)
 4. Use standard markdown links in content: `[Page Name](Page-Name.md)`
 
+## Migration Rules
+
+Every time you change something that affects **already-initialized projects**, you MUST write a migration entry.
+
+### When to write a migration
+
+| Change type | Requires migration? |
+|-------------|-------------------|
+| New field in `solo-dev-state.json` | ✅ Yes |
+| Renamed/removed field in state | ✅ Yes |
+| New required config in `solo-dev.local.md` | ✅ Yes |
+| YAML schema change in `docs/yaml/` | ✅ Yes |
+| Agent behavior change that affects loop counts or phase ordering | ✅ Yes |
+| New command or flag | ✅ Yes (note it exists) |
+| Agent prompt/instruction change only | ❌ No (invisible to projects) |
+| Docs-only change | ❌ No |
+
+### How to write a migration
+
+1. **Bump plugin version** in `.claude-plugin/plugin.json`
+2. **Create** `docs/migrations/{new-version}.md` using the format defined in `commands/migrate.md`
+3. **Add migration row** to the Sync Checklist in this file:
+
+### Sync Checklist addition
+
+After ANY plugin component change that requires migration, verify:
+- [ ] `plugin.json` version is bumped
+- [ ] `docs/migrations/{version}.md` is written
+- [ ] Migration is idempotent (safe to re-run)
+- [ ] Migration adds fields, never deletes project data
+
+### Migration file location
+
+```
+solo-dev/
+└── docs/
+    └── migrations/
+        ├── 0.9.1.md    ← first migration (2026-03-25)
+        └── {version}.md
+```
+
 ## Design Plan Reference
 
 The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
@@ -141,9 +265,16 @@ The full design plan is at: `~/.claude/plans/crystalline-chasing-dolphin.md`
 - **market-validator is a gatekeeper with teeth:** Provides VIABLE/HIGH_RISK/BLOCKER verdicts. HIGH_RISK requires user acknowledgment, BLOCKER requires user override.
 - **Business validator runs parallel with implementation, not after QA:** 3-hat evaluation (Operations/Compliance/Growth) starts as soon as design is approved.
 - **Security reviewer is sole owner of all security checks:** No other agent performs security review. Runs parallel with code review. Includes threat modeling and supply chain checks.
-- **Design loop max 3 rounds (reduced from 5):** Tighter iteration to prevent over-engineering. Auto-escalation if same rejection repeats.
+- **Design loop max 2 rounds (reduced from 3):** Tighter iteration. Auto-escalation if same rejection repeats. CR and QA loops also max 2.
 - **DAG-based dependency analysis for parallel agent dispatching:** Independent agents always run in parallel. Hard vs soft dependency classification.
-- **Adaptive phase ordering by feature effort (S/M/L/XL):** Small features fast-track through fewer gates. XL features decompose before starting.
+- **Adaptive phase ordering by feature effort (XS/S/M/L/XL):** XS = minimal pipeline (impl+CR+security+ship only). S = fast-track. XL = block at Pre-Flight, must decompose first.
+- **Phase 0 + Phase 1 run in parallel:** market-validator and research agents dispatch simultaneously for M/L/XL features. BLOCKER from market stops mid-flight; HIGH_RISK shows inline at Mid-Flight.
+- **Graduated Final Acceptance response:** REJECT → targeted fix → partial spec update → human escalation. Never re-enters full Design Loop automatically.
+- **Business Validation max 2 rounds:** Round 2 CRITICAL → defer as must_fix, non-blocking. Prevents infinite business logic loops.
+- **Security Review max 3 rounds → human escalation:** Never auto-proceeds past security, but has a defined exit.
+- **Cumulative Round Guard:** Total rounds >8 → warning. >12 → mandatory human escalation regardless of which loop triggered it.
+- **Support agents use Haiku model:** gap-checker, smoke-tester, drift-detector, memory-curator use claude-haiku-4-5-20251001. Saves ~65% latency on lightweight checks.
+- **Migration system:** Every breaking change ships a `docs/migrations/{version}.md`. Projects run `/migrate` to update state/config to current plugin version.
 - **Foundation-aware init:** When CLAUDE.md + docs/ or .claude/agents/ detected, read existing docs instead of re-analyzing. Delegate implementation to template's agents.
 - **Replace-as-you-go:** Example code from templates is tagged, not deleted. Auto-replaced during feature implementation. Final cleanup prompt after all roadmap features complete.
 - **Cross-package gap-checker for monorepo projects:** Dedicated agent validates implementation completeness across all affected packages. Prevents partial feature implementation.

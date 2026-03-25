@@ -19,7 +19,7 @@ description: |
   </commentary>
   </example>
 
-model: inherit
+model: claude-haiku-4-5-20251001
 color: yellow
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
@@ -34,7 +34,7 @@ You are the Drift Detector in the solo-dev validation layer. You detect inconsis
 - **Post-ship** → Pattern Validation Check (Mode 4)
 
 ## Configuration
-Read `drift_detection` from `.claude/solo-dev.local.md`:
+Read `drift_detection` from `.solo-dev/config.local.md`:
 - `enabled`: Master switch (default: true)
 - `spec_clarity`: Check spec before implementation (default: true)
 - `contract_checksum`: Track contract changes during impl (default: true)
@@ -50,7 +50,7 @@ Read `drift_detection` from `.claude/solo-dev.local.md`:
 **Purpose:** Prevent vague acceptance criteria that agents interpret differently.
 
 ### Process
-1. Read `docs/specs/{feature-id}.md`
+1. Read `.solo-dev/specs/{feature-id}.md`
 2. Extract all acceptance criteria
 3. For each criterion:
    - Check: is it measurable? (has number, condition, or exact behavior)
@@ -91,14 +91,14 @@ SPEC_CLARITY_REPORT:
 ### Process
 1. Read contract checksums from `solo-dev-state.json` field `contract_checksums`
    - These were recorded by orchestrator at Phase 2 start
-2. Compute current checksum of each file in `docs/contracts/`
-   - Use: `sha256sum docs/contracts/*.md` via Bash
+2. Compute current checksum of each file in `.solo-dev/contracts/`
+   - Use: `sha256sum .solo-dev/contracts/*.md` via Bash
 3. Compare:
    - If all match → STABLE
    - If any differ:
-     - `git log --oneline docs/contracts/{file}` → identify who changed it and when
+     - `git log --oneline .solo-dev/contracts/{file}` → identify who changed it and when
      - Read `agent_file_ownership` from `solo-dev-state.json` → match changed contract to affected agents
-     - If no file ownership map exists → infer from file path convention (docs/contracts/{feature}-api.md → frontend-agent, test-agent are affected consumers)
+     - If no file ownership map exists → infer from file path convention (.solo-dev/contracts/{feature}-api.md → frontend-agent, test-agent are affected consumers)
 
 ### Output
 ```yaml
@@ -106,10 +106,10 @@ CONTRACT_DRIFT_REPORT:
   contracts_checked: {N}
 
   STABLE:
-    - "docs/contracts/A1-api.md (sha256: abc123)"
+    - ".solo-dev/contracts/A1-api.md (sha256: abc123)"
 
   DRIFTED:
-    - file: "docs/contracts/A1-api.md"
+    - file: ".solo-dev/contracts/A1-api.md"
       original_hash: "abc123"
       current_hash: "def456"
       changed_by: "backend-agent (round 2 CR fix)"
@@ -131,7 +131,7 @@ CONTRACT_DRIFT_REPORT:
 **Purpose:** Detect stale patterns, contradictions, and sync issues before any feature work begins.
 
 ### Process
-1. Read all files in `docs/agents/memory/`:
+1. Read all files in `.solo-dev/memory/`:
    - `patterns.md` — Check each pattern: does the referenced file/function still exist? (use Grep/Glob)
    - `decisions.md` — Any decisions still tagged `[INFERRED]` after 3+ features? Flag for user confirmation.
    - `cr_learnings.md` + `bv_learnings.md` — Check for contradictions using these rules:
@@ -139,7 +139,7 @@ CONTRACT_DRIFT_REPORT:
      - If not confident it's a real contradiction → tag `[POSSIBLE_CONTRADICTION]` for user review
      - Different scopes are NOT contradictions (e.g., "server components for static" vs "client components for real-time" are complementary, not contradictory)
 2. Check YAML/Markdown sync:
-   - Compute checksum of each `docs/yaml/*.yaml`
+   - Compute checksum of each `.solo-dev/yaml/*.yaml`
    - Compare with generated markdown (roadmap.md, CHANGELOG.md, etc.)
    - If out of sync → flag + regenerate
 
@@ -250,7 +250,7 @@ PATTERN_VALIDATION_REPORT:
 **Purpose:** Detect demos that became inaccurate because a newer feature changed the same pages/flows.
 
 ### Process
-1. Read `docs/yaml/demos.yaml` — get all existing demos
+1. Read `.solo-dev/yaml/demos.yaml` — get all existing demos
 2. For the just-shipped feature, get list of files changed (from implementation reports or `git diff`)
 3. For each existing demo:
    - Read `related_features` and their file ownership from state history

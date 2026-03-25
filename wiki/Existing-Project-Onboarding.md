@@ -209,3 +209,82 @@ Next steps:
   2. Check docs/product/roadmap.md
   3. Run /solo-dev:next-feature to start building
 ```
+
+---
+
+## Continuing WIP Features
+
+If init detected partial features and marked them `WIP` in the roadmap, you have two paths depending on whether a solo-dev session was already in progress.
+
+### Path A: WIP detected by init (no prior solo-dev session)
+
+These are features the codebase already started (e.g. UI exists but no backend, or API exists but no tests). solo-dev treats them as **incomplete features to finish**, not as new features to design from scratch.
+
+```
+/solo-dev:next-feature
+```
+
+The orchestrator checks `docs/product/roadmap.md` and picks the highest-priority `WIP` feature first. It skips phases already complete based on what init detected:
+
+| What init found | Phases skipped | Resumes at |
+|-----------------|---------------|------------|
+| Partial (UI only, no backend) | Phase 0–1 (market + design) | Phase 2 (implementation) |
+| Partial (API only, no tests) | Phase 0–1 | Phase 2 (test-agent only) |
+| Stub (entry point, no impl) | Phase 0 (market) | Phase 1 (design loop) |
+| Unclear (user clarified at init) | None | Phase 0 |
+
+**Pre-Flight checkpoint** will show what was detected and which phases are being skipped, so you can confirm before any work begins.
+
+---
+
+### Path B: Mid-flight WIP (solo-dev session was interrupted)
+
+If you were already running `/solo-dev:next-feature` and the session was interrupted (context reset, crash, manual stop), the state is saved in `.claude/solo-dev-state.json`.
+
+```
+/solo-dev:resume
+```
+
+This reads the saved state and continues from the exact phase where it stopped. No work is repeated.
+
+```
+Resuming: content-brief-generator at phase IMPLEMENTATION round 1
+```
+
+If the session ended mid-escalation (a loop exceeded max retries and was waiting for your decision), `resume` will show the pending decision first:
+
+```
+/solo-dev:resume "Use option B — rewrite the API contract"
+```
+
+You can pass your decision directly as an argument to skip the re-prompt.
+
+---
+
+### Checking what's WIP
+
+Before running either command, you can inspect the roadmap:
+
+```bash
+cat docs/product/roadmap.md
+```
+
+Or use the status dashboard:
+
+```
+/solo-dev:status
+```
+
+This shows all features with their current state (`WIP`, `PLANNED`, `IMPLEMENTATION`, `ESCALATED`, etc.) and which agents are active.
+
+---
+
+### Decision: finish WIP first or start fresh?
+
+solo-dev always prioritizes `WIP` over `PLANNED` by default. If you want to skip a WIP feature and start a new one instead:
+
+1. Open `docs/product/roadmap.md`
+2. Change the feature status from `WIP` to `DEFERRED`
+3. Run `/solo-dev:next-feature` — it will pick the next highest-priority feature
+
+The deferred WIP feature stays in the roadmap and can be resumed later.

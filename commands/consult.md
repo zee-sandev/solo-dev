@@ -46,8 +46,8 @@ Extract from user input:
 
 ### Step 2: Gather Context
 
-If project has `.claude/solo-dev-state.json`:
-- Load docs/agents/memory/index.md (lightweight context)
+If project has `.solo-dev/state.json`:
+- Load .solo-dev/memory/index.md (lightweight context)
 - Load relevant memory files: decisions.md, patterns.md
 - Note: this agent has project context, answers will be project-aware
 

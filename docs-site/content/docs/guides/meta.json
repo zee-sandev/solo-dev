@@ -1,0 +1,11 @@
+{
+  "title": "Guides",
+  "pages": [
+    "existing-project-onboarding",
+    "configuration",
+    "supported-stacks",
+    "bundled-skills",
+    "rollback",
+    "sprint-planning"
+  ]
+}

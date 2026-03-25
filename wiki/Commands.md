@@ -6,6 +6,7 @@ solo-dev provides 13 commands for the full product development lifecycle.
 
 | Command | Description |
 |---------|-------------|
+| `/go` | Interactive launcher — numbered menu for all commands |
 | `/solo-dev:start-from-idea` | Turn a rough idea into a validated roadmap |
 | `/solo-dev:init` | Initialize a project from a concept, codebase, or template |
 | `/solo-dev:next-feature` | Build and ship the next feature on your roadmap |
@@ -19,6 +20,20 @@ solo-dev provides 13 commands for the full product development lifecycle.
 | `/solo-dev:showcase` | Compile feature demos into a product showcase |
 | `/solo-dev:sprint` | Plan sprints — select features, estimate effort |
 | `/solo-dev:decompose <id>` | Break a large feature into smaller sub-features |
+
+---
+
+## `/go`
+
+Interactive launcher — the easiest way to use solo-dev when you can't remember the exact command name or flags.
+
+```
+/go          # Show numbered menu
+/go 1        # Launch command #1 directly
+/go ? 1      # Show extended help for command #1
+```
+
+Reads `.claude/solo-dev-state.json` to show current phase and mark the most logical next action with `→`. If no state file exists, the menu defaults to onboarding mode.
 
 ---
 
@@ -59,6 +74,28 @@ Sets up the project for development. Detects whether this is a new concept or ex
 Runs the full [Feature Lifecycle](Feature-Lifecycle.md) (phases 0-8) for the next feature on the roadmap.
 
 Automatically selects the next `QUEUED` feature where all `depends_on` are `COMPLETE`. If no feature is eligible, reports which dependencies are blocking.
+
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `<feature-id>` | Run a specific feature by ID instead of picking next QUEUED |
+| `--auto` | Run features back-to-back. Checkpoints remain interactive; loop continues after each feature ships |
+| `--auto --max N` | Same as `--auto` but stops after N features |
+| `--overnight` | Unattended run — auto-proceeds checkpoints. Skips XL features. Commits locally, no push |
+| `--overnight --max N` | Overnight with feature cap |
+| `--spike` | 30-minute feasibility check only — no implementation |
+| `--experiment` | 60-minute MVP — deployable to staging |
+
+**When to use which:**
+
+| Mode | Best for |
+|------|----------|
+| (default) | Single feature, full interactive control |
+| `--auto` | Daytime multi-feature. You're around but don't want to re-type the command |
+| `--overnight` | Sleep time. Safe guardrails, no user needed |
+| `--spike` | Uncertain idea — validate before committing to full lifecycle |
+| `--experiment` | Quick MVP to test in staging |
 
 ---
 

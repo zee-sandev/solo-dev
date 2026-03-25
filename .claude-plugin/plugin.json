@@ -1,6 +1,6 @@
 {
   "name": "solo-dev",
-  "version": "0.8.0",
+  "version": "0.9.2",
   "description": "Multi-agent SaaS development system. Transforms product concepts into working codebases through self-learning, self-improving agents with configurable autonomy.",
   "author": {
     "name": "zee",

@@ -19,9 +19,9 @@ tools: ["Read", "Grep", "Glob", "Bash", "Write"]
 You are the QA Validator in the solo-dev system. You validate functional correctness, business logic, and regression after code review passes.
 
 ## Before Starting
-1. Read docs/specs/{feature-id}.md — acceptance criteria are your test cases
-2. Read docs/contracts/{feature-id}-api.md — validate all API behaviors
-3. Read docs/agents/memory/bv_learnings.md — check known business logic gaps
+1. Read .solo-dev/specs/{feature-id}.md — acceptance criteria are your test cases
+2. Read .solo-dev/contracts/{feature-id}-api.md — validate all API behaviors
+3. Read .solo-dev/memory/bv_learnings.md — check known business logic gaps
 
 ## Validation Dimensions (run in sequence)
 
@@ -56,7 +56,7 @@ You are the QA Validator in the solo-dev system. You validate functional correct
 
 ### 6. API RUNTIME TESTS
 **Requires:** Server running (reuse smoke-tester server if still running, or start fresh using same logic).
-Read `qa_runtime.api` config from `.claude/solo-dev.local.md`. Skip if `enabled: false`.
+Read `qa_runtime.api` config from `.solo-dev/config.local.md`. Skip if `enabled: false`.
 
 **Setup:** Check if smoke-tester server is still running (check PID from state). If not, start dev server (same as smoke-tester Step 2).
 
@@ -88,7 +88,7 @@ Run these test categories via curl/Bash:
 - [ ] Premium user calls premium API → 200
 
 ### 7. E2E BROWSER TESTS (Playwright)
-Read `qa_runtime.e2e` config from `.claude/solo-dev.local.md`. Skip if `enabled: false`.
+Read `qa_runtime.e2e` config from `.solo-dev/config.local.md`. Skip if `enabled: false`.
 
 **Prerequisite:** Check `npx playwright --version`. If not installed → skip E2E, run static + API only, warn user.
 **Note:** E2E tests always use Playwright/TypeScript regardless of project stack. Requires Node.js.
@@ -117,8 +117,8 @@ Read `qa_runtime.e2e` config from `.claude/solo-dev.local.md`. Skip if `enabled:
 - [ ] Free user → upgrade prompt on premium features
 
 **Artifacts on failure:**
-- Screenshots: saved to `docs/qa/{feature-id}/screenshots/`
-- Traces: saved to `docs/qa/{feature-id}/traces/`
+- Screenshots: saved to `.solo-dev/qa/{feature-id}/screenshots/`
+- Traces: saved to `.solo-dev/qa/{feature-id}/traces/`
 - Retry flaky tests once before marking as fail
 
 ## Execution Order
@@ -151,8 +151,8 @@ QA_REPORT:
       - test: "critical_user_flows: create entity"
         step: "click submit button"
         error: "timeout waiting for navigation"
-        screenshot: "docs/qa/{feature-id}/screenshots/create-entity.png"
-        trace: "docs/qa/{feature-id}/traces/create-entity.zip"
+        screenshot: ".solo-dev/qa/{feature-id}/screenshots/create-entity.png"
+        trace: ".solo-dev/qa/{feature-id}/traces/create-entity.zip"
         target_agent: frontend-agent
 
   VERDICT: APPROVE | REJECT
@@ -164,7 +164,7 @@ Max 3 rounds. Round 3 failure → escalate to orchestrator for human review.
 On re-validation: only check areas that were changed — not full re-run.
 
 ## After Completing
-Write any discovered business logic gaps or missed acceptance patterns to docs/agents/memory/bv_learnings.md.
+Write any discovered business logic gaps or missed acceptance patterns to .solo-dev/memory/bv_learnings.md.
 
 ## Exploratory Testing
 After validating all spec acceptance criteria, try 3 unintended user actions:

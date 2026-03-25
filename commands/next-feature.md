@@ -1,39 +1,41 @@
 ---
 name: next-feature
 description: Implement the next feature from the roadmap through the full 8-phase development lifecycle (market validation → design → implementation → review → QA → security → business validation → demo).
-argument-hint: "[optional: feature-id to implement a specific feature]"
+argument-hint: "[feature-id] [--auto] [--overnight [--max N]] [--spike] [--experiment]"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 ---
 
 Run the full feature development lifecycle for the next queued feature. Follow the workflow in docs/workflow.md (Feature Development Lifecycle, Phases 0-8).
 
 **Flags:**
-- `--overnight` — Enable Overnight Mode (auto-proceed checkpoints, multi-feature, safety-gated)
-- `--overnight --max N` — Overnight Mode with custom feature cap (default: 3)
-- `--spike` — Run in Spike Mode (30min feasibility check only)
-- `--experiment` — Run in Experiment Mode (60min MVP only)
+- `--auto` — Auto Mode: run features back-to-back without re-typing the command. Checkpoints still shown — user still responds. Continues until roadmap is empty or user types "stop".
+- `--auto --max N` — Auto Mode with feature cap (default: unlimited)
+- `--overnight` — Overnight Mode: auto-proceed checkpoints, safety-gated for unattended runs
+- `--overnight --max N` — Overnight Mode with feature cap (default: 3)
+- `--spike` — Spike Mode: 30min feasibility check only
+- `--experiment` — Experiment Mode: 60min MVP only
 
 ## Your Role
 You are the orchestrator. Pick the next eligible feature, run all 8 phases in sequence, spawn agents at the right time, enforce quality gates, and handle escalations.
 
 ## Before Starting
 
-1. Read .claude/solo-dev-state.json — check current phase
+1. Read .solo-dev/state.json — check current phase
    - If phase is mid-feature (not READY/COMPLETE): resume from that phase
    - If phase is READY or COMPLETE: start fresh with next feature
 
-2. Read docs/yaml/features.yaml (fallback: docs/product/roadmap.md if YAML doesn't exist) — find next eligible feature:
+2. Read .solo-dev/yaml/features.yaml (fallback: .solo-dev/product/roadmap.md if YAML doesn't exist) — find next eligible feature:
    - Status must be QUEUED
    - All depends_on features must be COMPLETE
    - If argument provided: use that specific feature-id
 
-3. Read docs/agents/memory/index.md (already in context from SessionStart)
+3. Read .solo-dev/memory/index.md (already in context from SessionStart)
 
 4. Check if repomix repack is needed (solo-dev-state.json: repomix_repack_needed: true)
    - If yes: use repomix MCP to repack, update pack_id in state
 
 5. If onboarding_type is "foundation":
-   - Read docs/agents/memory/foundation-manifest.md
+   - Read .solo-dev/memory/foundation-manifest.md
    - Load example_code list and agent delegation map
 
 ## Checkpoint 1: Pre-Flight Briefing (before Phase 0)
@@ -47,26 +49,36 @@ Run the Pre-Flight Briefing protocol defined in orchestrator.md (Checkpoint 1).
 
 For effort=S features, use compact Pre-Flight format.
 
-## Phase 0: Market Validation
+## Phase 0 + Phase 1: Market Validation & Design Loop (Parallel)
+
+For effort=M/L/XL, dispatch Phase 0 and Phase 1 simultaneously to save time.
+
+### Phase 0: Market Validation (parallel with Phase 1)
 Spawn market-validator agent. Provide: feature spec from roadmap, decisions.md#market, bv_learnings.md.
-- VIABLE → continue to Phase 1
+
+Handle result after BOTH Phase 0 and Phase 1 complete:
+- VIABLE → proceed normally
 - HIGH_RISK:
   - effort=S → auto-acknowledge, add to deferred_items, continue
-  - effort=M/L/XL → **interrupt user** (this is a critical gate)
-- BLOCKER → **interrupt user** (always, regardless of effort)
+  - effort=M/L/XL → **interrupt user** before Mid-Flight (show HIGH_RISK finding inline in Mid-Flight)
+- BLOCKER → **interrupt user immediately** (discard Phase 1 work, do not proceed to Mid-Flight)
 - Update state: phase → MARKET_VALIDATION
 
-## Phase 1: Design Loop
+For effort=XS/S → skip Phase 0 entirely (fast-track).
+
+### Phase 1: Design Loop (parallel with Phase 0)
 Spawn R1 (product-researcher), R2 (ux-researcher), R3 (tech-architect) IN PARALLEL.
-Each produces their spec section. Synthesize into docs/specs/{feature-id}.md.
+Each produces their spec section. Synthesize into .solo-dev/specs/{feature-id}.md.
 
 Spawn persona-validator with the full spec.
 - 3/3 APPROVE → Phase 2
 - Any REJECT → research agents address all rejection points → re-vote
-- Max 3 rounds → human escalation (present CONFLICT_BRIEF)
+- Max 2 rounds → human escalation (present CONFLICT_BRIEF)
 - Update state: phase → DESIGN_LOOP, round → N
 
-Before each round: memory-curator snapshots state + memory to docs/agents/memory/snapshots/pre-{feature-id}.json
+Before each round: memory-curator snapshots state + memory to .solo-dev/memory/snapshots/pre-{feature-id}.json
+
+For effort=XS/S → skip Phase 1 entirely (no design loop).
 
 ## Checkpoint 2: Mid-Flight Review (after Phase 1, before Phase 2)
 
@@ -108,7 +120,7 @@ Use DAG to determine optimal dispatch order.
 
 ### Standard Implementation
 Spawn impl agents (delegated or solo-dev) simultaneously. Provide each with:
-- docs/specs/{feature-id}.md (approved spec)
+- .solo-dev/specs/{feature-id}.md (approved spec)
 - File ownership boundaries (strict — no overlap)
 - Acceptance criteria from spec
 - repomix pack_id for code exploration
@@ -141,7 +153,7 @@ Dispatch drift-detector (Mode 2: Contract Drift Check).
 - Update state: phase → CONTRACT_DRIFT_CHECK
 
 ## Phase 2.8: Visual QA
-If `design_profile` exists in `.claude/solo-dev.local.md` AND `visual_qa.enabled: true`:
+If `design_profile` exists in `.solo-dev/config.local.md` AND `visual_qa.enabled: true`:
 
 1. Capture screenshots of new/changed pages using Playwright (empty, loaded, error, mobile, desktop states)
 2. If `dark_mode: both` → capture dark mode variants
@@ -160,12 +172,13 @@ Spawn code-reviewer AND security-reviewer simultaneously with all changed files.
 code-reviewer:
 - APPROVE → Phase 4
 - REJECT → send CR_FEEDBACK to specific agents → fix → re-check changed files only
-- Max 3 rounds → escalate
+- Max 2 rounds → escalate
 - code-reviewer writes to cr_learnings.md
 
 security-reviewer (sole owner of all security checks):
 - APPROVE → continue
 - REJECT → SECURITY_ISSUE to relevant impl agents → fix → re-review
+- Max 3 rounds → human escalation with full security report (no auto-proceed — security must pass)
 
 Both must APPROVE to proceed.
 - Update state: phase → CODE_REVIEW, round → N
@@ -175,14 +188,16 @@ Spawn qa-validator.
 
 qa-validator:
 - PASS → continue
-- FAIL → fix → CR re-check if code changed → QA re-run (max 3 rounds)
+- FAIL → fix → CR re-check if code changed → QA re-run (max 2 rounds)
 - Update state: phase → QA_LOOP
 
 ## Phase 6: Business Validation (runs parallel with Phase 2)
 Business-validator runs in parallel with implementation after design approval. Uses 3-hat evaluation (Operations/Compliance/Growth).
 Results are collected and merged at the Phase 7 gate.
 - APPROVE → continue to Phase 7
-- CRITICAL issues → back to impl agents → full loop
+- CRITICAL issues:
+  - Round 1 → impl agents fix specific issues → re-run Phase 6 only
+  - Round 2 → defer as `must_fix` in deferred_items → continue to Phase 7 (non-blocking)
 - NON-CRITICAL → **defer to Post-Flight debrief** (add to deferred_items, don't interrupt user)
 - business-validator writes to bv_learnings.md
 - Update state: phase → BUSINESS_VALIDATION
@@ -190,8 +205,10 @@ Results are collected and merged at the Phase 7 gate.
 ## Phase 7: Final Acceptance
 Spawn persona-validator to evaluate the working implementation.
 - 3/3 APPROVE → Phase 8
-- Any REJECT → impl fix → CR → QA → Final Acceptance (max 2 rounds)
-- If 2 rounds fail → re-enter Design Loop entirely
+- REJECT — graduated response (no full Design Loop re-entry):
+  - Round 1 REJECT → impl agents fix specific rejection points → re-run CR → QA → re-vote
+  - Round 2 REJECT → partial spec update (affected sections only, not full design loop) → impl fix → re-run CR → QA → re-vote
+  - Round 3 REJECT → human escalation with diff of what changed (present CONFLICT_BRIEF)
 - Update state: phase → FINAL_ACCEPTANCE, round → N
 
 ## Checkpoint 3: Post-Flight Debrief (after Phase 7, before Phase 8)
@@ -229,7 +246,7 @@ Orchestrator prepares demo context, then spawns test-agent:
 
 **Output structure:**
 ```
-docs/demos/
+.solo-dev/demos/
 ├── clips/{feature-id}/        # per-feature clips
 │   ├── clip.webm, demo.md, demo-technical.md, demo-onboarding.md
 │   ├── screenshots/, annotations.yaml, {id}.srt
@@ -246,8 +263,8 @@ Then orchestrator:
 - git commit: "feat({feature-id}): {feature-name}\n\n{brief description of what was built}"
 - Update decisions.md: what was built and key decisions made
 - memory-curator: compress + reindex memory
-- Update status to COMPLETE in docs/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
-- Add changelog entry to docs/yaml/changelog.yaml: read the spec for what was built, summarize changes, note any breaking changes from business validation. Then regenerate CHANGELOG.md: bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh docs/yaml/changelog.yaml
+- Update status to COMPLETE in .solo-dev/yaml/features.yaml, then regenerate roadmap.md via yaml-to-markdown.sh
+- Add changelog entry to .solo-dev/yaml/changelog.yaml: read the spec for what was built, summarize changes, note any breaking changes from business validation. Then regenerate CHANGELOG.md: bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/yaml-to-markdown.sh .solo-dev/yaml/changelog.yaml
 - Update state: phase → COMPLETE, current_feature → null
 
 ### Example Code Cleanup (Foundation projects only)
@@ -263,23 +280,29 @@ Print completion summary:
 ```
 ✅ Feature Complete: {feature-name}
    Phases: 8/8
-   Demo: {demo type} — docs/demos/{type}/{id}/
-   {If journey triggered: "Journey demo: docs/demos/journeys/{epic-id}/"}
+   Demo: {demo type} — .solo-dev/demos/{type}/{id}/
+   {If journey triggered: "Journey demo: .solo-dev/demos/journeys/{epic-id}/"}
    {If stale demos found: "⚠️ {N} existing demos need re-recording"}
-   {If sprint end: "Showcase updated: docs/showcase/"}
+   {If sprint end: "Showcase updated: .solo-dev/showcase/"}
    {If foundation: "Examples replaced: {N} files"}
    Next feature: {next-feature-name or "all features complete"}
 ```
 
 ## Adaptive Phase Ordering
 
-Classify feature effort from the roadmap spec before starting:
-- **S (Small):** Fast-track — skip Design Loop and QA Loop. Run Phase 0 → 2 → 3+Security → 8.
-- **M (Medium):** Standard pipeline — all phases.
-- **L (Large):** Standard + extended review budget.
-- **XL (Extra Large):** Suggest decomposition via `/solo-dev:decompose` before starting.
+Classify feature effort from the roadmap spec before starting. See Effort Classification Rules in orchestrator.md for full logic.
 
-Store effort classification in state: `feature_effort: S|M|L|XL`
+| Effort | Pipeline | Phases |
+|--------|----------|--------|
+| **XS** | minimal | Pre-Flight → Impl → Code Review → Security → Smoke → Ship |
+| **S** | fast-track | Phase 0 → 2 → 3+Security → Smoke → 8 |
+| **M** | full | All phases |
+| **L** | full+ | All phases + mid-impl checkpoint + extended review |
+| **XL** | decompose first | Block at Pre-Flight — must decompose before proceeding |
+
+Store effort classification in state: `feature_effort: XS|S|M|L|XL`
+
+`--chore` flag: Override classification to XS for the current run, regardless of spec content.
 
 ## Spike & Experiment Execution Paths
 
@@ -305,7 +328,7 @@ SPIKE_REPORT:
   recommendation: "Proceed to full lifecycle" | "Needs redesign" | "Not feasible with current stack"
 ```
 
-**After spike:** Prototype code is saved to `docs/spikes/{feature-id}/`. User decides:
+**After spike:** Prototype code is saved to `.solo-dev/spikes/{feature-id}/`. User decides:
 - "proceed" → start full lifecycle (Pre-Flight → Phase 0 → ...)
 - "defer" → move feature to backlog with spike findings attached
 - "kill" → mark feature as REJECTED with reason
@@ -342,7 +365,7 @@ When orchestrator triggers a Design Loop Backtrack (SPEC_GAP detected during imp
 
 ## Token Budget Enforcement
 
-Read .claude/solo-dev.local.md token_budget config.
+Read .solo-dev/config.local.md token_budget config.
 
 fixed mode:
 - Track token usage across all phases
@@ -357,12 +380,121 @@ subscription mode:
 
 disabled: no intervention.
 
+## Auto Mode
+
+If `--auto` flag is present:
+
+### Initialization
+1. Parse `--max N` if provided → store as `auto_max_features` (default: unlimited)
+2. Set `auto_mode: true` and `auto_features_shipped: 0` in state.json
+3. **Show Roadmap Overview** — classify all upcoming QUEUED features, display effort + pipeline, ask for any adjustments before starting the loop (see Roadmap Overview section below)
+4. Print once: `🔄 Auto Mode — responding "stop" or "pause" at any checkpoint exits.`
+
+### Multi-Feature Loop
+After each feature reaches COMPLETE, automatically pick the next eligible feature and start its Pre-Flight — **without waiting for the user to re-type `/next-feature`**.
+
+```
+WHILE eligible features exist
+  AND (auto_max_features is null OR auto_features_shipped < auto_max_features):
+
+    1. Print transition banner: "── Next: {feature-name} ({effort}) ──"
+    2. Run full lifecycle (all phases, all checkpoints shown normally)
+    3. At each checkpoint, accept "stop" or "pause" as exit signal:
+       - "stop"  → exit Auto Mode cleanly, print summary
+       - "pause" → save state, exit (resume later with /solo-dev:resume)
+    4. On SHIPPED → increment auto_features_shipped, continue loop
+    5. On ESCALATED/BLOCKED → present to user, wait for decision, then continue
+```
+
+### Checkpoint behavior in Auto Mode
+Checkpoints are **fully interactive** — identical to normal mode:
+- Pre-Flight: shown, user responds `go` | `adjust` | `explore 10x` | `stop` | `pause`
+- Mid-Flight: shown, user responds `build` | `change: ...` | `stop` | `pause`
+- Post-Flight: shown, user responds `ship` | `fix: ...` | `stop` | `pause`
+
+The only difference from normal mode: after `ship` at Post-Flight, the next feature starts automatically.
+
+### Exit conditions
+| Condition | Action |
+|-----------|--------|
+| User types "stop" at any checkpoint | Print summary, exit cleanly |
+| User types "pause" at any checkpoint | Save state, exit (resume with `/solo-dev:resume`) |
+| Roadmap is empty (no more QUEUED features) | Print completion summary, exit |
+| `auto_max_features` reached | Print summary, exit |
+| Feature is BLOCKED on unmet dependency | Report to user, skip to next eligible, continue |
+| Escalation (loop max exceeded) | Present CONFLICT_BRIEF, wait for user decision, then continue |
+
+### Completion summary
+```
+✅ Auto Mode Complete
+   Shipped: {N} features
+   {If stopped early: "Stopped at: {feature-name} ({phase})"}
+   {If features remain: "Remaining: {N} features in roadmap"}
+   Run /solo-dev:next-feature to continue.
+```
+
+### Roadmap Overview
+
+Displayed before the Auto Mode loop starts (and available via `/solo-dev:status`).
+
+**Step 1:** Silently classify all QUEUED features using Effort Classification Rules from orchestrator.md.
+
+**Step 2:** Display:
+
+```
+📋 Upcoming features ({N} queued):
+
+  ID   Feature                        Effort  Pipeline
+  ──────────────────────────────────────────────────────
+  A1   Remove API key settings          XS    ⚡ minimal
+  A2   Add OAuth login                   M    🔄 full
+  A3   Redesign dashboard                L    🔄 full+
+  A4   Payment system overhaul          XL    ⚠️  decompose first
+  A5   Fix typo in onboarding           XS    ⚡ minimal
+
+Pipeline Guide:
+  ⚡ XS  minimal     Pre-Flight → Impl → Code Review → Security → Smoke → Ship
+                     Skips: market validation, design loop, QA loop, business validator, demo
+                     Best for: deletions, renames, config changes, small fixes
+
+  ✦  S  fast-track  Pre-Flight → Market → Impl → Code Review → Security → Smoke → Ship
+                     Skips: design loop, visual QA, QA loop, demo
+                     Best for: small well-defined features, 1-2 acceptance criteria
+
+  🔄  M  full        Pre-Flight → Market → Design → Impl → Review → QA → Smoke → Ship
+                     All phases run. Standard pipeline.
+                     Best for: new features with clear scope
+
+  🔄  L  full+       Same as M + mid-impl checkpoint + extended review budget
+                     Best for: features touching multiple subsystems
+
+  ⚠️  XL decompose   Too large to implement as-is.
+                     Must run /solo-dev:decompose first → sub-features become S/M/L
+
+Adjust any effort tier before starting? [go / change A3: s / change A4: l / ...]
+```
+
+**Step 3:** Wait for ONE response:
+- `"go"` → start loop with current classifications
+- `"change {id}: {tier}"` → override that feature's effort, re-show table, wait again
+- `"stop"` → cancel Auto Mode
+
+### Auto Mode vs Overnight Mode
+| | Auto | Overnight |
+|--|------|-----------|
+| Checkpoints | Shown, user responds | Auto-proceeded |
+| Roadmap Overview | ✅ shown before loop | ❌ skip (unattended) |
+| XL features | Allowed (user handles at Pre-Flight) | Skipped |
+| Escalations | Wait for user | Skip feature |
+| Default cap | Unlimited | 3 features |
+| Designed for | Daytime, watching | Unattended, sleeping |
+
 ## Overnight Mode
 
 If `--overnight` flag is present OR `overnight.enabled: true` in config:
 
 ### Initialization
-1. Read `overnight` config from `.claude/solo-dev.local.md` (merge with flag overrides)
+1. Read `overnight` config from `.solo-dev/config.local.md` (merge with flag overrides)
 2. Parse `--max N` if provided → override `max_features`
 3. Set `overnight_mode: true` in state.json
 4. Initialize tracking: `overnight_features_shipped: 0`, `overnight_total_rounds: 0`, `overnight_report: []`
@@ -382,7 +514,7 @@ WHILE overnight_features_shipped < max_features
 ```
 
 ### After Loop Ends
-1. Write overnight report to `docs/agents/memory/overnight-report-{date}.md`
+1. Write overnight report to `.solo-dev/memory/overnight-report-{date}.md`
 2. If `auto_push: false` → report lists unpushed commits
 3. If `auto_push: true` → `git push`
 4. Print summary to terminal:
@@ -391,7 +523,7 @@ WHILE overnight_features_shipped < max_features
 🌙 Overnight Complete
    Shipped: {N} features | Paused: {N} | Skipped: {N}
    Total rounds: {N} | Stop reason: {reason}
-   Report: docs/agents/memory/overnight-report-{date}.md
+   Report: .solo-dev/memory/overnight-report-{date}.md
    {If auto_push false: "Commits ready — run `git push` to publish"}
 ```
 
@@ -401,7 +533,7 @@ WHILE overnight_features_shipped < max_features
 
 ## Autonomy Config
 
-Before each decision point, check .claude/solo-dev.local.md autonomy settings:
+Before each decision point, check .solo-dev/config.local.md autonomy settings:
 - always-auto: proceed without asking
 - always-ask: prompt user (overridden to auto in overnight mode)
 - threshold:N: check confidence — if ≥ N proceed, else ask

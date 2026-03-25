@@ -56,7 +56,7 @@ Generate 2-3 specific personas from the concept. Each persona should have:
 - Top 3 pain points this product solves
 - Behavioral patterns (technical vs. non-technical, power user vs. casual, etc.)
 
-Save to: docs/product/personas.md (create docs/product/ if needed)
+Save to: .solo-dev/product/personas.md (create .solo-dev/product/ if needed)
 Ask user to review and adjust.
 
 ### Phase 4: Core Feature Definition
@@ -102,15 +102,15 @@ User selects → roadmap. Unselected → backlog.md.
 
 ### Phase 5: Generate Roadmap Docs
 Create the following files:
-- docs/product/idea-brief.md — concept summary (1-2 pages)
-- docs/product/personas.md — user personas (if not already created)
-- docs/product/competitive-analysis.md — gap matrix + weaknesses
-- docs/product/feature-enhancements.md — AI suggestions per feature
-- docs/product/idea-enhancements.md — big picture improvements
-- docs/product/roadmap.md — phased feature roadmap with dependency graph
-- docs/product/backlog.md — future ideas deferred from this session
+- .solo-dev/product/idea-brief.md — concept summary (1-2 pages)
+- .solo-dev/product/personas.md — user personas (if not already created)
+- .solo-dev/product/competitive-analysis.md — gap matrix + weaknesses
+- .solo-dev/product/feature-enhancements.md — AI suggestions per feature
+- .solo-dev/product/idea-enhancements.md — big picture improvements
+- .solo-dev/product/roadmap.md — phased feature roadmap with dependency graph
+- .solo-dev/product/backlog.md — future ideas deferred from this session
 
-Also write docs/yaml/features.yaml with all feature entries from the roadmap (with status, priority, depends_on, blocks). After writing backlog.md, also write docs/yaml/backlog.yaml with all backlog entries.
+Also write .solo-dev/yaml/features.yaml with all feature entries from the roadmap (with status, priority, depends_on, blocks). After writing backlog.md, also write .solo-dev/yaml/backlog.yaml with all backlog entries.
 
 roadmap.md format:
 ```markdown

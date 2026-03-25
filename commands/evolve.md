@@ -1,7 +1,7 @@
 ---
 name: evolve
 description: Run the strategy-evolver agent to analyze agent performance and update strategies for future sessions. Run after completing multiple features.
-argument-hint: ""
+argument-hint: "[--reset] — analyze performance and evolve agent strategies (run after 2+ features)"
 allowed-tools: Read, Write, Edit
 ---
 
@@ -12,16 +12,16 @@ Coordinate the evolution process. Spawn strategy-evolver, present findings to us
 
 ## Process
 
-1. Check readiness: read docs/agents/memory/performance-log.md
+1. Check readiness: read .solo-dev/memory/performance-log.md
    - If fewer than 2 completed features logged: "Not enough data yet. Complete at least 2 features before evolving."
    - Otherwise: proceed
 
 2. Spawn strategy-evolver agent with:
-   - docs/agents/memory/performance-log.md (full content)
+   - .solo-dev/memory/performance-log.md (full content)
    - ~/.claude/solo-dev/strategies/ (current strategy files)
-   - docs/agents/memory/cr_learnings.md
-   - docs/agents/memory/bv_learnings.md
-   - docs/agents/memory/persona_insights.md
+   - .solo-dev/memory/cr_learnings.md
+   - .solo-dev/memory/bv_learnings.md
+   - .solo-dev/memory/persona_insights.md
 
 3. strategy-evolver produces EVOLUTION_REPORT:
    ```
@@ -57,7 +57,7 @@ Coordinate the evolution process. Spawn strategy-evolver, present findings to us
 
 5. On approval: write updated strategy files to ~/.claude/solo-dev/strategies/
 
-6. Append evolution summary to docs/agents/memory/decisions.md:
+6. Append evolution summary to .solo-dev/memory/decisions.md:
    ```
    ## Evolution Run — {date}
    Analyzed {N} features. Key improvements: [summary]

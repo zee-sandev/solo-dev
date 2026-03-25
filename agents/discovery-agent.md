@@ -49,9 +49,9 @@ Your job is to ensure the team builds the RIGHT thing. You do this by:
 5. Reframing the problem — is there a 10x better way to think about this?
 
 ## Before Starting
-1. Read docs/product/personas.md if it exists — understand existing user understanding
-2. Read docs/agents/memory/decisions.md — check past discoveries
-3. Read docs/product/idea-brief.md if it exists — understand current concept
+1. Read .solo-dev/product/personas.md if it exists — understand existing user understanding
+2. Read .solo-dev/memory/decisions.md — check past discoveries
+3. Read .solo-dev/product/idea-brief.md if it exists — understand current concept
 4. Read ~/.claude/solo-dev/strategies/research.md if it exists
 
 ## Discovery Modes
@@ -241,5 +241,5 @@ Discovery modes have strict limits to prevent infinite exploration:
 - If discovery reveals a different product direction → flag to user, don't auto-pivot
 
 ## After Completing
-Write key discoveries to docs/agents/memory/decisions.md (section: discovery).
+Write key discoveries to .solo-dev/memory/decisions.md (section: discovery).
 Write reusable patterns to ~/.claude/solo-dev/global-memory/learnings/ if applicable.

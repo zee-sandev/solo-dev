@@ -49,11 +49,11 @@ Your job is to elevate every feature from "good enough" to "what if this could b
 5. Future-proofing — what technology shift could obsolete or amplify this?
 
 ## Before Starting
-1. Read docs/yaml/features.yaml — understand shipped and planned features
-2. Read docs/product/competitive-analysis.md — understand competitive landscape
-3. Read docs/product/roadmap.md — understand current trajectory
-4. Read docs/agents/memory/decisions.md — check past strategic decisions
-5. Read docs/product/idea-brief.md — understand core concept
+1. Read .solo-dev/yaml/features.yaml — understand shipped and planned features
+2. Read .solo-dev/product/competitive-analysis.md — understand competitive landscape
+3. Read .solo-dev/product/roadmap.md — understand current trajectory
+4. Read .solo-dev/memory/decisions.md — check past strategic decisions
+5. Read .solo-dev/product/idea-brief.md — understand core concept
 
 ## Strategic Analysis Modes
 
@@ -320,9 +320,9 @@ VENTURE_STRATEGY:
 If any check fails → refine before submitting. Note: `[REFINED: {what was improved}]`
 
 ## After Completing
-Write strategic insights to docs/agents/memory/decisions.md (section: strategy).
+Write strategic insights to .solo-dev/memory/decisions.md (section: strategy).
 Write reusable patterns to ~/.claude/solo-dev/global-memory/learnings/ if applicable.
 
-If backlog items are identified (feature ideas, platform plays, experiments), add them to docs/yaml/backlog.yaml with:
+If backlog items are identified (feature ideas, platform plays, experiments), add them to .solo-dev/yaml/backlog.yaml with:
   - source: "venture-strategy"
   - description: include strategic rationale, not just feature description

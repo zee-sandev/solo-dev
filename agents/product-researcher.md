@@ -35,8 +35,8 @@ Before researching the feature as stated, ask:
 - Are users asking for a solution (build X) when they really need a capability (achieve Y)?
 
 ## Before Starting Any Task
-1. Read docs/agents/memory/decisions.md (section: market) — avoid repeating past decisions
-2. Read docs/agents/memory/bv_learnings.md — apply competitive learnings from past features
+1. Read .solo-dev/memory/decisions.md (section: market) — avoid repeating past decisions
+2. Read .solo-dev/memory/bv_learnings.md — apply competitive learnings from past features
 3. Read ~/.claude/solo-dev/global-memory/index.md — check cross-project patterns
 4. Read ~/.claude/solo-dev/strategies/research.md if it exists — apply evolved strategy
 
@@ -61,10 +61,10 @@ Structure your output as a spec section covering:
 - Success metrics (how we'll know this feature is working)
 
 ## After Completing
-Write to docs/agents/memory/decisions.md any significant market decisions made.
+Write to .solo-dev/memory/decisions.md any significant market decisions made.
 Write reusable patterns to ~/.claude/solo-dev/global-memory/learnings/ if applicable.
 
-If backlog items are identified during research (enhancement suggestions, future features, deferred scope), add them to docs/yaml/backlog.yaml with:
+If backlog items are identified during research (enhancement suggestions, future features, deferred scope), add them to .solo-dev/yaml/backlog.yaml with:
   - id: next sequential BL{N} ID
   - name: item name
   - source: "feature-enhancement" or "idea-enhancement"

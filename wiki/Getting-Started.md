@@ -81,6 +81,18 @@ Template agents handle implementation (they know conventions better). Example co
 Builds the next feature from your roadmap through the full [Feature Lifecycle](Feature-Lifecycle.md):
 Market validation → Design loop → Parallel implementation → Code review → QA → Security → Business validation → Demo generation.
 
+### If you have WIP from an existing codebase
+
+When `init` onboards an existing project, partial features are marked `WIP` in the roadmap. `/solo-dev:next-feature` picks these up first and skips phases that are already complete.
+
+If a **solo-dev session was interrupted** mid-feature, resume from the exact phase it stopped:
+
+```
+/solo-dev:resume
+```
+
+See [Existing Project Onboarding → Continuing WIP Features](Existing-Project-Onboarding.md#continuing-wip-features) for the full guide.
+
 ## First Run Example
 
 ```

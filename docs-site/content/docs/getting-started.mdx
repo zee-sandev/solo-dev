@@ -1,0 +1,152 @@
+---
+title: Getting Started
+description: Installation, entry points, and your first run with solo-dev.
+---
+
+## Installation
+
+### Quick Install
+
+```bash
+# 1. Add solo-dev as a marketplace source
+claude plugin marketplace add zee-sandev/solo-dev
+
+# 2. Install the plugin
+claude plugin install solo-dev
+```
+
+### Optional Plugins
+
+These enhance quality — solo-dev works without them via bundled fallbacks.
+
+```bash
+claude plugin install impeccable
+claude plugin install ui-ux-pro-max
+claude plugin install everything-claude-code
+```
+
+### Manual Install
+
+```bash
+git clone https://github.com/zee-sandev/solo-dev.git ~/.claude/plugins/solo-dev
+```
+
+## Three Entry Points
+
+### 1. Starting from a new idea
+
+```
+/solo-dev:start-from-idea
+```
+
+Guides you through 6 phases:
+1. Idea exploration (dialogue)
+2. Market reality check (competitor research)
+3. Competitor gap analysis (feature gaps, weaknesses, whitespace)
+4. Persona generation (2-3 user personas)
+5. AI-enhanced feature definition (depth, breadth, differentiation, quick wins)
+6. Roadmap generation (prioritized, with dependency graph)
+
+Output: `docs/product/` directory with idea-brief, personas, competitive analysis, roadmap, and backlog.
+
+### 2. Starting from an existing concept
+
+```
+/solo-dev:init
+```
+
+If you already have notes, a spec, or requirements — `init` sets up the project structure and memory system.
+
+### 3. Onboarding an existing codebase
+
+```
+/solo-dev:init
+```
+
+If solo-dev detects source files but no product docs, it automatically enters **onboarding mode**. See [Existing Project Onboarding](/docs/guides/existing-project-onboarding) for details.
+
+### 4. Starting from a project template
+
+```
+/solo-dev:init
+```
+
+If solo-dev detects `CLAUDE.md` + `docs/` or `.claude/agents/` but no product docs, it enters **foundation mode** — reads existing documentation, maps template agents, tags example code, and asks one question: "What product are you building on this foundation?"
+
+Template agents handle implementation (they know conventions better). Example code is replaced naturally as real features are built. See [Existing Project Onboarding](/docs/guides/existing-project-onboarding) for details.
+
+## After Setup
+
+```
+/solo-dev:next-feature
+```
+
+Builds the next feature from your roadmap through the full [Feature Lifecycle](/docs/architecture/feature-lifecycle):
+Market validation → Design loop → Parallel implementation → Code review → QA → Security → Business validation → Demo generation.
+
+### If you have WIP from an existing codebase
+
+When `init` onboards an existing project, partial features are marked `WIP` in the roadmap. `/solo-dev:next-feature` picks these up first and skips phases that are already complete.
+
+If a **solo-dev session was interrupted** mid-feature, resume from the exact phase it stopped:
+
+```
+/solo-dev:resume
+```
+
+See [Existing Project Onboarding → Continuing WIP Features](/docs/guides/existing-project-onboarding#continuing-wip-features) for the full guide.
+
+## First Run Example
+
+```
+> /solo-dev:start-from-idea
+
+Orchestrator: Tell me about your idea — even a rough description works.
+
+User: I want to build a tool that helps content teams track which blog posts
+      are ranking on Google and get AI suggestions for improvement.
+
+Orchestrator: Who has this problem? Describe your ideal first customer.
+
+User: Marketing managers at B2B SaaS companies, 5–50 person teams.
+
+[... questions continue one at a time ...]
+
+✓  Idea captured
+✓  4 competitors found — Clearscope, Surfer SEO, MarketMuse, Frase
+✓  Gap matrix built — 3 whitespace opportunities identified
+✓  2 personas generated — Content Manager Sarah, SEO Lead Marcus
+✓  6 MVP features defined, 2 competitive moat features
+✓  AI enhancements suggested — 4 selected, 3 moved to backlog
+✓  Roadmap generated
+
+Run /solo-dev:init to start building.
+```
+
+## Project Output Structure
+
+Every project built with solo-dev follows this layout:
+
+```
+docs/
+├── specs/          # Feature specifications
+├── contracts/      # API contracts (auto-generated per feature)
+├── demos/          # Demo videos + documentation per feature
+│   └── {feature}/
+│       ├── demo.mp4
+│       └── demo.md
+└── agents/
+    └── memory/     # Agent learning memory
+        ├── index.md
+        ├── patterns.md
+        ├── decisions.md
+        ├── cr_learnings.md
+        ├── bv_learnings.md
+        ├── performance-log.md
+        └── snapshots/
+docs/product/
+├── roadmap.md      # Feature roadmap with dependency graph
+├── personas.md     # Generated user personas
+├── competitive-analysis.md
+└── backlog.md      # Unselected AI enhancement suggestions
+```
