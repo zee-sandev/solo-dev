@@ -1,5 +1,5 @@
 ---
-name: next-feature
+name: solo-dev:next-feature
 description: Implement the next feature from the roadmap through the full 8-phase development lifecycle (market validation → design → implementation → review → QA → security → business validation → demo).
 argument-hint: "[feature-id] [--auto] [--overnight [--max N]] [--spike] [--experiment]"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -133,24 +133,28 @@ Wait for all agents to report DONE | BLOCKED | NEEDS_CLARIFICATION.
 - NEEDS_CLARIFICATION → answer and continue
 - Update state: phase → IMPLEMENTATION, agents_status → {...}
 
-## Phase 2.5: Gap Check (monorepo)
-See orchestrator for full gap-check logic. If monorepo + multi-package impact map → dispatch gap-checker.
-- PASS → Phase 2.6
-- FAIL → targeted fix → re-check
-- Update state: phase → GAP_CHECK
+## Phase 2.5: Post-Implementation Checks (Parallel)
 
-## Phase 2.6: Smoke Test
-Dispatch smoke-tester agent.
-- PASS → Phase 2.7
-- FAIL → targeted feedback → agents fix → re-run failed steps
-- PARTIAL (build pass, endpoints skipped due to no contract) → proceed with warning
-- Update state: phase → SMOKE_TEST
+Dispatch all three simultaneously:
+- **gap-checker** — cross-layer/cross-package completeness (if monorepo or multi-package impact map)
+- **smoke-tester** — build + server start + endpoint health
+- **drift-detector** (Mode 2) — contract drift check
 
-## Phase 2.7: Contract Drift Check
-Dispatch drift-detector (Mode 2: Contract Drift Check).
-- STABLE → Phase 2.8
-- DRIFTED → notify affected agents → block until re-validated
-- Update state: phase → CONTRACT_DRIFT_CHECK
+Wait for ALL three to complete before proceeding.
+
+### Merge Results
+
+**All PASS** → Phase 2.8
+
+**Any FAIL** → collect all failures first, then fix together:
+- Gap failures + Smoke failures: prioritize gap fixes first (missing code causes misleading smoke errors)
+- Drift failures: notify affected agents in parallel with gap/smoke fixes
+- After all fixes: re-run only the checks that failed (not all three)
+- PARTIAL smoke (build pass, endpoints skipped due to no contract) → proceed with warning
+
+**Max 3 re-check rounds** → escalate to user if unresolved
+
+- Update state: phase → POST_IMPL_CHECKS
 
 ## Phase 2.8: Visual QA
 If `design_profile` exists in `.solo-dev/config.local.md` AND `visual_qa.enabled: true`:

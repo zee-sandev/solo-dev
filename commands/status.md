@@ -1,5 +1,5 @@
 ---
-name: status
+name: solo-dev:status
 description: Show the current project status dashboard — phase, feature progress, roadmap, token usage, memory stats, and agent performance.
 argument-hint: "[--full] [--token] — show project dashboard (phase, roadmap, memory, agents)"
 allowed-tools: Read, Bash

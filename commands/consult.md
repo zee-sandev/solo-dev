@@ -1,5 +1,5 @@
 ---
-name: consult
+name: solo-dev:consult
 description: Consult a specific solo-dev agent for expert input without running the full workflow. Works with or without an initialized project.
 argument-hint: "<agent-name> <question or topic>"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -54,7 +54,7 @@ If project has `.solo-dev/state.json`:
 If NO solo-dev state exists:
 - Agent works standalone — general expertise only
 - If question references specific files: read those files for context
-- Note to user: "Running without project context. For project-aware answers, run /solo-dev:init first."
+- Note to user: "Running without project context. For project-aware answers, run /solo-dev:setup first."
 
 ### Step 3: Invoke Agent
 

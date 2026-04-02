@@ -71,7 +71,7 @@ deep problem discovery → market reality check → competitor gap analysis → 
 ### 2. Start from existing notes or a spec
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 Already have requirements, a brief, or scattered notes? `init` sets up the project structure and memory system.
@@ -79,7 +79,7 @@ Already have requirements, a brief, or scattered notes? `init` sets up the proje
 ### 3. Onboard an existing codebase
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 When solo-dev detects source files but no product docs, it enters **onboarding mode** — analyzes your codebase silently, then cross-checks understanding with you in just 3 interactions. The codebase speaks first, questions come after.
@@ -87,7 +87,7 @@ When solo-dev detects source files but no product docs, it enters **onboarding m
 ### 4. Start from a project template
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 If your project already has `CLAUDE.md`, `docs/`, or `.claude/agents/`, solo-dev enters **foundation mode** — reads existing documentation, delegates implementation to your template's agents (they know the conventions best), tags example code for automatic replacement, and asks just one question: *"What are you building on this foundation?"*
@@ -107,7 +107,7 @@ Picks the next eligible feature from your roadmap and runs the full 8-phase life
 | Command | What it does |
 |---------|-------------|
 | `/solo-dev:start-from-idea` | Turn a rough idea into a validated, prioritized roadmap |
-| `/solo-dev:init` | Initialize a project — works for new concepts, existing codebases, and templates |
+| `/solo-dev:setup` | Initialize a project — works for new concepts, existing codebases, and templates |
 | `/solo-dev:next-feature` | Build and ship the next feature through all 8 phases. `--overnight` for unattended multi-feature runs, `--spike` for quick feasibility checks |
 | `/solo-dev:consult <agent>` | Quick expert consultation with any agent — no init required |
 | `/solo-dev:handoff` | Transition your current discussion into a structured build |
@@ -127,7 +127,7 @@ Picks the next eligible feature from your roadmap and runs the full 8-phase life
 ### Onboarding an existing codebase
 
 ```
-> /solo-dev:init
+> /solo-dev:setup
 
   Packing codebase with Repomix...
   Analyzing in parallel: tech-architect · product-researcher · ux-researcher
@@ -186,7 +186,7 @@ User: A tool that helps content teams track blog rankings
 ✓  10x opportunity found — AI auto-optimization (no competitor does this)
 ✓  Roadmap generated with dependency graph
 
-Run /solo-dev:init to start building.
+Run /solo-dev:setup to start building.
 ```
 
 ### Building a feature

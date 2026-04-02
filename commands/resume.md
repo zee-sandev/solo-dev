@@ -1,5 +1,5 @@
 ---
-name: resume
+name: solo-dev:resume
 description: Resume from an escalation, paused state, or human decision point. Use when the system is waiting for your input or after you've made a decision on an escalated conflict.
 argument-hint: "[optional: your decision — e.g., 'A' or 'Use option B with WebSocket']"
 allowed-tools: Read, Write, Edit, Bash

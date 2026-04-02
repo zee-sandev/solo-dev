@@ -96,7 +96,7 @@ Create all product docs:
 Present summary of what was created.
 
 Options:
-- **A: Approve** → proceed to /solo-dev:init
+- **A: Approve** → proceed to /solo-dev:setup
 - **B: Adjust section** → specify which section needs changes → re-run that phase
 - **C: Start over** → reset and restart from Phase 1
 

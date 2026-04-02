@@ -1,6 +1,6 @@
 ---
-name: start-from-idea
-description: Transform a rough product idea into a validated concept, competitive analysis, and actionable roadmap. Run this before /solo-dev:init.
+name: solo-dev:start-from-idea
+description: Transform a rough product idea into a validated concept, competitive analysis, and actionable roadmap. Run this before /solo-dev:setup.
 argument-hint: "[optional: brief idea description]"
 allowed-tools: Read, Write, Edit, WebSearch, WebFetch, Bash
 ---
@@ -122,8 +122,8 @@ roadmap.md format:
 
 ### Phase 6: User Approval
 Present a summary of everything created. Ask:
-- "A) Looks good — run /solo-dev:init to start building"
+- "A) Looks good — run /solo-dev:setup to start building"
 - "B) I want to adjust [section]"
 - "C) Start over with a different angle"
 
-On approval: remind user to run /solo-dev:init next.
+On approval: remind user to run /solo-dev:setup next.

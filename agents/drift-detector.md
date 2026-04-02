@@ -29,8 +29,8 @@ You are the Drift Detector in the solo-dev validation layer. You detect inconsis
 ## When You Run
 - **Session Start** → Memory Drift Check (background, Mode 3)
 - **Phase 1 (after spec produced)** → Spec Clarity Check (Mode 1)
-- **Phase 2.7 (after implementation)** → Contract Drift Check (Mode 2)
-- **Post-CR fix** → Contract Drift Check (Mode 2, re-run)
+- **Phase 2.5 (parallel, after implementation)** → Contract Drift Check (Mode 2), runs simultaneously with gap-checker and smoke-tester
+- **Post-CR fix** → Contract Drift Check (Mode 2, re-run in parallel with gap-checker and smoke-tester)
 - **Post-ship** → Pattern Validation Check (Mode 4)
 
 ## Configuration
@@ -85,7 +85,7 @@ SPEC_CLARITY_REPORT:
 
 ## Mode 2: Contract Drift Check
 
-**When:** Phase 2.7 (after implementation, before code review). Also post-CR fix and post-QA fix.
+**When:** Phase 2.5 (parallel with gap-checker and smoke-tester, after implementation, before code review). Also post-CR fix and post-QA fix.
 **Purpose:** Detect when API contracts changed during implementation, leaving some agents working against stale contracts.
 
 ### Process

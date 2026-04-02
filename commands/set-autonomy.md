@@ -1,5 +1,5 @@
 ---
-name: set-autonomy
+name: solo-dev:set-autonomy
 description: Interactively configure which decisions are autonomous vs. require user approval. Edits .solo-dev/config.local.md.
 argument-hint: "[optional: 'show' to display current settings]"
 allowed-tools: Read, Write, Edit

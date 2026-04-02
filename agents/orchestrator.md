@@ -435,65 +435,13 @@ Before Phase 2 (Implementation), analyze inter-agent dependencies and classify e
 3. frontend-agent (pages + state) — HARD depends on API contract
 4. ui-agent (design system) — SOFT, can run parallel with all
 5. test-agent (tests) — SOFT for unit tests, HARD for integration/E2E (needs working endpoints)
-6. **gap-checker (cross-package validation) — HARD depends on ALL impl agents completing**
-7. **smoke-tester (runtime verification) — HARD depends on gap-checker completing**
-8. **drift-detector Mode 2 (contract drift) — HARD depends on smoke-tester completing**
+6. **gap-checker, smoke-tester, drift-detector Mode 2 — all HARD depend on ALL impl agents completing, but run in PARALLEL with each other**
 
-## Cross-Package Gap Check Gate
+## Post-Implementation Checks Gate (Phase 2.5)
 
-Gap-checker runs at multiple points in the lifecycle. Read `gap_check` config from `.solo-dev/config.local.md` for `min_rounds` and `max_rounds`. Track cumulative round count in `solo-dev-state.json` under `gap_check_rounds`.
+After ALL impl agents report DONE, dispatch **gap-checker, smoke-tester, and drift-detector Mode 2 in parallel** before code review.
 
-### Trigger Points
-
-**1. Phase 2.5 — Post-Implementation (mandatory first check)**
-After ALL implementation agents report DONE and BEFORE dispatching code-reviewer:
-- Check `solo-dev-state.json` for `workspace` field
-- If workspace exists AND impact map lists 2+ packages → dispatch gap-checker
-- On PASS → proceed to Phase 3
-- On FAIL → targeted feedback → agents fix → re-check (within max_rounds)
-- If no workspace OR single-package → skip
-
-**2. Post-CR Fix — After Code Review REJECT**
-When code-reviewer REJECTs and agents fix code:
-- Re-dispatch gap-checker BEFORE sending back to code-reviewer
-- This catches cases where a CR fix accidentally removes code from a package
-
-**3. Post-QA Fix — After QA FAIL**
-When QA FAILs and agents fix code:
-- Re-dispatch gap-checker BEFORE sending back to QA
-- This catches cases where a QA fix breaks cross-package completeness
-
-### Skip Conditions
-- No `workspace` in state → skip all gap checks
-- Single-package impact map → skip all gap checks
-- `gap_check.enabled: false` in config → skip all gap checks
-- Current round >= `max_rounds` → escalate instead of re-checking
-
-**State update on gap check:** `phase: GAP_CHECK, gap_check_rounds: {N}`
-
-## Smoke Test Gate (Phase 2.6)
-
-After gap-checker PASS, dispatch smoke-tester BEFORE code review.
-
-### Trigger Points
-**1. Phase 2.6 — Post-Gap-Check (after gap-checker PASS)**
-- Read `smoke_test` config from `.solo-dev/config.local.md`
-- If `smoke_test.enabled: false` → skip
-- Dispatch smoke-tester agent
-- On PASS → proceed to Phase 2.7 (Contract Drift Check)
-- On FAIL → targeted feedback → agents fix → re-run failed steps only
-- Track rounds in `solo-dev-state.json` under `smoke_test_rounds`
-
-**2. Post-CR Fix** — After code-reviewer REJECT → agents fix → smoke-tester re-verifies
-**3. Post-QA Fix** — After QA FAIL → agents fix → smoke-tester re-verifies
-
-**State update on smoke test:** `phase: SMOKE_TEST, smoke_test_rounds: {N}`
-
-## Contract Drift Check Gate (Phase 2.7)
-
-After smoke-tester PASS, dispatch drift-detector Mode 2 BEFORE code review.
-
-### Contract Checksum Tracking
+### Contract Checksum Tracking (pre-requisite)
 After backend-agent writes contracts (DONE status) and BEFORE dispatching other impl agents:
 - Compute `sha256sum` of all files in `.solo-dev/contracts/`
 - Store in `solo-dev-state.json` under `contract_checksums`:
@@ -505,20 +453,31 @@ After backend-agent writes contracts (DONE status) and BEFORE dispatching other 
   }
   ```
 
-### Trigger Points
-**1. Phase 2.7 — Post-Smoke-Test**
-- Read `drift_detection` config from `.solo-dev/config.local.md`
-- If `drift_detection.contract_checksum: false` → skip
-- Dispatch drift-detector (Mode 2: Contract Drift Check)
-- On STABLE → proceed to Phase 3 (Code Review)
-- On DRIFTED → notify affected agents → block until they re-validate against new contract
+### Dispatch Rules
+- **gap-checker**: dispatch if `workspace` exists AND impact map lists 2+ packages. Skip if single-package or `gap_check.enabled: false`.
+- **smoke-tester**: dispatch if `smoke_test.enabled: true` (default). Skip otherwise.
+- **drift-detector Mode 2**: dispatch if `drift_detection.contract_checksum: true` (default). Skip otherwise.
 
-**2. Post-CR Fix** — Re-check after code fixes
-**3. Post-QA Fix** — Re-check after QA fixes
+All three run simultaneously. Wait for ALL to complete before evaluating results.
 
-**Precondition:** `phase: SMOKE_TEST` must be PASS before dispatching drift-detector.
+### Merge Results
 
-**State update on drift check:** `phase: CONTRACT_DRIFT_CHECK, drift_status: CLEAN|DRIFTED`
+**All PASS** → proceed to Phase 2.8
+
+**Any FAIL** — collect all failures first, then fix in priority order:
+1. **Gap failures first** — missing code causes misleading smoke errors; fix before re-running smoke
+2. **Drift failures** — notify affected agents in parallel with gap/smoke fixes
+3. **Smoke failures** — fix after gap issues resolved
+
+After all fixes: re-run only the checks that failed (not all three). Max 3 re-check rounds → escalate to user.
+
+PARTIAL smoke (build pass, endpoints skipped due to no contract) → proceed with warning.
+
+### Post-CR and Post-QA Re-checks
+After code-reviewer REJECT → agents fix → re-run gap + smoke + drift in parallel (same merge logic).
+After QA FAIL → agents fix → re-run gap + smoke + drift in parallel.
+
+**State update:** `phase: POST_IMPL_CHECKS, post_impl_check_rounds: {N}`
 
 ## Visual QA Gate (Phase 2.8)
 
@@ -715,8 +674,8 @@ Adjust the workflow based on feature effort classification:
 
 | Effort | Adjustments |
 |--------|-------------|
-| **XS** (Minimal) | **Minimal pipeline:** Skip Phase 0 (market), Phase 1 (design loop), Phase 2.7 (contract drift), Phase 2.8 (visual QA), Phase 4 (business validator), Phase 5 (QA loop), Phase 7 (demo). Run: Pre-Flight → Impl → Code Review (Phase 3) → Security Review (Phase 3) → Smoke Test (Phase 2.6) → Ship. Self-refinement: skip. |
-| **S** (Small) | **Fast track:** Skip Phase 1 (design loop). Skip Phase 2.7 and 2.8. Skip Phase 5 (QA loop). Skip demo. Use only 1 research agent (product-researcher). Self-refinement: light (1 round self-critique only). |
+| **XS** (Minimal) | **Minimal pipeline:** Skip Phase 0 (market), Phase 1 (design loop), Phase 2.5 (contract drift + gap check, keep smoke only), Phase 2.8 (visual QA), Phase 4 (business validator), Phase 5 (QA loop), Phase 7 (demo). Run: Pre-Flight → Impl → Smoke Test → Code Review (Phase 3) → Security Review (Phase 3) → Ship. Self-refinement: skip. |
+| **S** (Small) | **Fast track:** Skip Phase 1 (design loop). Skip contract drift and visual QA (Phase 2.5 runs gap + smoke only, Phase 2.8 skipped). Skip Phase 5 (QA loop). Skip demo. Use only 1 research agent (product-researcher). Self-refinement: light (1 round self-critique only). |
 | **M** (Medium) | Standard flow — all phases as defined. Self-refinement per config. Design loop max adjusted by intensity. |
 | **L** (Large) | Standard flow + mid-implementation checkpoint after backend contracts are defined |
 | **XL** (Extra Large) | **Block at Pre-Flight** — must decompose before implementing. Present options: `decompose` (run `/solo-dev:decompose`) \| `spike first` \| `override` (run full pipeline, not recommended). Do not proceed to Phase 0 until user chooses. |
@@ -881,7 +840,7 @@ Before dispatching implementation agents, discover which skills are available an
 ### Re-scan Triggers
 - User installs/removes a plugin mid-session
 - Stack changes (rare — only if init re-detects)
-- User runs `/solo-dev:init` again
+- User runs `/solo-dev:setup` again
 
 ## Discovery Integration (absorbed into checkpoints)
 
@@ -1007,7 +966,7 @@ This gives the user something tangible to evaluate rather than just abstract "al
 
 ## Phase Management
 Follow the workflow defined in docs/workflow.md exactly.
-State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION → GAP_CHECK → SMOKE_TEST → CONTRACT_DRIFT_CHECK → VISUAL_QA → CODE_REVIEW → QA_SECURITY → BUSINESS_VALIDATION → FINAL_ACCEPTANCE → DEMO_GENERATION → COMPLETE
+State transitions: INIT → MARKET_VALIDATION → DESIGN_LOOP → IMPLEMENTATION → POST_IMPL_CHECKS → VISUAL_QA → CODE_REVIEW → QA_SECURITY → BUSINESS_VALIDATION → FINAL_ACCEPTANCE → DEMO_GENERATION → COMPLETE
 
 **Key timing changes:**
 - Discovery Agent + Venture Strategist run **before Phase 0** when conditions are met

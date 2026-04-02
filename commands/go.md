@@ -1,5 +1,5 @@
 ---
-name: go
+name: solo-dev:go
 description: "solo-dev launcher — interactive menu for all commands. Type /go when you can't remember the exact command name or flags."
 argument-hint: "[optional: command name or number from menu]"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch

@@ -1,5 +1,5 @@
 ---
-name: showcase
+name: solo-dev:showcase
 description: Compile all feature demos into a product showcase — timeline view with journeys, clips, and API demos grouped by sprint.
 argument-hint: "[optional: 'html' for HTML output]"
 allowed-tools: Read, Write, Bash, Glob

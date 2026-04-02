@@ -1,5 +1,5 @@
 ---
-name: evolve
+name: solo-dev:evolve
 description: Run the strategy-evolver agent to analyze agent performance and update strategies for future sessions. Run after completing multiple features.
 argument-hint: "[--reset] — analyze performance and evolve agent strategies (run after 2+ features)"
 allowed-tools: Read, Write, Edit

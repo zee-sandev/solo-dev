@@ -25,7 +25,7 @@ This project maintains 3 documentation surfaces that MUST stay in sync:
 | Configuration change | `README.md` (config section), `docs-site/content/docs/guides/configuration.mdx`, `wiki/Configuration.md` |
 | New bundled skill | `README.md` (bundled skills table), `docs-site/content/docs/guides/bundled-skills.mdx`, `wiki/Bundled-Skills.md` |
 | New supported stack | `README.md` (supported stacks table), `docs-site/content/docs/guides/supported-stacks.mdx`, `wiki/Supported-Stacks.md` |
-| Onboarding flow change | `README.md`, `commands/init.md`, `docs-site/content/docs/guides/existing-project-onboarding.mdx`, `wiki/Existing-Project-Onboarding.md`, `docs/workflow.md` |
+| Onboarding flow change | `README.md`, `commands/setup.md`, `docs-site/content/docs/guides/existing-project-onboarding.mdx`, `wiki/Existing-Project-Onboarding.md`, `docs/workflow.md` |
 | Rollback change | `docs-site/content/docs/guides/rollback.mdx`, `wiki/Rollback.md`, `docs/workflow.md` |
 | New docs page | Add MDX file to `docs-site/content/docs/`, update relevant `meta.json` |
 | Mermaid diagram needs update | `README.md`, `docs-site/content/docs/architecture/feature-lifecycle.mdx`, `wiki/Feature-Lifecycle.md` |

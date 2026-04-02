@@ -5,7 +5,7 @@
 
 ---
 
-## Workflow 0: `/solo-dev:init` — Existing Project Onboarding
+## Workflow 0: `/solo-dev:setup` — Existing Project Onboarding
 
 Onboards an existing codebase that has no solo-dev docs. Agents analyze the project first — no upfront questions — then cross-check understanding with the user at two key checkpoints.
 
@@ -13,7 +13,7 @@ Onboards an existing codebase that has no solo-dev docs. Agents analyze the proj
 **User interactions:** 3 (product understanding, feature map, architecture decisions)
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 ### Step 1: Silent Analysis (no questions)
@@ -125,7 +125,7 @@ roadmap.md status ← based on confirmed feature map
 
 ---
 
-## Workflow 0.5: `/solo-dev:init` — Foundation-Aware Mode
+## Workflow 0.5: `/solo-dev:setup` — Foundation-Aware Mode
 
 When init detects an existing well-documented codebase with CLAUDE.md, docs/, and/or .claude/agents/ — but no solo-dev product docs (docs/product/).
 
@@ -210,7 +210,7 @@ Example code is NOT deleted during init. During `/solo-dev:next-feature`:
 ## Workflow 1: `/solo-dev:start-from-idea`
 
 Transforms a rough idea into a validated product concept + actionable roadmap.
-Output feeds directly into `/solo-dev:init`.
+Output feeds directly into `/solo-dev:setup`.
 
 ```
 /solo-dev:start-from-idea [optional: rough idea text]
@@ -388,7 +388,7 @@ docs/product/
 ### Phase 6: User Approval
 
 Present summary → user decides:
-- **A) Approve** → run `/solo-dev:init` to start building
+- **A) Approve** → run `/solo-dev:setup` to start building
 - **B) Adjust** → specify which section, iterate
 - **C) Start over** → new angle or pivot
 

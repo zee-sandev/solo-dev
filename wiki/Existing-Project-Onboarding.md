@@ -1,6 +1,6 @@
 # Existing Project Onboarding
 
-When `/solo-dev:init` detects an existing codebase with no product docs, it picks one of two paths based on what's already documented.
+When `/solo-dev:setup` detects an existing codebase with no product docs, it picks one of two paths based on what's already documented.
 
 ---
 

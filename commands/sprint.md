@@ -1,5 +1,5 @@
 ---
-name: sprint
+name: solo-dev:sprint
 description: Plan a development sprint — select features, estimate effort, create sprint plan.
 argument-hint: "[optional: 'show' to display current sprint]"
 allowed-tools: Read, Write, Edit

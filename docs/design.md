@@ -110,7 +110,7 @@ solo-dev/
 | Command | Purpose | Autonomy |
 |---------|---------|----------|
 | `/solo-dev:start-from-idea` | Idea → validated concept + roadmap | Guided |
-| `/solo-dev:init` | Setup project from concept/docs/template | Semi-guided |
+| `/solo-dev:setup` | Setup project from concept/docs/template | Semi-guided |
 | `/solo-dev:next-feature` | Implement next feature from roadmap. `--overnight` for unattended runs, `--spike` / `--experiment` for lightweight validation | Per config |
 | `/solo-dev:consult` | Quick expert consultation with any agent — no init required | Read-only |
 | `/solo-dev:handoff` | Transition conversation discussion into structured workflow | Semi-guided |

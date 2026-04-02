@@ -1,5 +1,5 @@
 ---
-name: handoff
+name: solo-dev:handoff
 description: Transition the current conversation into a solo-dev structured workflow. Captures discussion context and creates a feature spec or runs init.
 argument-hint: "[optional: 'design-only' to skip implementation]"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -123,7 +123,7 @@ When no solo-dev state exists, run a minimal init before handoff.
 
 #### A. Quick Init
 
-This is NOT the full `/solo-dev:init` — it's a lightweight setup:
+This is NOT the full `/solo-dev:setup` — it's a lightweight setup:
 
 1. Detect stack from project files (package.json, go.mod, etc.) or CLAUDE.md
 2. Create minimal directory structure:
@@ -138,10 +138,10 @@ This is NOT the full `/solo-dev:init` — it's a lightweight setup:
 5. If CLAUDE.md exists: read it for foundation context (same as Foundation Mode)
 
 Skip: autonomy config, global memory, repomix setup, detailed onboarding
-These can be set up later with full `/solo-dev:init`.
+These can be set up later with full `/solo-dev:setup`.
 
 ```
-Quick setup complete. Full configuration available via /solo-dev:init later.
+Quick setup complete. Full configuration available via /solo-dev:setup later.
 Proceeding with handoff...
 ```
 

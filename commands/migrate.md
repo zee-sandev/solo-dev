@@ -1,5 +1,5 @@
 ---
-name: migrate
+name: solo-dev:migrate
 description: "Apply plugin updates to an already-initialized project — updates state schema, config defaults, and YAML indexes to match the current plugin version."
 argument-hint: "[--dry-run] [--from X.Y.Z] — migrate project to current plugin version"
 allowed-tools: Read, Write, Edit, Bash

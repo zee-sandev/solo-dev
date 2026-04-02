@@ -38,14 +38,10 @@ If `self_refinement.intensity` is `standard` or `thorough`: orchestrator sends c
 
 Wait for all to report DONE. If any blocks on a contract mismatch, resolve via backend-agent before others continue.
 
-**Phase 2.5: Gap Check (monorepo only)**
-Dispatch gap-checker to verify cross-package completeness. Content validation runs for all projects.
-
-**Phase 2.6: Smoke Test**
-Dispatch smoke-tester. Build verification + runtime endpoint testing. On FAIL → targeted feedback → fix → re-test.
-
-**Phase 2.7: Contract Drift Check**
-Dispatch drift-detector (Mode 2). Verify contracts haven't changed since impl started. On DRIFTED → notify affected agents.
+**Phase 2.5: Post-Implementation Checks (Parallel)**
+Dispatch gap-checker, smoke-tester, and drift-detector (Mode 2) simultaneously. Wait for all to complete.
+- Gap failures prioritized first (missing code causes misleading smoke errors)
+- Re-run only failed checks after fixes. Max 3 rounds → escalate.
 
 **Phase 2.8: Visual QA**
 If `design_profile` exists and `visual_qa.enabled: true`:

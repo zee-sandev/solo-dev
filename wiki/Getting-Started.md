@@ -49,7 +49,7 @@ Output: `docs/product/` directory with idea-brief, personas, competitive analysi
 ### 2. Starting from an existing concept
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 If you already have notes, a spec, or requirements — `init` sets up the project structure and memory system.
@@ -57,7 +57,7 @@ If you already have notes, a spec, or requirements — `init` sets up the projec
 ### 3. Onboarding an existing codebase
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 If solo-dev detects source files but no product docs, it automatically enters **onboarding mode**. See [Existing Project Onboarding](Existing-Project-Onboarding.md) for details.
@@ -65,7 +65,7 @@ If solo-dev detects source files but no product docs, it automatically enters **
 ### 4. Starting from a project template
 
 ```
-/solo-dev:init
+/solo-dev:setup
 ```
 
 If solo-dev detects `CLAUDE.md` + `docs/` or `.claude/agents/` but no product docs, it enters **foundation mode** — reads existing documentation, maps template agents, tags example code, and asks one question: "What product are you building on this foundation?"
@@ -117,7 +117,7 @@ User: Marketing managers at B2B SaaS companies, 5–50 person teams.
 ✓  AI enhancements suggested — 4 selected, 3 moved to backlog
 ✓  Roadmap generated
 
-Run /solo-dev:init to start building.
+Run /solo-dev:setup to start building.
 ```
 
 ## Project Output Structure

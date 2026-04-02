@@ -1,5 +1,5 @@
 ---
-name: decompose
+name: solo-dev:decompose
 description: Break a large feature into smaller sub-features with dependency links. Useful after rollback or when a feature is too complex.
 argument-hint: "<feature-id>"
 allowed-tools: Read, Write, Edit, Bash

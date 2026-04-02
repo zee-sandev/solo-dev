@@ -1,5 +1,5 @@
 ---
-name: init
+name: solo-dev:setup
 description: Initialize a solo-dev project. Detects whether this is a new concept or an existing codebase and runs the appropriate onboarding flow.
 argument-hint: "[optional: concept description or 'existing' to onboard existing codebase]"
 allowed-tools: Read, Write, Edit, Bash

@@ -1,5 +1,5 @@
 ---
-name: rollback
+name: solo-dev:rollback
 description: Rollback a completed or in-progress feature — reverts git, restores memory snapshot, and gives options to re-attempt, remove, or decompose.
 argument-hint: "<feature-id>"
 allowed-tools: Read, Write, Edit, Bash
